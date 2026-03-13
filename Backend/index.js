@@ -4,30 +4,43 @@ import authRouter from './Routes/auth.router.js'
 import socialRouter from './Routes/social.router.js'
 import moviesRouter from './Routes/movies.router.js'
 import cors from 'cors'
+import { rateLimit } from 'express-rate-limit'
 import cookieParser from 'cookie-parser'
 import { start } from './utils/fetchMovies.js'
 import cron from 'node-cron';
 import path from 'path'
 import debug from 'debug'
 
+const limiter = rateLimit({
+    windowMs: 10 * 60 * 1000,
+    limit: 100,
+    standardHeaders: 'draft-8',
+    legacyHeaders: false,
+    ipv6Subnet: 56,
+    // to do: Implement redis store to have consistency in case of multiple server instances
+})
+
+const corsOptions = cors({
+    origin: 'http://localhost:5173',
+    credentials: true,
+})
 
 const app = express();
 
-app.use(cors({
-    origin: 'http://localhost:5173',
-    credentials: true,
-}))
+app.use(corsOptions)
 
 app.use(cookieParser());
 
 app.use(express.json());
 
-
-app.use('/api/auth', authRouter);
+app.use(limiter)
 
 app.use('/api/social', socialRouter);
 
+app.use('/api/auth', authRouter);
+
 app.use('/api/movies', moviesRouter);
+
 
 app.use((err, req, res, next) => {
     return res.status(500).json({ message: err });
@@ -49,10 +62,8 @@ if (process.env.NODE_ENV != 'development') {
 
 let cron_debug = debug("cron");
 
-let server_debug = debug("server");
-
 app.listen(PORT, async () => {
-    server_debug('server running on port %o', PORT)
+    console.log('server running on port: ', PORT);
 
     if (process.env.NODE_ENV != 'development') await start();
 
