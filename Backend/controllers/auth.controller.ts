@@ -1,21 +1,24 @@
+import type { Request, Response } from "express";
 import { sign, verify } from "../lib/jwt.js";
-import { validateNewUser } from "../middlewares/validate.js";
 import * as model from "../Models/auth.model.js"
 import { compare, hash } from "../lib/bcrypt.js";
-
-function sanitizeUser(user) {
+import { LoginSchema, SignupSchema } from "../../Shared/auth.schema.ts";
+function sanitizeUser(user: any) {
     if (!user) return null;
     const { password, ...userWithoutPassword } = user;
     return userWithoutPassword;
 }
 
-export async function login(req, res) {
-    try {
-        const { username, password } = req.body;
+export async function login(req: Request, res: Response) {
 
-        if (!username || !password) {
-            return res.status(400).json({ message: "Username and password are required" });
+    try {
+        const parseResult = LoginSchema.safeParse(req.body);
+
+        if (!parseResult.success) {
+            return res.status(400).json({ message: parseResult.error.message });
         }
+
+        const { username, password } = parseResult.data;
 
         const user = await model.getUserByUsername(username);
 
@@ -39,16 +42,15 @@ export async function login(req, res) {
     }
 }
 
-export async function signup(req, res) {
+export async function signup(req: Request, res: Response) {
     try {
-        let { name, username, password } = req.body;
+        const parseResult = SignupSchema.safeParse(req.body);
 
-        const { error, ok } = validateNewUser(name, username, password);
-
-        if (!ok) {
-
-            return res.status(400).json({ message: error || "Invalid request parameters" });
+        if (!parseResult.success) {
+            return res.status(400).json({ message: parseResult.error.message });
         }
+
+        let { name, username, password } = parseResult.data;
 
         const hashedPassword = await hash(password);
 
@@ -58,7 +60,7 @@ export async function signup(req, res) {
 
         return res.status(201).json({ user: sanitizeUser(user) });
 
-    } catch (error) {
+    } catch (error: any) {
         if (error.code === 'P2002') {
             return res.status(409).json({ message: "Username already exists" });
         }
@@ -68,7 +70,7 @@ export async function signup(req, res) {
     }
 }
 
-export async function check(req, res) {
+export async function check(req: Request, res: Response) {
     try {
         const { jwt } = req.cookies;
 
@@ -98,7 +100,7 @@ export async function check(req, res) {
     }
 }
 
-export async function logout(req, res) {
+export async function logout(req: Request, res: Response) {
     try {
         res.clearCookie("jwt");
         return res.status(200).json({ message: 'Logged out successfully' });
