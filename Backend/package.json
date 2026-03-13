@@ -7,17 +7,18 @@
   "type": "module",
   "main": "index.ts",
   "scripts": {
-    "start": "NODE_ENV=production node ./dist/index.js",
+    "start": "NODE_ENV=production node dist/index.js",
+    "dev": "NODE_ENV=development node --watch index.ts",
+    "build": "tsup-node index.ts --format esm",
+    "prebuild": "npx prisma generate",
     "mig": "npx prisma migrate dev --name Init",
     "gen": "npx prisma generate",
-    "dev": "NODE_ENV=development node --watch index.ts",
     "seed": "node ./prisma/seed.js",
-    "migrate": "npx prisma migrate deploy",
-    "build": "tsc"
+    "migrate": "npx prisma migrate deploy"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.2.0",
-    "@prisma/client": "^7.2.0",
+    "@prisma/client": "^7.5.0",
     "axios": "^1.13.2",
     "bcrypt": "^6.0.0",
     "cheerio": "^1.1.2",
@@ -45,6 +46,7 @@
     "@types/express": "^5.0.6",
     "@types/node": "^25.5.0",
     "@types/node-cron": "^3.0.11",
+    "tsup": "^8.5.1",
     "typescript": "^5.9.3"
   }
 }

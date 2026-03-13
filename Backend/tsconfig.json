@@ -25,7 +25,7 @@
     "verbatimModuleSyntax": true,
     "allowJs": true,
     "outDir": "./dist",
-    "noEmit": false
+    "noEmit": true,
   },
   "exclude": [
     "node_modules",

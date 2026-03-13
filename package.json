@@ -19,7 +19,7 @@
   },
   "scripts": {
     "postinstall": "npm install --prefix Backend && npm install --prefix Frontend",
-    "build": "npm run build --prefix Frontend && npm run gen --prefix Backend",
+    "build": "npm run gen --prefix Backend && npm run build --prefix Backend && npm run build --prefix Frontend",
     "start": "npm run start --prefix Backend"
   }
 }
