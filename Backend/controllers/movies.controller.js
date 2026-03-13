@@ -31,7 +31,7 @@ export async function getTodayMovies(req, res, next) {
     }
 }
 
-export async function getAllMovies(req, res) {
+export async function getAllMovies(req, res, next) {
     try {
         let movies = await prisma.movie.findMany({
             include: {
