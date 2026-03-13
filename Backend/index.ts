@@ -73,13 +73,13 @@ if (process.env.NODE_ENV != 'development') {
         },
     }));
 
-    const staticPath = path.join(__dirname, '..', 'Frontend/dist');
+    const staticPath = path.join(__dirname, '..', '..', 'Frontend', 'dist');
 
-    app.use(express.static(path.join(staticPath)));
+    app.use(express.static(staticPath));
 
     app.get('/{*splat}', (req: Request, res: Response) => {
-        res.sendFile(path.join(staticPath, '/index.html'));
-    })
+        res.sendFile(path.join(staticPath, 'index.html'));
+    });
 }
 
 let cron_debug = debug("cron");
