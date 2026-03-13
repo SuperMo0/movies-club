@@ -23,7 +23,8 @@
     "rewriteRelativeImportExtensions": true,
     "erasableSyntaxOnly": true,
     "verbatimModuleSyntax": true,
-    "noImplicitAny": false
+    "allowJs": true,
+    "noEmit": true,
   },
   "exclude": [
     "node_modules"
