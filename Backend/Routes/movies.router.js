@@ -1,5 +1,5 @@
 import { Router } from "express";
-import * as controller from '../controllers/movies.controller.js'
+import * as controller from '../controllers/movies.controller.ts'
 import { getSecondsUntil3AM } from '../utils/cache.js';
 
 const router = Router();

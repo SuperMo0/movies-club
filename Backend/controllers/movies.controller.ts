@@ -1,9 +1,10 @@
+import type { Request, Response, NextFunction } from 'express'
 import { prisma } from './../lib/prisma.js'
 
-let cachedMovies = null;
-let lastUpdate = null;
+let cachedMovies: any = null;
+let lastUpdate: string | null = null;
 
-export async function getTodayMovies(req, res, next) {
+export async function getTodayMovies(req: Request, res: Response, next: NextFunction) {
     try {
 
         const today = new Date().toLocaleDateString('en-CA');
@@ -31,7 +32,7 @@ export async function getTodayMovies(req, res, next) {
     }
 }
 
-export async function getAllMovies(req, res, next) {
+export async function getAllMovies(req: Request, res: Response, next: NextFunction) {
     try {
         let movies = await prisma.movie.findMany({
             include: {

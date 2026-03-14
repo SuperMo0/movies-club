@@ -1,8 +1,16 @@
+import type { Request, Response, NextFunction } from 'express';
 import { prisma } from '../lib/prisma.js'
 import v2 from '../lib/cloudinary.js'
 import { userProfileSelect } from './../Models/auth.model.js'
+import {
+    userIdParamSchema,
+    postIdParamSchema,
+    commentBodySchema,
+    createPostBodySchema,
+    updateProfileBodySchema
+} from '../../Shared/social.schema.js'
 
-export async function getFeed(req, res) {
+export async function getFeed(req: Request, res: Response, next: NextFunction) {
 
     try {
         let posts = await prisma.post.findMany({
@@ -19,7 +27,7 @@ export async function getFeed(req, res) {
     }
 }
 
-export async function getUserLikedPosts(req, res) {
+export async function getUserLikedPosts(req: Request & { userId: string }, res: Response) {
     try {
         const userId = req.userId;
 
@@ -49,7 +57,7 @@ export async function getUserLikedPosts(req, res) {
 }
 
 
-export async function getUsers(req, res) {
+export async function getUsers(req: Request, res: Response, next: NextFunction) {
     try {
         let users = await prisma.user.findMany({
             select: userProfileSelect
@@ -62,12 +70,16 @@ export async function getUsers(req, res) {
     }
 }
 
-export async function getUserPosts(req, res, next) {
+export async function getUserPosts(req: Request, res: Response, next: NextFunction) {
 
     try {
-        let userId = req?.params?.userId;               // this is the target userId and not req.userId
+        let userId = req?.params?.userId;
 
-        if (!userId) return res.status(400).json({ message: 'bad request' });
+        const validatedParams = userIdParamSchema.safeParse({ userId });
+        if (!validatedParams.success) {
+            return res.status(400).json({ message: validatedParams.error.message || 'bad request' });
+        }
+        userId = validatedParams.data.userId;
 
         let posts = await prisma.post.findMany({
             orderBy: { createdAt: 'desc' },
@@ -89,12 +101,18 @@ export async function getUserPosts(req, res, next) {
 
 }
 
-export async function likePost(req, res, next) {
+export async function likePost(req: Request & { userId: string }, res: Response, next: NextFunction) {
 
     try {
         let postId = req?.params?.postId;
         let userId = req.userId;
-        if (!postId) return res.status(400).json({ message: 'bad request' });
+
+        const validatedParams = postIdParamSchema.safeParse({ postId });
+        if (!validatedParams.success) {
+            return res.status(400).json({ message: validatedParams.error.message || 'bad request' });
+        }
+        postId = validatedParams.data.postId;
+
         let result = await prisma.post.update({
             where: {
                 id: postId
@@ -117,11 +135,17 @@ export async function likePost(req, res, next) {
 }
 
 
-export async function deleteLikePost(req, res, next) {
+export async function deleteLikePost(req: Request & { userId: string }, res: Response, next: NextFunction) {
     try {
         let postId = req?.params?.postId;
         let userId = req.userId;
-        if (!postId) return res.status(400).json({ message: 'bad request' });
+
+        const validatedParams = postIdParamSchema.safeParse({ postId });
+        if (!validatedParams.success) {
+            return res.status(400).json({ message: validatedParams.error.message || 'bad request' });
+        }
+        postId = validatedParams.data.postId;
+
         let result = await prisma.post.update({
             data: {
                 likedBy: {
@@ -151,14 +175,23 @@ export async function deleteLikePost(req, res, next) {
 
 
 
-export async function commentPost(req, res, next) {
+export async function commentPost(req: Request & { userId: string }, res: Response, next: NextFunction) {
 
     try {
         let postId = req?.params?.postId;
         let userId = req.userId;
-        if (!postId) return res.status(400).json({ message: 'bad request' });
 
-        const { content } = req.body;
+        const validatedParams = postIdParamSchema.safeParse({ postId });
+        if (!validatedParams.success) {
+            return res.status(400).json({ message: validatedParams.error.message || 'bad request' });
+        }
+        postId = validatedParams.data.postId;
+
+        const validatedBody = commentBodySchema.safeParse(req.body);
+        if (!validatedBody.success) {
+            return res.status(400).json({ message: validatedBody.error.message || 'bad request' });
+        }
+        const { content } = validatedBody.data;
 
         let result = await prisma.comment.create({
             data: {
@@ -177,11 +210,17 @@ export async function commentPost(req, res, next) {
 
 }
 
-export async function createPost(req, res, next) {
+export async function createPost(req: Request & { userId: string, file?: any }, res: Response, next: NextFunction) {
     try {
         const userId = req.userId;
         const image = req.file;
-        let { content, movieId, rating } = req.body;
+
+        const validatedBody = createPostBodySchema.safeParse(req.body);
+        if (!validatedBody.success) {
+            return res.status(400).json({ message: validatedBody.error.message || 'bad request' });
+        }
+
+        let { content, movieId, rating } = validatedBody.data;
 
         if (movieId === 'null' || movieId === '') movieId = null;
 
@@ -204,8 +243,6 @@ export async function createPost(req, res, next) {
                 authorId: userId,
                 content: content,
                 image: imageUrl,
-                movieId: movieId,
-                rating: dbRating,
             },
             include: {
                 author: {
@@ -223,17 +260,17 @@ export async function createPost(req, res, next) {
     }
 }
 
-async function uploadImage(image) {
-    if (!image) return;
+async function uploadImage(image: any, folder: string = ''): Promise<string | null> {
+    if (!image) return null;
 
-    const imageUrl = await new Promise((resolve, reject) => {
+    const imageUrl = await new Promise<string>((resolve, reject) => {
         const stream = v2.uploader.upload_stream(
             {
                 resource_type: 'image',
             },
             (error, result) => {
                 if (error) reject(error);
-                else resolve(result.secure_url);
+                else if (result) resolve(result.secure_url);
             }
         );
         stream.end(image);
@@ -244,17 +281,19 @@ async function uploadImage(image) {
 
 }
 
-export async function updateProfile(req, res) {
+export async function updateProfile(req: Request & { userId: string, file?: any }, res: Response) {
     try {
         const userId = req.userId;
         const image = req.file;
-        const { name, bio } = req.body;
 
-        if (!name || name.trim() === "") {
-            return res.status(400).json({ message: "Name cannot be empty" });
+        const validatedBody = updateProfileBodySchema.safeParse(req.body);
+        if (!validatedBody.success) {
+            return res.status(400).json({ message: validatedBody.error.message || 'bad request' });
         }
 
-        const updateData = {
+        const { name, bio } = validatedBody.data;
+
+        const updateData: any = {
             name: name,
             bio: bio,
         };
@@ -286,7 +325,7 @@ export async function updateProfile(req, res) {
             message: "Profile updated successfully"
         });
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("Update Profile Error:", error);
 
         if (error.code === 'P2025') {

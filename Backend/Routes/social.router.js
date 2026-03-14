@@ -1,5 +1,5 @@
 import { Router } from "express";
-import * as controller from '../controllers/social.controller.js'
+import * as controller from '../controllers/social.controller.ts'
 import protect from './../middlewares/protect.js'
 import multer from 'multer'
 
