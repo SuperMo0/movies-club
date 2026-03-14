@@ -13,7 +13,7 @@ import { useMoviesStore } from '@/stores/movies.store';
 export default function Hero({ handleMovieClick }) {
     const [api, setApi] = useState();
 
-    const { getTodayMovie, todayMovies } = useMoviesStore();
+    const { todayMovies } = useMoviesStore();
 
     function handleInteraction() {
         if (!api) return;
