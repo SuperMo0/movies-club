@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, use, useContext, useEffect, useState } from 'react'
 import { Routes, Route, Outlet } from 'react-router'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -6,16 +6,24 @@ import 'react-toastify/dist/ReactToastify.css'
 import Home from './pages/Home'
 import SocialMainPage from './pages/SocialMainPage'
 import SocialProfile from './pages/SocialProfile'
-import Header from './MoviesComponents/Header'
-import Login from './SocialComponents/Login'
-import Signup from './SocialComponents/Signup'
-import SocialLayout from './SocialComponents/SocialLayout'
+
+import Login from './components/social-components/Login'
+import Signup from './components/social-components/Signup'
+import Header from './components/movies-components/Header'
+import SocialLayout from './components/social-components/SocialLayout'
+
 import LoadingScreen from './components/ui/LoadingScreen'
 
 // Stores
 import { useAuthStore } from './stores/auth.store'
 
-const LoginContext = createContext();
+
+type LoginContextType = {
+  openLogin: () => void,
+  openSignup: () => void
+}
+
+const LoginContext = createContext<LoginContextType>(null!);
 
 function App() {
 
@@ -86,4 +94,4 @@ function App() {
 
 export default App;
 
-export const useLoginModal = () => useContext(LoginContext);
+export const useLoginModal = () => use(LoginContext);

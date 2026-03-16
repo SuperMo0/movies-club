@@ -1,6 +1,5 @@
 import React from 'react'
-import MovieCard from './MovieCard'
-import movies from '../movies.js'
+import MovieCard from './MovieCard.jsx'
 import { Flame } from 'lucide-react'
 import { useMoviesStore } from '@/stores/movies.store';
 

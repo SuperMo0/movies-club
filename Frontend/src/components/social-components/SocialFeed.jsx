@@ -1,5 +1,5 @@
 import React from 'react'
-import NewPostEditor from '@/SocialComponents/NewPostEditor'
+import NewPostEditor from '@/components/social-components/NewPostEditor'
 import Post from './Post'
 import { useSocialStore } from '@/stores/social.store';
 import { useAuthStore } from '@/stores/auth.store';

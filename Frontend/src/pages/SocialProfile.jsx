@@ -1,14 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react'
-import Post from '@/SocialComponents/Post';
-import NewPostEditor from '@/SocialComponents/NewPostEditor';
-import Cropper from '@/SocialComponents/Cropper';
+import Post from '@/components/social-components/Post';
+import NewPostEditor from '@/components/social-components/NewPostEditor';
+import Cropper from '@/components/social-components/Cropper';
 import { MapPin, Calendar, Edit3, Link as LinkIcon, Camera, X, Check, UserPlus, UserMinus } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth.store';
 import { useParams } from 'react-router';
 import { useSocialStore } from '@/stores/social.store';
-import { useMoviesStore } from '@/stores/movies.store';
 import api from '@/lib/axios';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 
 export default function SocialProfile() {
 

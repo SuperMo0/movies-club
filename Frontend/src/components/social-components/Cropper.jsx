@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import 'react-image-crop/dist/ReactCrop.css'
 import { ReactCrop, convertToPixelCrop, centerCrop, makeAspectCrop } from 'react-image-crop';
-import { imagePreview } from './../lib/imagePreview.js'
+import { imagePreview } from '../../lib/imagePreview'
 
 
 const minWidth = 200;
