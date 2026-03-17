@@ -1,6 +1,6 @@
 import React from 'react'
-import NewPostEditor from '@/components/social-components/NewPostEditor'
-import Post from './Post'
+import NewPostEditor from '@/components/social-components/new-post-editor'
+import PostCard from './post-card'
 import { useSocialStore } from '@/stores/social.store';
 import { useAuthStore } from '@/stores/auth.store';
 
@@ -17,7 +17,7 @@ export default function SocialFeed() {
                 {allPosts.map((post) => {
                     const isOwner = authUser?.id === post.authorId;
                     const user = isOwner ? authUser : users.get(post.authorId);
-                    return <Post key={post.id} post={post} user={user} />
+                    return <PostCard key={post.id} post={post} user={user} />
                 })}
             </div>
         </div>

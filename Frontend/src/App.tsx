@@ -3,14 +3,14 @@ import { Routes, Route, Outlet } from 'react-router'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
-import Home from './pages/Home'
-import SocialMainPage from './pages/SocialMainPage'
-import SocialProfile from './pages/SocialProfile'
+import Home from './pages/home-page'
+import SocialMainPage from './pages/social-main-page'
+import SocialProfile from './pages/social-profile-page'
 
-import Login from './components/social-components/Login'
-import Signup from './components/social-components/Signup'
-import Header from './components/movies-components/Header'
-import SocialLayout from './components/social-components/SocialLayout'
+import Login from './components/social-components/login'
+import Signup from './components/social-components/signup'
+import Header from './components/movies-components/header'
+import SocialLayout from './components/social-components/social-layout'
 
 import LoadingScreen from './components/ui/LoadingScreen'
 

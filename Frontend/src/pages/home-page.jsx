@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react'
-import Footer from '@/components/movies-components/Footer'
-import Hero from '@/components/movies-components/Hero'
-import Qsearch from '@/components/movies-components/Qsearch'
-import ShowingNow from '@/components/movies-components/ShowingNow'
-import MovieBookingModal from '@/components/movies-components/MovieBookingModal'
-import Login from '@/components/social-components/Login'
+import { useEffect, useState } from 'react'
+import Footer from '@/components/movies-components/footer'
+import Hero from '@/components/movies-components/hero'
+import ShowingNow from '@/components/movies-components/showing-now'
+import MovieBookingModal from '@/components/movies-components/movie-booking-modal'
+
 import { useMoviesStore } from '@/stores/movies.store'
 import LoadingScreen from '@/components/ui/LoadingScreen'
 
@@ -40,7 +39,6 @@ export default function Home() {
                 closeModal={closeModal}
             />
             <Hero handleMovieClick={handleMovieClick} />  {/*This component is heavy my fans are going crazy !*/}
-            {/* <Qsearch /> */}
             <ShowingNow handleMovieClick={handleMovieClick} />
             <Footer />
         </div>

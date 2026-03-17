@@ -1,6 +1,6 @@
 import React from 'react'
-import SocialFeed from '@/components/social-components/SocialFeed'
-import Trending from '@/components/social-components/Trending'
+import SocialFeed from '@/components/social-components/social-feed'
+import Trending from '@/components/social-components/trending'
 
 export default function SocialMainPage() {
     return (

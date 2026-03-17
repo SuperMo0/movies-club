@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react'
-import Post from '@/components/social-components/Post';
-import NewPostEditor from '@/components/social-components/NewPostEditor';
-import Cropper from '@/components/social-components/Cropper';
+import PostCard from '@/components/social-components/post-card';
+import NewPostEditor from '@/components/social-components/new-post-editor';
+import Cropper from '@/components/social-components/cropper';
 import { MapPin, Calendar, Edit3, Link as LinkIcon, Camera, X, Check, UserPlus, UserMinus } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth.store';
 import { useParams } from 'react-router';
@@ -346,7 +346,7 @@ export default function SocialProfile() {
 
                             <div className='flex flex-col gap-6'>
                                 {posts.length > 0 ? posts.map((post) => (
-                                    <Post key={post.id} post={post} user={user} />
+                                    <PostCard key={post.id} post={post} user={user} />
                                 )) : (
                                     <div className="text-slate-500 text-center py-10">No posts yet.</div>
                                 )}

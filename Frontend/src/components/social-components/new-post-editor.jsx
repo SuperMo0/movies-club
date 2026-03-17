@@ -1,10 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { Image as ImageIcon, Film, Send, Smile, Star, X } from 'lucide-react' // Renamed Image to ImageIcon to avoid conflict with native Image
+import { useState, useEffect, useRef } from 'react'
+import { Image as ImageIcon, Film, Send, Star, X } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth.store';
 import { useLoginModal } from '@/App';
 import { useSocialStore } from '@/stores/social.store';
 import { useMoviesStore } from '@/stores/movies.store';
 import { toast } from 'react-toastify';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+
+const DEFAULT_AVATAR = "https://i.pinimg.com/originals/e7/ba/95/e7ba955b143cda691280e1d0fd23ada6.jpg"
+const RATING_SCALE = [1, 2, 3, 4, 5]
 
 export default function NewPostEditor() {
 
@@ -41,19 +46,18 @@ export default function NewPostEditor() {
             return;
         }
 
-        if (!image && !content && !(selectedMovie && rating)) {
+        if (!image && !content.trim() && !(selectedMovie && rating)) {
             toast.info("Post can't be Empty!");
             return;
         }
 
-
-        let imageBlob = image ? await (await fetch(image)).blob() : null;
+        const imageBlob = image ? await (await fetch(image)).blob() : null;
 
         const formData = new FormData();
-        formData.append("content", content);
-        formData.append("image", imageBlob);
-        formData.append("movieId", selectedMovie);
-        formData.append("rating", rating);
+        if (content.trim()) formData.append("content", content.trim());
+        if (imageBlob) formData.append("image", imageBlob);
+        if (selectedMovie) formData.append("movieId", selectedMovie);
+        if (rating > 0) formData.append("rating", String(rating));
 
         setContent("");
         setImage(null);
@@ -61,8 +65,7 @@ export default function NewPostEditor() {
         setRating(0);
         fileInputRef.current.value = null;
 
-
-        const { success } = await createNewPost(formData);
+        await createNewPost(formData);
     }
 
     function handleImageUpload(e) {
@@ -106,17 +109,17 @@ export default function NewPostEditor() {
         <div className='bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-lg'>
             <div className='flex gap-4'>
                 <img
-                    src={authUser?.image || "https://i.pinimg.com/originals/e7/ba/95/e7ba955b143cda691280e1d0fd23ada6.jpg"}
+                    src={authUser?.image || DEFAULT_AVATAR}
                     className='w-10 h-10 rounded-full bg-slate-800 object-cover'
                     alt="My Avatar"
                 />
 
                 <div className='flex-1 flex flex-col gap-3'>
-                    <textarea
+                    <Textarea
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
                         placeholder="What did you watch today?"
-                        className='w-full bg-transparent text-white placeholder:text-slate-500 resize-none outline-none text-base min-h-20'
+                        className='min-h-20 resize-none border-none bg-transparent px-0 text-base text-white placeholder:text-slate-500 shadow-none focus-visible:ring-0'
                     />
 
                     {image && (
@@ -126,12 +129,14 @@ export default function NewPostEditor() {
                                 alt="Preview"
                                 className="w-full max-h-80 object-cover"
                             />
-                            <button
+                            <Button
+                                type='button'
+                                variant='ghost'
                                 onClick={removeImage}
-                                className="absolute top-2 right-2 bg-black/60 hover:bg-black/80 text-white p-1.5 rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100"
+                                className="absolute top-2 right-2 h-8 w-8 rounded-full border-none bg-black/60 p-0 text-white opacity-0 backdrop-blur-sm transition-all hover:bg-black/80 group-hover:opacity-100"
                             >
                                 <X className="w-4 h-4" />
-                            </button>
+                            </Button>
                         </div>
                     )}
 
@@ -145,13 +150,16 @@ export default function NewPostEditor() {
                             <div className="h-4 w-px bg-slate-700"></div>
 
                             <div className="flex items-center gap-1">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                    <button
+                                {RATING_SCALE.map((star) => (
+                                    <Button
                                         key={star}
+                                        type='button'
+                                        variant='ghost'
+                                        size='icon-sm'
                                         onClick={() => setRating(star)}
                                         onMouseEnter={() => setHoverRating(star)}
                                         onMouseLeave={() => setHoverRating(0)}
-                                        className="focus:outline-none transition-transform hover:scale-110"
+                                        className="h-8 w-8 rounded-full border-none bg-transparent p-0 transition-transform hover:scale-110"
                                     >
                                         <Star
                                             className={`w-5 h-5 transition-colors ${star <= (hoverRating || rating)
@@ -159,16 +167,18 @@ export default function NewPostEditor() {
                                                 : 'text-slate-600'
                                                 }`}
                                         />
-                                    </button>
+                                    </Button>
                                 ))}
                             </div>
 
-                            <button
+                            <Button
+                                type='button'
+                                variant='ghost'
                                 onClick={() => { setSelectedMovie(null); setRating(0); }}
-                                className="ml-auto text-slate-500 hover:text-white"
+                                className="ml-auto h-7 w-7 rounded-full border-none bg-transparent p-0 text-slate-500 hover:text-white"
                             >
                                 <X className="w-4 h-4" />
-                            </button>
+                            </Button>
                         </div>
                     )}
 
@@ -184,22 +194,26 @@ export default function NewPostEditor() {
                                 onChange={handleImageUpload}
                             />
 
-                            <button
+                            <Button
+                                type='button'
+                                variant='ghost'
                                 onClick={() => fileInputRef.current.click()}
-                                className={`p-2 rounded-full transition-colors ${image ? 'text-red-500 bg-red-500/10' : 'text-slate-400 hover:bg-slate-800 hover:text-red-500'}`}
+                                className={`h-9 w-9 rounded-full border-none p-0 transition-colors ${image ? 'bg-red-500/10 text-red-500' : 'text-slate-400 hover:bg-slate-800 hover:text-red-500'}`}
                             >
                                 <ImageIcon className='w-5 h-5' />
-                            </button>
+                            </Button>
 
                             {/* MOVIE SELECTOR */}
                             <div ref={pickerRef} className="relative">
-                                <button
+                                <Button
+                                    type='button'
+                                    variant='ghost'
                                     onClick={() => setShowMoviePicker(!showMoviePicker)}
-                                    className={`p-2 rounded-full transition-colors flex items-center gap-2 ${showMoviePicker ? 'bg-red-500/20 text-red-500' : 'hover:bg-slate-800 text-slate-400 hover:text-red-500'
+                                    className={`h-9 w-9 rounded-full border-none p-0 transition-colors ${showMoviePicker ? 'bg-red-500/20 text-red-500' : 'text-slate-400 hover:bg-slate-800 hover:text-red-500'
                                         }`}
                                 >
                                     <Film className='w-5 h-5' />
-                                </button>
+                                </Button>
 
                                 {showMoviePicker && (
                                     <div className="absolute top-full left-0 mt-2 w-56 bg-slate-950 border border-slate-800 rounded-lg shadow-xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-100">
@@ -207,17 +221,19 @@ export default function NewPostEditor() {
                                             Recent Releases
                                         </div>
                                         {[...todayMovies.values()].map(movie => (
-                                            <button
+                                            <Button
                                                 key={movie.id}
+                                                type='button'
+                                                variant='ghost'
                                                 onClick={() => {
                                                     setSelectedMovie(movie.id);
                                                     setShowMoviePicker(false);
                                                 }}
-                                                className="w-full text-left px-4 py-2.5 text-sm text-slate-300 hover:bg-red-600 hover:text-white transition-colors flex items-center gap-2"
+                                                className="h-auto w-full justify-start rounded-none border-none px-4 py-2.5 text-left text-sm text-slate-300 hover:bg-red-600 hover:text-white"
                                             >
                                                 <Film className="w-3 h-3 opacity-50" />
                                                 {movie.title}
-                                            </button>
+                                            </Button>
                                         ))}
                                     </div>
                                 )}
@@ -225,10 +241,14 @@ export default function NewPostEditor() {
 
                         </div>
 
-                        <button className='bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-full font-medium flex items-center gap-2 transition-colors'
-                            onClick={handlePostSubmit}>
+                        <Button
+                            type='button'
+                            variant='form'
+                            className='rounded-full px-6 py-2'
+                            onClick={handlePostSubmit}
+                        >
                             Post <Send className='w-4 h-4' />
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </div>

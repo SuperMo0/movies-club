@@ -6,7 +6,7 @@ import {
     CarouselNext,
     CarouselPrevious,
 } from "@/components/ui/carousel"
-import MovieHeroCard from './MovieHeroCard'
+import MovieHeroCard from './movie-hero-card'
 import Autoplay from "embla-carousel-autoplay"
 import { useMoviesStore } from '@/stores/movies.store';
 
