@@ -1,4 +1,3 @@
-import React from 'react'
 import { TrendingUp, Flame, Hash } from 'lucide-react'
 
 export default function Trending() {

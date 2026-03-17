@@ -1,4 +1,3 @@
-import React from 'react'
 import NewPostEditor from '@/components/social-components/new-post-editor'
 import PostCard from './post-card'
 import { useSocialStore } from '@/stores/social.store';
