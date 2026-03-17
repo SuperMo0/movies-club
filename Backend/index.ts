@@ -69,9 +69,7 @@ if (process.env.NODE_ENV != 'development') {
             scriptSrc: ["'self'", "'unsafe-inline'"],
             styleSrc: ["'self'", "'unsafe-inline'"],
             imgSrc: ["'self'", "data:", "res.cloudinary.com", "*.elcinema.com"],
-            connectSrc: ["'self'", process.env.FRONTEND_URL || 'http://localhost:5173'],
-            fetchSrc: ["'self'", "https://api.imdbapi.dev/*"],
-
+            connectSrc: ["'self'", process.env.FRONTEND_URL || 'http://localhost:5173', 'https://api.imdbapi.dev'],
         },
     }));
 
