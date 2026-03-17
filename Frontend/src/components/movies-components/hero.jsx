@@ -9,9 +9,11 @@ import {
 import MovieHeroCard from './movie-hero-card'
 import Autoplay from "embla-carousel-autoplay"
 import { useMoviesStore } from '@/stores/movies.store';
+import { getImdbCacheKey, searchImdbTitle } from '@/lib/imdb';
 
 export default function Hero({ handleMovieClick }) {
     const [api, setApi] = useState();
+    const [featuredImdb, setFeaturedImdb] = useState({});
 
     const { todayMovies } = useMoviesStore();
 
@@ -20,7 +22,18 @@ export default function Hero({ handleMovieClick }) {
         console.log(api.plugins().autoplay.stop());
 
     }
-    let featuredMovies = [...todayMovies.values()];
+    const featuredMovies = [...todayMovies.values()].slice(0, 3);
+
+    useEffect(() => {
+        featuredMovies.forEach(async (movie) => {
+            const key = getImdbCacheKey(movie?.title);
+            if (!key) return;
+
+            const result = await searchImdbTitle(movie.title);
+            setFeaturedImdb((prev) => ({ ...prev, [key]: result }));
+        });
+    }, [todayMovies]);
+
     return (
         <div>
             <Carousel opts={{ loop: true }} setApi={setApi} plugins={[
@@ -31,15 +44,21 @@ export default function Hero({ handleMovieClick }) {
 
             ]}>
                 <CarouselContent>
-                    <CarouselItem > <MovieHeroCard handleMovieClick={handleMovieClick} movie={featuredMovies[0]} /> </CarouselItem>
-                    <CarouselItem><MovieHeroCard handleMovieClick={handleMovieClick} movie={featuredMovies[1]} /></CarouselItem>
-                    <CarouselItem><MovieHeroCard handleMovieClick={handleMovieClick} movie={featuredMovies[2]} /></CarouselItem>
+                    {featuredMovies.map((movie) => (
+                        <CarouselItem key={movie.id}>
+                            <MovieHeroCard
+                                handleMovieClick={handleMovieClick}
+                                movie={movie}
+                                imdbData={featuredImdb[getImdbCacheKey(movie?.title)] || null}
+                            />
+                        </CarouselItem>
+                    ))}
                 </CarouselContent>
 
-                <div onClick={handleInteraction}>
+                <div className='hidden md:block' onClick={handleInteraction}>
                     <CarouselPrevious />
                 </div>
-                <div onClick={handleInteraction}>
+                <div className='hidden md:block' onClick={handleInteraction}>
                     <CarouselNext />
                 </div>
             </Carousel>

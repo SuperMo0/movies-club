@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button'
 import { PlayCircle, CalendarClock } from 'lucide-react'
 import React from 'react'
 
-export default function MovieHeroCard({ movie, handleMovieClick }) {
+export default function MovieHeroCard({ movie, handleMovieClick, imdbData = null }) {
 
 
     {/* if (!movie.genre) console.log(movie);*/ }
@@ -51,6 +51,24 @@ export default function MovieHeroCard({ movie, handleMovieClick }) {
                         ))}
                     </div>
 
+                    <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold uppercase tracking-wide text-yellow-500">
+                            IMDb {typeof imdbData?.rating === 'number' ? imdbData.rating.toFixed(1) : '--'}
+                        </span>
+                        {imdbData?.imdbUrl && (
+                            <a
+                                href={imdbData.imdbUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center rounded-sm bg-yellow-400 px-1.5 py-0.5 text-[10px] font-black tracking-tight text-black hover:bg-yellow-300"
+                                title="Open on IMDb"
+                                aria-label={`Open ${movie.title} on IMDb`}
+                            >
+                                IMDb
+                            </a>
+                        )}
+                    </div>
+
                     <p className="text-muted-foreground text-sm md:text-lg leading-relaxed max-w-xl line-clamp-4 md:line-clamp-none">
                         {movie.description}
                     </p>
@@ -59,7 +77,7 @@ export default function MovieHeroCard({ movie, handleMovieClick }) {
                         <Button
                             size="lg"
                             className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-neon-red w-full sm:w-auto h-12"
-                            onClick={() => { handleMovieClick(movie) }}
+                            onClick={() => { handleMovieClick(movie, imdbData) }}
                         >
                             <CalendarClock className="mr-2 h-5 w-5" />
                             Show Times

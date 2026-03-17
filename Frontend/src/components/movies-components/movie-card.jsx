@@ -1,9 +1,8 @@
-import React from 'react'
 import { Star, Ticket } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useMoviesStore } from '@/stores/movies.store';
 
-export default function MovieCard({ movie }) {
+export default function MovieCard({ movie, imdbData = null }) {
+    const imdbRating = typeof imdbData?.rating === 'number' ? imdbData.rating.toFixed(1) : '--'
 
 
     return (
@@ -30,10 +29,23 @@ export default function MovieCard({ movie }) {
                     </h3>
 
                     <div className="flex items-center gap-2 mb-3">
-                        <div className="flex items-center text-yellow-500">
+                        <div className="flex items-center text-yellow-500" title="IMDb aggregate rating">
                             <Star className="w-3.5 h-3.5 fill-current" />
-                            <span className="text-xs font-bold ml-1">4.5</span>
+                            <span className="text-xs font-bold ml-1">{imdbRating}</span>
                         </div>
+                        {imdbData?.imdbUrl && (
+                            <a
+                                href={imdbData.imdbUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                onClick={(event) => event.stopPropagation()}
+                                className="inline-flex items-center rounded-sm bg-yellow-400 px-1.5 py-0.5 text-[10px] font-black tracking-tight text-black hover:bg-yellow-300"
+                                title="Open on IMDb"
+                                aria-label={`Open ${movie.title} on IMDb`}
+                            >
+                                IMDb
+                            </a>
+                        )}
                         <span className="text-xs text-muted-foreground">•</span>
                         <span className="text-xs text-muted-foreground truncate max-w-25">
                             {movie.genre?.[0] || 'Action'}

@@ -1,23 +1,54 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Select, SelectItem, SelectTrigger, SelectValue, SelectContent } from '@/components/ui/select';
-import { CalendarDays, MapPin, X, Clock } from 'lucide-react';
+import { CalendarDays, MapPin, Clock } from 'lucide-react';
+import { searchImdbTitle } from '@/lib/imdb';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 
-export default function MovieBookingModal({ isModalOpen, movie, closeModal }) {
-
-    if (!isModalOpen || !movie) return null;
+export default function MovieBookingModal({ open, onOpenChange, movie, imdbData = null }) {
 
     const todayStr = new Date().toLocaleDateString('en-CA');
+    const schedule = movie?.schedule || [];
 
-    const [selectedDate, setSelectedDate] = useState(() => {
-        const hasToday = movie.schedule?.some(s => s.date === todayStr);
-        return hasToday ? todayStr : movie.schedule?.[0]?.date || '';
-    });
-
+    const [resolvedImdb, setResolvedImdb] = useState(imdbData);
+    const [selectedDate, setSelectedDate] = useState('');
     const [selectedCinemaIndex, setSelectedCinemaIndex] = useState("0");
-
     const [selectedTime, setSelectedTime] = useState(null);
 
-    const currentDaySchedule = movie.schedule?.find(s => s.date === selectedDate);
+    useEffect(() => {
+        let isMounted = true;
+
+        if (!open || !movie) return;
+
+        setResolvedImdb(imdbData || null);
+
+        if (imdbData) {
+            return;
+        }
+
+        async function fetchImdb() {
+            const result = await searchImdbTitle(movie.title);
+            if (isMounted) setResolvedImdb(result);
+        }
+
+        fetchImdb();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [open, movie, imdbData]);
+
+    useEffect(() => {
+        if (!movie || !open) return;
+
+        const hasToday = schedule.some((s) => s.date === todayStr);
+        const defaultDate = hasToday ? todayStr : schedule[0]?.date || '';
+
+        setSelectedDate(defaultDate);
+        setSelectedCinemaIndex("0");
+        setSelectedTime(null);
+    }, [movie, open, todayStr]);
+
+    const currentDaySchedule = schedule.find(s => s.date === selectedDate);
 
     const availableCinemas = currentDaySchedule?.cinemas || [];
 
@@ -39,27 +70,17 @@ export default function MovieBookingModal({ isModalOpen, movie, closeModal }) {
         return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
     };
 
+    if (!movie) return null;
+
 
     return (
+        <Dialog
+            open={open}
+            onOpenChange={onOpenChange}
+        >
+            <DialogContent className="flex w-[calc(100vw-1rem)] max-h-[calc(100dvh-1rem)] flex-col overflow-x-hidden overflow-y-auto rounded-xl border border-slate-800 bg-slate-950 p-0 shadow-2xl sm:w-full sm:max-h-[90vh] sm:rounded-2xl md:w-[min(96vw,72rem)] md:max-w-6xl md:flex-row">
 
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
-
-            <div
-                className="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity"
-                onClick={closeModal}
-            ></div>
-
-            <div className="relative bg-slate-950 border border-slate-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto flex flex-col md:flex-row animate-in fade-in zoom-in-95 duration-200">
-
-                <button
-                    onClick={closeModal}
-                    className="absolute top-4 right-4 z-20 p-2 rounded-full bg-black/50 text-white hover:bg-red-600 transition-colors"
-                >
-                    <X className="w-5 h-5" />
-                </button>
-
-                {/* LEFT: Image */}
-                <div className="w-full md:w-2/5 h-64 md:h-auto relative shrink-0">
+                <div className="relative h-52 w-full shrink-0 md:h-auto md:w-[38%]">
                     <img
                         src={movie.image}
                         className="w-full h-full object-cover"
@@ -68,8 +89,7 @@ export default function MovieBookingModal({ isModalOpen, movie, closeModal }) {
                     <div className="absolute inset-0 bg-linear-to-t from-slate-950 via-transparent to-transparent md:bg-linear-to-r" />
                 </div>
 
-                {/* RIGHT: Booking Content */}
-                <div className="flex-1 p-6 md:p-8 flex flex-col gap-6">
+                <div className="flex min-w-0 flex-1 flex-col gap-6 p-4 sm:p-6 md:p-8">
 
                     {/* Header */}
                     <div>
@@ -81,16 +101,31 @@ export default function MovieBookingModal({ isModalOpen, movie, closeModal }) {
                                 {Array.isArray(movie.genre) ? movie.genre.join(' • ') : (movie.genre || "Cinema")}
                             </span>
                         </div>
-                        <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight leading-none mb-2">
+                        <DialogTitle className="text-3xl md:text-4xl font-bold text-white tracking-tight leading-none mb-2">
                             {movie.title}
-                        </h1>
-                        <p className="text-slate-400 text-sm line-clamp-2">
+                        </DialogTitle>
+                        <DialogDescription className="text-slate-400 text-sm line-clamp-2">
                             {movie.description || "Experience the thrill on the big screen."}
-                        </p>
+                        </DialogDescription>
+                        <div className="mt-3 flex items-center gap-2">
+                            <span className="text-xs font-semibold uppercase tracking-wide text-yellow-500">
+                                IMDb {typeof resolvedImdb?.rating === 'number' ? resolvedImdb.rating.toFixed(1) : '--'}
+                            </span>
+                            {resolvedImdb?.imdbUrl && (
+                                <a
+                                    href={resolvedImdb.imdbUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="inline-flex items-center rounded-sm bg-yellow-400 px-1.5 py-0.5 text-[10px] font-black tracking-tight text-black hover:bg-yellow-300"
+                                >
+                                    IMDb
+                                </a>
+                            )}
+                        </div>
                     </div>
 
                     {/* Inputs Section */}
-                    {movie.schedule && movie.schedule.length > 0 ? (
+                    {schedule.length > 0 ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
                             {/* Date Selector */}
@@ -98,13 +133,13 @@ export default function MovieBookingModal({ isModalOpen, movie, closeModal }) {
                                 <label className="text-xs font-medium text-slate-500 uppercase">Date</label>
                                 <Select value={selectedDate} onValueChange={handleDateChange}>
                                     <SelectTrigger className="w-full bg-slate-900/50 border-slate-700 text-slate-200 focus:ring-red-500/50 h-12">
-                                        <div className="flex items-center gap-2">
-                                            <CalendarDays className="w-4 h-4 text-red-500" />
-                                            <SelectValue placeholder="Pick a Date" />
+                                        <div className="flex min-w-0 flex-1 items-center gap-2 pr-2">
+                                            <CalendarDays className="h-4 w-4 shrink-0 text-red-500" />
+                                            <SelectValue className="truncate" placeholder="Pick a Date" />
                                         </div>
                                     </SelectTrigger>
                                     <SelectContent className="bg-slate-900 border-slate-800 text-slate-200">
-                                        {movie.schedule.map((day) => (
+                                        {schedule.map((day) => (
                                             <SelectItem key={day.date} value={day.date}>
                                                 {formatDate(day.date)}
                                             </SelectItem>
@@ -122,9 +157,9 @@ export default function MovieBookingModal({ isModalOpen, movie, closeModal }) {
                                     disabled={availableCinemas.length === 0}
                                 >
                                     <SelectTrigger className="w-full bg-slate-900/50 border-slate-700 text-slate-200 focus:ring-red-500/50 h-12">
-                                        <div className="flex items-center gap-2">
-                                            <MapPin className="w-4 h-4 text-red-500" />
-                                            <SelectValue placeholder="Select Cinema" />
+                                        <div className="flex min-w-0 flex-1 items-center gap-2 pr-2">
+                                            <MapPin className="h-4 w-4 shrink-0 text-red-500" />
+                                            <SelectValue className="truncate" placeholder="Select Cinema" />
                                         </div>
                                     </SelectTrigger>
                                     <SelectContent className="bg-slate-900 border-slate-800 text-slate-200">
@@ -188,7 +223,7 @@ export default function MovieBookingModal({ isModalOpen, movie, closeModal }) {
                     </div>
 
                 </div>
-            </div>
-        </div>
+            </DialogContent>
+        </Dialog>
     );
 }
