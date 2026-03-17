@@ -9,6 +9,7 @@ import { useSocialStore } from '@/stores/social.store';
 import api from '@/lib/axios';
 import { toast } from 'react-toastify';
 
+const defaultAvatar = "https://i.pinimg.com/originals/e7/ba/95/e7ba955b143cda691280e1d0fd23ada6.jpg";
 export default function SocialProfile() {
 
     const { authUser, check } = useAuthStore()
@@ -32,7 +33,7 @@ export default function SocialProfile() {
     const [showCropper, setShowCropper] = useState(false);
 
     function startEditing() {
-        setPreviewImage(authUser.image || "https://i.pinimg.com/originals/e7/ba/95/e7ba955b143cda691280e1d0fd23ada6.jpg");
+        setPreviewImage(authUser.image || defaultAvatar);
         setImageBlob(null);
         setIsEditing(true);
     }
@@ -185,7 +186,7 @@ export default function SocialProfile() {
                                 <div className='w-32 h-32 md:w-40 md:h-40 rounded-full border-[6px] border-slate-950 overflow-hidden bg-slate-800 shadow-xl relative'>
                                     <img
                                         className='w-full h-full object-cover'
-                                        src={isEditing ? previewImage : (user.image || "https://i.pinimg.com/originals/e7/ba/95/e7ba955b143cda691280e1d0fd23ada6.jpg")}
+                                        src={isEditing ? previewImage : (user.image || defaultAvatar)}
                                         alt={user.name}
                                     />
                                     {isEditing && (
