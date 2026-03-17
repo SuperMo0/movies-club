@@ -23,7 +23,8 @@
     "Shared"
   ],
   "scripts": {
-    "postinstall": "npm run gen --prefix Backend",
+    "dev:backend": "npm run dev --prefix Backend",
+    "dev:frontend": "npm run dev --prefix Frontend",
     "build": "npm run build --prefix Backend && npm run build --prefix Frontend",
     "start": "npm run start --prefix Backend"
   }
