@@ -63,8 +63,8 @@ function App() {
         openSignup
       }}>
         <Login
-          isOpen={shouldOpenLogin}
-          onClose={() => setIsLoginModalOpen(false)}
+          open={shouldOpenLogin}
+          onOpenChange={() => setIsLoginModalOpen(false)}
         />
 
         <Signup

@@ -76,6 +76,21 @@ const fieldVariants = cva("group/field flex w-full gap-3 data-[invalid=true]:tex
   },
 })
 
+const fieldLabelVariants = cva(
+  "group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50 has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col has-[>[data-slot=field]]:rounded-md has-[>[data-slot=field]]:border [&>*]:data-[slot=field]:p-4 has-data-[state=checked]:bg-primary/5 has-data-[state=checked]:border-primary dark:has-data-[state=checked]:bg-primary/10",
+  {
+    variants: {
+      variant: {
+        default: "",
+        form: "text-xs font-medium uppercase text-slate-500 tracking-wider",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+)
+
 function Field({
   className,
   orientation = "vertical",
@@ -104,16 +119,15 @@ function FieldContent({
 }
 
 function FieldLabel({
-  className,
+  className = "",
+  variant = "default",
   ...props
 }) {
   return (
     <Label
       data-slot="field-label"
       className={cn(
-        "group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50",
-        "has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col has-[>[data-slot=field]]:rounded-md has-[>[data-slot=field]]:border [&>*]:data-[slot=field]:p-4",
-        "has-data-[state=checked]:bg-primary/5 has-data-[state=checked]:border-primary dark:has-data-[state=checked]:bg-primary/10",
+        fieldLabelVariants({ variant }),
         className
       )}
       {...props} />
@@ -178,12 +192,14 @@ function FieldSeparator({
   );
 }
 
-function FieldError({
-  className,
-  children,
-  errors,
-  ...props
-}) {
+function FieldError(props) {
+  const {
+    className,
+    children,
+    errors,
+    ...rest
+  } = props ?? {}
+
   const content = useMemo(() => {
     if (children) {
       return children
@@ -218,7 +234,7 @@ function FieldError({
       role="alert"
       data-slot="field-error"
       className={cn("text-destructive text-sm font-normal", className)}
-      {...props}>
+      {...rest}>
       {content}
     </div>
   );

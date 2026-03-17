@@ -1,6 +1,6 @@
-import { useState, type ChangeEvent } from 'react'
 import {
     Field,
+    FieldError,
     FieldGroup,
     FieldLabel,
     FieldSet,
@@ -8,6 +8,8 @@ import {
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
+    DialogTitle,
 } from '@/components/ui/dialog'
 
 import { Input } from "@/components/ui/input"
@@ -24,7 +26,6 @@ import { useForm } from 'react-hook-form'
 type SignupProps = { open: boolean, onOpenChange: (x: boolean) => void }
 
 export default function Signup({ open, onOpenChange }: SignupProps) {
-
     const { signup, isSigningUp, guestLogin, isLogginIn } = useAuthStore()
 
     const { openLogin } = useLoginModal();
@@ -67,12 +68,12 @@ export default function Signup({ open, onOpenChange }: SignupProps) {
                         <div className='inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-600/10 mb-4'>
                             <User className='w-6 h-6 text-red-600' />
                         </div>
-                        <h1 className='text-3xl font-bold text-white tracking-tight'>
+                        <DialogTitle className='text-3xl font-bold text-white tracking-tight text-center'>
                             Create Account
-                        </h1>
-                        <p className='text-slate-400 text-sm mt-2'>
+                        </DialogTitle>
+                        <DialogDescription className='text-slate-400 text-sm mt-2'>
                             Join the community at <span className='text-red-500 font-semibold'>MovieClub</span>
-                        </p>
+                        </DialogDescription>
 
                         {form.formState.errors.root && (
                             <p className='text-red-500 text-sm mt-3 font-medium bg-red-500/10 py-1 px-3 rounded-md animate-in fade-in slide-in-from-top-1'>
@@ -84,7 +85,7 @@ export default function Signup({ open, onOpenChange }: SignupProps) {
                         <FieldSet className="space-y-5">
                             <FieldGroup className="space-y-4">
                                 <Field className="space-y-1.5">
-                                    <FieldLabel htmlFor="name" className="text-xs font-medium uppercase text-slate-500 tracking-wider">
+                                    <FieldLabel htmlFor="name" variant="form">
                                         Full Name
                                     </FieldLabel>
                                     <Input
@@ -92,26 +93,27 @@ export default function Signup({ open, onOpenChange }: SignupProps) {
                                         id="name"
                                         type="text"
                                         placeholder="John Doe"
-                                        className=""
+                                        variant={"form"}
                                     />
-
+                                    <FieldError>{form.formState.errors.name?.message}</FieldError>
                                 </Field>
 
                                 <Field className="space-y-1.5">
-                                    <FieldLabel htmlFor="username" className="text-xs font-medium uppercase text-slate-500 tracking-wider">
+                                    <FieldLabel htmlFor="username" variant="form">
                                         Username
                                     </FieldLabel>
                                     <Input
                                         {...form.register("username")}
                                         id="username"
                                         type="text"
-                                        className=""
                                         placeholder="johndoe123"
+                                        variant={"form"}
                                     />
+                                    <FieldError>{form.formState.errors.username?.message}</FieldError>
                                 </Field>
 
                                 <Field className="space-y-1.5">
-                                    <FieldLabel htmlFor="password" className="text-xs font-medium uppercase text-slate-500 tracking-wider">
+                                    <FieldLabel htmlFor="password" variant="form">
                                         Password
                                     </FieldLabel>
                                     <Input
@@ -119,8 +121,9 @@ export default function Signup({ open, onOpenChange }: SignupProps) {
                                         id="password"
                                         type="password"
                                         placeholder="••••••••"
-                                        className=""
+                                        variant={"form"}
                                     />
+                                    <FieldError>{form.formState.errors.password?.message}</FieldError>
                                 </Field>
                             </FieldGroup>
 
