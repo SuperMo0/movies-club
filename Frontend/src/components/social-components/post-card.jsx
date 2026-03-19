@@ -8,47 +8,20 @@ import { useLoginModal } from '@/App';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import RatingStars from '@/components/social-components/rating-stars';
+import { PostActionButton } from '@/components/ui/post-action-button';
 
 const DEFAULT_AVATAR = "https://i.pinimg.com/originals/e7/ba/95/e7ba955b143cda691280e1d0fd23ada6.jpg"
 
-function PostActionButton({ onClick, icon: Icon, count, active = false, tone = 'slate' }) {
-    const toneClasses = {
-        pink: active ? 'text-pink-600' : 'text-slate-500 hover:text-pink-500',
-        blue: 'text-slate-500 hover:text-blue-400',
-        green: 'text-slate-500 hover:text-green-400',
-        slate: 'text-slate-500 hover:text-slate-300'
-    }
-
-    const bubbleClasses = {
-        pink: 'group-hover:bg-pink-500/10',
-        blue: 'group-hover:bg-blue-400/10',
-        green: 'group-hover:bg-green-400/10',
-        slate: 'group-hover:bg-slate-700/40'
-    }
-
-    return (
-        <Button
-            type='button'
-            variant='ghost'
-            onClick={onClick}
-            className={`group h-auto border-none bg-transparent px-0 py-0 text-sm ${toneClasses[tone] || toneClasses.slate}`}
-        >
-            <span className={`rounded-full p-2 transition-colors ${bubbleClasses[tone] || bubbleClasses.slate}`}>
-                <Icon className={`h-5 w-5 ${active ? 'fill-current' : ''}`} />
-            </span>
-            {typeof count === 'number' && <span>{count}</span>}
-        </Button>
-    )
-}
-
 export default function PostCard({ user, post }) {
 
-    const { likedPosts, likePost, unLikePost, commentPost } = useSocialStore();
+    const likedPosts = useSocialStore(s => s.likedPosts);
+    const togglePostLike = useSocialStore(s => s.togglePostLike);
+    const commentPost = useSocialStore(s => s.commentPost);
 
     const [comment, setComment] = useState('');
-    const { users } = useSocialStore();
-    const { allMovies } = useMoviesStore();
-    const { authUser } = useAuthStore()
+    const users = useSocialStore(s => s.users);
+    const allMovies = useMoviesStore(s => s.allMovies);
+    const authUser = useAuthStore(s => s.authUser);
     const { openLogin } = useLoginModal();
 
     const isLiked = (likedPosts?.has(post.id));
@@ -59,12 +32,7 @@ export default function PostCard({ user, post }) {
             openLogin();
             return;
         }
-        if (isLiked) {
-            const { success, message } = await unLikePost(post);
-        }
-        else {
-            const { success, message } = await likePost(post);
-        }
+        (isLiked) ? await togglePostLike(post, -1) : await togglePostLike(post, 1);
     }
 
     async function handleCommentPost() {
@@ -112,7 +80,7 @@ export default function PostCard({ user, post }) {
                         )}
                     </div>
                 </div>
-                <Button type='button' variant='ghost' size='icon' className='h-8 w-8 border-none bg-transparent text-slate-500 hover:bg-slate-800/50 hover:text-white'>
+                <Button type='button' variant='social-ghost' size='icon-sm'>
                     <MoreHorizontal className='w-5 h-5' />
                 </Button>
             </div>
@@ -149,9 +117,9 @@ export default function PostCard({ user, post }) {
                                         </div>
                                         <p className='text-xs text-slate-300 leading-snug mt-0.5'>{comment.content}</p>
                                     </div>
-                                    <div className='flex gap-3 mt-1 ml-1 text-[10px] text-slate-500'>
-                                        <Button type='button' variant='ghost' className='h-auto border-none bg-transparent p-0 text-[10px] text-slate-500 hover:text-slate-300'>Like</Button>
-                                        <Button type='button' variant='ghost' className='h-auto border-none bg-transparent p-0 text-[10px] text-slate-500 hover:text-slate-300'>Reply</Button>
+                                    <div className='flex gap-3 mt-1 ml-1'>
+                                        <Button type='button' variant='social-link' className='text-[10px]'>Like</Button>
+                                        <Button type='button' variant='social-link' className='text-[10px]'>Reply</Button>
                                     </div>
                                 </div>
                             </div>
@@ -172,12 +140,11 @@ export default function PostCard({ user, post }) {
                             onChange={(e) => { setComment(e.target.value) }}
                             type="text"
                             placeholder="Write a comment..."
-                            className='h-10 rounded-full border-slate-800 bg-slate-900 px-4 text-sm text-white placeholder:text-slate-600 focus:border-slate-600 focus:bg-slate-900'
+                            variant="social"
                         />
                         <Button
                             type='button'
-                            variant='ghost'
-                            className='absolute right-2 top-1/2 h-7 w-7 -translate-y-1/2 rounded-full border-none bg-transparent p-0 text-slate-500 opacity-0 transition-colors group-focus-within:opacity-100 hover:bg-red-500/10 hover:text-red-500'
+                            variant='input-action'
                             onClick={handleCommentPost}
                             disabled={!comment.trim()}
                         >
