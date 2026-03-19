@@ -26,7 +26,7 @@ export default function SocialLayout() {
         if (!allMovies) getAllMovies();
         if (!todayMovies) getTodayMovie();
         if (authUser && !likedPosts) getLikedPosts();
-    }, [authUser, users, allPosts, allMovies, todayMovies, likedPosts, getUsers, getPosts, getAllMovies, getTodayMovie, getLikedPosts]);
+    }, [authUser]);
 
     const isLoading = !users || !allPosts || !allMovies || !todayMovies || (authUser && !likedPosts);
 

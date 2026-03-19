@@ -20,7 +20,7 @@ const __dirname = path.dirname(__filename);
 
 const limiter = rateLimit({
     windowMs: 10 * 60 * 1000,
-    limit: 100,
+    limit: 1000,
     standardHeaders: 'draft-8',
     legacyHeaders: false,
     ipv6Subnet: 56,
