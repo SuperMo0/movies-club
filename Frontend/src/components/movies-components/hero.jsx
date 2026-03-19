@@ -15,7 +15,7 @@ export default function Hero({ handleMovieClick }) {
     const [api, setApi] = useState();
     const [featuredImdb, setFeaturedImdb] = useState({});
 
-    const { todayMovies } = useMoviesStore();
+    const todayMovies = useMoviesStore(s => s.todayMovies);
 
     function handleInteraction() {
         if (!api) return;

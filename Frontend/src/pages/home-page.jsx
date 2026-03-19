@@ -12,8 +12,10 @@ export default function Home() {
     const [activeMovie, setActiveMovie] = useState(null);
     const [activeMovieImdb, setActiveMovieImdb] = useState(null);
 
-    const { getTodayMovie, todayMovies, getAllMovies, allMovies } = useMoviesStore();
-
+    const getTodayMovie = useMoviesStore(state => state.getTodayMovie);
+    const todayMovies = useMoviesStore(state => state.todayMovies);
+    const getAllMovies = useMoviesStore(state => state.getAllMovies);
+    const allMovies = useMoviesStore(state => state.allMovies);
 
     useEffect(() => {
 
@@ -25,11 +27,6 @@ export default function Home() {
         setActiveMovie(movie);
         setActiveMovieImdb(imdbData);
         setIsModalOpen(true);
-    }
-
-    function closeModal() {
-        setIsModalOpen(false);
-        setActiveMovieImdb(null);
     }
 
     function handleModalOpenChange(nextOpen) {
@@ -49,7 +46,7 @@ export default function Home() {
                 movie={activeMovie}
                 imdbData={activeMovieImdb}
             />
-            <Hero handleMovieClick={handleMovieClick} />  {/*This component is heavy my fans are going crazy !*/}
+            <Hero handleMovieClick={handleMovieClick} />
             <ShowingNow handleMovieClick={handleMovieClick} />
             <Footer />
         </div>

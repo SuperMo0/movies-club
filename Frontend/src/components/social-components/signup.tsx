@@ -26,7 +26,10 @@ import { useForm } from 'react-hook-form'
 type SignupProps = { open: boolean, onOpenChange: (x: boolean) => void }
 
 export default function Signup({ open, onOpenChange }: SignupProps) {
-    const { signup, isSigningUp, guestLogin, isLogginIn } = useAuthStore()
+    const signup = useAuthStore(s => s.signup);
+    const isSigningUp = useAuthStore(s => s.isSigningUp);
+    const guestLogin = useAuthStore(s => s.guestLogin);
+    const isLogginIn = useAuthStore(s => s.isLogginIn);
 
     const { openLogin } = useLoginModal();
 

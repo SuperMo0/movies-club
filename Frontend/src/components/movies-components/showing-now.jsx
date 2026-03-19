@@ -7,7 +7,7 @@ import { getCachedImdbTitle, getImdbCacheKey, searchImdbTitle } from '@/lib/imdb
 export default function ShowingNow({ handleMovieClick }) {
 
 
-    const { todayMovies } = useMoviesStore();
+    const todayMovies = useMoviesStore(s => s.todayMovies);
     const [imdbByTitle, setImdbByTitle] = useState({});
 
     const movies = useMemo(() => [...todayMovies.values()], [todayMovies]);

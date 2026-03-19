@@ -22,7 +22,9 @@ type LoginProps = {
 }
 
 export default function Login({ open, onOpenChange }: LoginProps) {
-    const { login, isLogginIn, guestLogin } = useAuthStore()
+    const login = useAuthStore(s => s.login);
+    const isLogginIn = useAuthStore(s => s.isLogginIn);
+    const guestLogin = useAuthStore(s => s.guestLogin);
     const [message, setMessage] = useState<string | null>(null)
 
     const {

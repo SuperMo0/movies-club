@@ -6,22 +6,34 @@ import { useMoviesStore } from '@/stores/movies.store';
 import LoadingScreen from '@/components/ui/LoadingScreen';
 
 export default function SocialLayout() {
-    const { getPosts, getUsers, users, allPosts, likedPosts, getLikedPosts } = useSocialStore();
-    const { authUser } = useAuthStore();
-    const { allMovies, getAllMovies } = useMoviesStore();
+    const getPosts = useSocialStore(state => state.getPosts);
+    const getUsers = useSocialStore(state => state.getUsers);
+    const users = useSocialStore(state => state.users);
+    const allPosts = useSocialStore(state => state.allPosts);
+    const likedPosts = useSocialStore(state => state.likedPosts);
+    const getLikedPosts = useSocialStore(state => state.getLikedPosts);
+
+    const authUser = useAuthStore(state => state.authUser);
+
+    const allMovies = useMoviesStore(state => state.allMovies);
+    const getAllMovies = useMoviesStore(state => state.getAllMovies);
+    const todayMovies = useMoviesStore(state => state.todayMovies);
+    const getTodayMovie = useMoviesStore(state => state.getTodayMovie);
 
     useEffect(() => {
         if (!users) getUsers();
         if (!allPosts) getPosts();
         if (!allMovies) getAllMovies();
+        if (!todayMovies) getTodayMovie();
         if (authUser && !likedPosts) getLikedPosts();
-    }, [authUser, users, allPosts, allMovies, likedPosts]);
+    }, [authUser, users, allPosts, allMovies, todayMovies, likedPosts, getUsers, getPosts, getAllMovies, getTodayMovie, getLikedPosts]);
 
-    const isLoading = !users || !allPosts || !allMovies || (authUser && !likedPosts);
+    const isLoading = !users || !allPosts || !allMovies || !todayMovies || (authUser && !likedPosts);
 
     if (isLoading) {
         return <LoadingScreen message="Loading Social Area..." />;
     }
+
 
     return <Outlet />;
 }

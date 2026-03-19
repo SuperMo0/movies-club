@@ -5,9 +5,10 @@ import { useAuthStore } from '@/stores/auth.store';
 
 export default function SocialFeed() {
 
-    const { users, allPosts } = useSocialStore();
+    const users = useSocialStore(s => s.users);
+    const allPosts = useSocialStore(s => s.allPosts);
 
-    const { authUser } = useAuthStore();
+    const authUser = useAuthStore(s => s.authUser);
 
     return (
         <div className='flex flex-col gap-6 max-w-2xl mx-auto lg:mx-0'>

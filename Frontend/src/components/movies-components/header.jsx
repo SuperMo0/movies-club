@@ -6,7 +6,8 @@ import { useAuthStore } from '@/stores/auth.store';
 
 const Header = ({ onLoginClick, onSignupClick }) => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const { authUser, logout } = useAuthStore();
+    const authUser = useAuthStore(s => s.authUser);
+    const logout = useAuthStore(s => s.logout);
 
     const navLinks = [
         { name: "Movies", href: "/" },
