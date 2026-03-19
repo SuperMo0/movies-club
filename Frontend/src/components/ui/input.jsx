@@ -10,6 +10,9 @@ const inputVariants = cva(
       variant: {
         default: "",
         form: "bg-slate-900 border-slate-800 text-slate-200 placeholder:text-slate-600 focus:border-red-500/50 focus:ring-red-500/20 h-11",
+        social: "h-10 rounded-full border-slate-800 bg-slate-900 px-4 text-sm text-white placeholder:text-slate-600 focus:border-slate-600 focus:bg-slate-900 focus-visible:ring-0 focus-visible:ring-offset-0",
+        "profile-edit": "bg-slate-900 border border-slate-700 text-white text-lg md:text-2xl font-bold px-3 py-1 rounded focus:outline-none focus:border-red-500 w-full focus-visible:ring-0 focus-visible:ring-offset-0 h-auto",
+        "profile-disabled": "bg-transparent text-slate-500 font-medium px-3 text-sm border-none cursor-not-allowed w-full shadow-none",
       },
     },
     defaultVariants: {
