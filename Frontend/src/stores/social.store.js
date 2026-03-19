@@ -1,9 +1,13 @@
 import { create } from "zustand";
+import { immer } from "zustand/middleware/immer";
 import api from '../lib/axios.js';
 import { toast } from "react-toastify";
 import { useAuthStore } from '@/stores/auth.store.js';
+import { enableMapSet } from 'immer'
 
-export const useSocialStore = create((set, get) => ({
+enableMapSet();
+
+export const useSocialStore = create(immer((set, get) => ({
 
     users: null,
     allPosts: null,
@@ -14,18 +18,18 @@ export const useSocialStore = create((set, get) => ({
 
     getUsers: async () => {
         if (get().users) return;
-        set({ isLoading: true });
+        set((state) => { state.isLoading = true; });
         try {
             let response = await api.get('/social/users');
             let users = new Map();
             response.data.users.forEach((u) => {
                 users.set(u.id, u);
             });
-            set({ users });
+            set((state) => { state.users = users; });
         } catch (error) {
             console.log(error);
         } finally {
-            set({ isLoading: false });
+            set((state) => { state.isLoading = false; });
         }
     },
 
@@ -33,7 +37,7 @@ export const useSocialStore = create((set, get) => ({
         try {
             let result = await api.get('/social/liked');
             const likedPosts = new Set(result.data.likedPosts);
-            set({ likedPosts });
+            set((state) => { state.likedPosts = likedPosts; });
         } catch (error) {
             console.log(error);
             toast.error('Error while getting liked posts');
@@ -42,7 +46,7 @@ export const useSocialStore = create((set, get) => ({
 
     getPosts: async () => {
         if (get().allPosts) return;
-        set({ isLoading: true });
+        set((state) => { state.isLoading = true; });
         try {
             let response = await api.get('/social/feed');
             let posts = response.data.posts;
@@ -54,17 +58,19 @@ export const useSocialStore = create((set, get) => ({
                 userPosts.get(p.authorId).push(p);
             });
 
-            set({ allPosts: posts });
-            set({ userPosts });
+            set((state) => {
+                state.allPosts = posts;
+                state.userPosts = userPosts;
+            });
         } catch (error) {
             console.log(error);
         } finally {
-            set({ isLoading: false });
+            set((state) => { state.isLoading = false; });
         }
     },
 
     createNewPost: async (formData) => {
-        set({ isUploading: true });
+        set((state) => { state.isUploading = true; });
 
         const { authUser } = useAuthStore.getState();
 
@@ -90,37 +96,33 @@ export const useSocialStore = create((set, get) => ({
         const prevAll = get().allPosts;
         const prevUserPosts = get().userPosts;
 
-        set(state => {
-            const updatedAllPosts = [optimisticPost, ...state.allPosts];
+        set((state) => {
+            state.allPosts.unshift(optimisticPost);
 
-            const updatedUserPosts = new Map(state.userPosts);
-            const authorPosts = updatedUserPosts.get(authUser.id) || [];
-            updatedUserPosts.set(authUser.id, [optimisticPost, ...authorPosts]);
-
-            return { allPosts: updatedAllPosts, userPosts: updatedUserPosts };
+            const authorPosts = state.userPosts.get(authUser.id) || [];
+            state.userPosts.set(authUser.id, [optimisticPost, ...authorPosts]);
         });
 
         try {
             let result = await api.post('/social/post', formData);
             const realPost = result.data.post;
 
-            set(state => {
-                // Helper to find and replace the temp post
-                const swapPost = (p) => p.id === tempId ? realPost : p;
-
-                const finalAllPosts = state.allPosts.map(swapPost);
-
-                const finalUserPosts = new Map(state.userPosts);
-                const authorPosts = finalUserPosts.get(authUser.id);
-                if (authorPosts) {
-                    finalUserPosts.set(authUser.id, authorPosts.map(swapPost));
+            set((state) => {
+                // Swap temp post for real post
+                const swapPostIndex = state.allPosts.findIndex(p => p.id === tempId);
+                if (swapPostIndex !== -1) {
+                    state.allPosts[swapPostIndex] = realPost;
                 }
 
-                return {
-                    allPosts: finalAllPosts,
-                    userPosts: finalUserPosts,
-                    isUploading: false
-                };
+                const authorPosts = state.userPosts.get(authUser.id);
+                if (authorPosts) {
+                    const swapUserPostIndex = authorPosts.findIndex(p => p.id === tempId);
+                    if (swapUserPostIndex !== -1) {
+                        authorPosts[swapUserPostIndex] = realPost;
+                    }
+                }
+
+                state.isUploading = false;
             });
 
             return { success: true };
@@ -128,109 +130,58 @@ export const useSocialStore = create((set, get) => ({
         } catch (error) {
             console.log("Upload failed", error);
 
-            set({
-                allPosts: prevAll,
-                userPosts: prevUserPosts,
-                isUploading: false
+            set((state) => {
+                state.allPosts = prevAll;
+                state.userPosts = prevUserPosts;
+                state.isUploading = false;
             });
 
             return { success: false, message: error.message };
         }
     },
 
-    likePost: async (post) => {
+
+
+    togglePostLike: async (post, action) => {
         const prevLiked = new Set(get().likedPosts);
         const prevAll = get().allPosts;
         const prevUserPosts = get().userPosts;
 
-        // OPTIMISTIC UPDATE
         set((state) => {
-
-            const newLiked = new Set(state.likedPosts);
-            newLiked.add(post.id);
-
-            const newAllPosts = state.allPosts.map((p) =>
-                p.id === post.id
-                    ? { ...p, _count: { ...p._count, likedBy: (p._count?.likedBy || 0) + 1 } }
-                    : p
-            );
-
-            const newUserPostsMap = new Map(state.userPosts);
-            const authorPosts = newUserPostsMap.get(post.authorId);
-
-            if (authorPosts) {
-                const updatedAuthorPosts = authorPosts.map((p) =>
-                    p.id === post.id
-                        ? { ...p, _count: { ...p._count, likedBy: (p._count?.likedBy || 0) + 1 } }
-                        : p
-                );
-                newUserPostsMap.set(post.authorId, updatedAuthorPosts);
+            if (action === 1) {
+                state.likedPosts.add(post.id);
+            } else {
+                state.likedPosts.delete(post.id);
             }
 
-            return {
-                likedPosts: newLiked,
-                allPosts: newAllPosts,
-                userPosts: newUserPostsMap
-            };
+            const targetAllPost = state.allPosts.find(p => p.id === post.id);
+            if (targetAllPost) {
+                targetAllPost._count.likedBy += action;
+            }
+
+            const userPostsArray = state.userPosts.get(post.authorId);
+            if (userPostsArray) {
+                const targetUserPost = userPostsArray.find(p => p.id === post.id);
+                if (targetUserPost) {
+                    targetUserPost._count.likedBy += action;
+                }
+            }
         });
 
         try {
-            await api.post(`/social/like/${post.id}`);
+            if (action === 1) await api.post(`/social/like/${post.id}`);
+            else await api.delete(`/social/like/${post.id}`);
             return { success: true, message: 'ok' };
         } catch (error) {
-            console.log("Like failed, reverting...");
-            set({ likedPosts: prevLiked, allPosts: prevAll, userPosts: prevUserPosts });
+            set((state) => {
+                state.likedPosts = prevLiked;
+                state.allPosts = prevAll;
+                state.userPosts = prevUserPosts;
+            });
             return { success: false, message: 'error' };
         }
     },
 
-    unLikePost: async (post) => {
-
-        const prevLiked = new Set(get().likedPosts);
-        const prevAll = get().allPosts;
-        const prevUserPosts = get().userPosts;
-
-        // OPTIMISTIC UPDATE
-        set((state) => {
-
-            const newLiked = new Set(state.likedPosts);
-            newLiked.delete(post.id);
-
-
-            const newAllPosts = state.allPosts.map((p) =>
-                p.id === post.id
-                    ? { ...p, _count: { ...p._count, likedBy: Math.max(0, (p._count?.likedBy || 1) - 1) } }
-                    : p
-            );
-
-            const newUserPostsMap = new Map(state.userPosts);
-            const authorPosts = newUserPostsMap.get(post.authorId);
-
-            if (authorPosts) {
-                const updatedAuthorPosts = authorPosts.map((p) =>
-                    p.id === post.id
-                        ? { ...p, _count: { ...p._count, likedBy: Math.max(0, (p._count?.likedBy || 1) - 1) } }
-                        : p
-                );
-                newUserPostsMap.set(post.authorId, updatedAuthorPosts);
-            }
-
-            return {
-                likedPosts: newLiked,
-                allPosts: newAllPosts,
-                userPosts: newUserPostsMap
-            };
-        });
-
-        try {
-            await api.delete(`/social/like/${post.id}`);
-            return { success: true, message: 'ok' };
-        } catch (error) {
-            console.log("Unlike failed, reverting...");
-            set({ likedPosts: prevLiked, allPosts: prevAll, userPosts: prevUserPosts });
-            return { success: false, message: 'error' };
-        }
-    },
 
 
 
@@ -249,30 +200,24 @@ export const useSocialStore = create((set, get) => ({
 
         // SNAPSHOT 
         const prevAll = get().allPosts;
-
         const prevUserPosts = get().userPosts;
-
-        const updatePostWithComment = (p) => {
-            if (p.id === post.id) {
-                return {
-                    ...p,
-                    comments: [...(p.comments || []), optimisticComment],
-                };
-            }
-            return p;
-        };
 
         //  OPTIMISTIC UPDATE
         set((state) => {
-            const newAllPosts = state.allPosts.map(updatePostWithComment);
+            const targetAllPost = state.allPosts.find(p => p.id === post.id);
+            if (targetAllPost) {
+                if (!targetAllPost.comments) targetAllPost.comments = [];
+                targetAllPost.comments.push(optimisticComment);
+            }
 
-            const newUserPosts = new Map(state.userPosts);
-
-            const authorPosts = newUserPosts.get(post.authorId);
-
-            newUserPosts.set(post.authorId, authorPosts.map(updatePostWithComment));
-
-            return { allPosts: newAllPosts, userPosts: newUserPosts };
+            const userPostsArray = state.userPosts.get(post.authorId);
+            if (userPostsArray) {
+                const targetUserPost = userPostsArray.find(p => p.id === post.id);
+                if (targetUserPost) {
+                    if (!targetUserPost.comments) targetUserPost.comments = [];
+                    targetUserPost.comments.push(optimisticComment);
+                }
+            }
         });
 
         try {
@@ -281,25 +226,20 @@ export const useSocialStore = create((set, get) => ({
             const realComment = res.data.comment;
 
             set((state) => {
-                const swapTempForReal = (p) => {
-                    if (p.id === post.id) {
-                        return {
-                            ...p,
-                            comments: p.comments.map(c => c.id === tempId ? realComment : c)
-                        };
-                    }
-                    return p;
-                };
-                const finalAllPosts = state.allPosts.map(swapTempForReal);
-
-                const finalUserPosts = new Map(state.userPosts);
-
-                const authorPosts = finalUserPosts.get(post.authorId);
-
-                if (authorPosts) {
-                    finalUserPosts.set(post.authorId, authorPosts.map(swapTempForReal));
+                const targetAllPost = state.allPosts.find(p => p.id === post.id);
+                if (targetAllPost && targetAllPost.comments) {
+                    const cIdx = targetAllPost.comments.findIndex(c => c.id === tempId);
+                    if (cIdx !== -1) targetAllPost.comments[cIdx] = realComment;
                 }
-                return { allPosts: finalAllPosts, userPosts: finalUserPosts };
+
+                const userPostsArray = state.userPosts.get(post.authorId);
+                if (userPostsArray) {
+                    const targetUserPost = userPostsArray.find(p => p.id === post.id);
+                    if (targetUserPost && targetUserPost.comments) {
+                        const cIdx = targetUserPost.comments.findIndex(c => c.id === tempId);
+                        if (cIdx !== -1) targetUserPost.comments[cIdx] = realComment;
+                    }
+                }
             });
 
             return { success: true };
@@ -308,8 +248,11 @@ export const useSocialStore = create((set, get) => ({
             console.log(error);
 
             console.log("Comment failed");
-            set({ allPosts: prevAll, userPosts: prevUserPosts });
+            set((state) => {
+                state.allPosts = prevAll;
+                state.userPosts = prevUserPosts;
+            });
             return { success: false, message: "Failed to post comment" };
         }
     }
-}));
+})));
