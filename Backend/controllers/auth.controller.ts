@@ -8,7 +8,7 @@ import { AppError } from '../errors/appError.ts'
 
 function sanitizeUser(user: any): ResponseSafeUser | null {
     if (!user) return null;
-    const { password, ...userWithoutPassword } = user;
+    const { password: _password, ...userWithoutPassword } = user;
     return userWithoutPassword as ResponseSafeUser;
 }
 

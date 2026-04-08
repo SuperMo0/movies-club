@@ -17,7 +17,7 @@ export const userProfileSelect = {
 } satisfies Prisma.userSelect
 
 export type UserProfile = Prisma.userGetPayload<{ select: typeof userProfileSelect }>
-export type DbUser = Prisma.userGetPayload<{}>
+export type DbUser = Prisma.userGetPayload<Prisma.userDefaultArgs>
 
 export async function insertUser(name: string, username: string, password: string): Promise<UserProfile> {
   return prisma.user.create({
