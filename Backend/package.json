@@ -16,7 +16,8 @@
     "prisma:migrate:deploy": "prisma migrate deploy",
     "test": "vitest run",
     "test:watch": "vitest",
-    "pretypecheck": "prisma generate"
+    "pretypecheck": "prisma generate",
+    "lint": "eslint . --ext .ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.2.0",
@@ -42,6 +43,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.4",
     "@types/bcrypt": "^6.0.0",
     "@types/compression": "^1.8.1",
     "@types/cookie-parser": "^1.4.10",
@@ -53,8 +55,11 @@
     "@types/node": "^25.5.0",
     "@types/node-cron": "^3.0.11",
     "@types/supertest": "^7.2.0",
+    "eslint": "^9.39.4",
+    "globals": "^16.5.0",
     "supertest": "^7.2.2",
     "typescript": "^5.9.3",
+    "typescript-eslint": "^8.58.1",
     "vitest": "^4.1.3"
   }
 }
