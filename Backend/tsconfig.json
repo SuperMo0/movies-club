@@ -19,7 +19,7 @@
     "rewriteRelativeImportExtensions": true,
     "erasableSyntaxOnly": true,
     "verbatimModuleSyntax": true,
-    "allowJs": true,
+    "allowJs": false,
     "noEmit": true,
   },
   "exclude": [
