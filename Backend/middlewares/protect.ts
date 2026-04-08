@@ -4,8 +4,8 @@ import { AppError } from '../errors/appError.ts'
 
 const protect: RequestHandler = async (req, res, next) => {
   try {
-    const { jwt } = req.cookies as { jwt?: string }
-    const userId = await verify(jwt)
+    const token = (req.cookies as { jwt?: string } | undefined)?.jwt
+    const userId = await verify(token)
     req.userId = userId
     return next()
   } catch {

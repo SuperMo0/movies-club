@@ -22,6 +22,10 @@ function validationError(message: string, details?: unknown) {
     })
 }
 
+function unauthenticatedSession(): AuthSessionResponse {
+    return { user: null };
+}
+
 export async function login(req: Request, res: Response) {
     const parseResult = LoginSchema.safeParse(req.body);
 
@@ -96,23 +100,20 @@ export async function check(req: Request, res: Response) {
     const { jwt } = req.cookies;
 
     if (!jwt) {
-        const payload: AuthSessionResponse = { user: null };
-        return res.status(200).json(payload);
+        return res.status(200).json(unauthenticatedSession());
     }
 
     const userId = await verify(jwt).catch(() => null);
 
     if (!userId) {
-        const payload: AuthSessionResponse = { user: null };
-        return res.status(200).json(payload);
+        return res.status(200).json(unauthenticatedSession());
     }
 
     const user = await model.getUserById(userId);
 
     if (!user) {
         res.clearCookie("jwt");
-        const payload: AuthSessionResponse = { user: null };
-        return res.status(200).json(payload);
+        return res.status(200).json(unauthenticatedSession());
     }
 
     const payload: AuthSessionResponse = { user: sanitizeUser(user) };

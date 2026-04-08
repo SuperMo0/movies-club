@@ -2,6 +2,7 @@ import { SignJWT, jwtVerify, type JWTPayload } from 'jose'
 import type { Response } from 'express'
 
 export type AuthJwtPayload = JWTPayload & { id: string }
+const textEncoder = new TextEncoder()
 
 function getRequiredSecret(): string {
   const secret = process.env.SECRET
@@ -14,7 +15,7 @@ function getRequiredSecret(): string {
 }
 
 function getSecretKey(): Uint8Array {
-  return new TextEncoder().encode(getRequiredSecret())
+  return textEncoder.encode(getRequiredSecret())
 }
 
 export async function sign(user: { id: string }, res: Response): Promise<string> {
@@ -42,10 +43,11 @@ export async function verify(token: string | undefined): Promise<string> {
 
   const secretKey = getSecretKey()
   const { payload } = await jwtVerify(token, secretKey)
+  const authPayload = payload as AuthJwtPayload
 
-  if (typeof (payload as AuthJwtPayload).id !== 'string') {
+  if (typeof authPayload.id !== 'string') {
     throw new Error('Invalid token payload')
   }
 
-  return (payload as AuthJwtPayload).id
+  return authPayload.id
 }
