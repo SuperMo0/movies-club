@@ -11,6 +11,23 @@ export const LoginSchema = z.object({
     password: z.string().min(1, "Password is required"),
 });
 
+export type ResponseSafeUser = {
+    id: string;
+    name: string;
+    username: string;
+    image: string | null;
+    bio: string | null;
+    joinedAt: Date | string;
+};
+
+export type AuthUserResponse = {
+    user: ResponseSafeUser;
+};
+
+export type AuthSessionResponse = {
+    user: ResponseSafeUser | null;
+};
+
 
 export type SignupType = z.infer<typeof SignupSchema>;
 export type LoginType = z.infer<typeof LoginSchema>;

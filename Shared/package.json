@@ -5,6 +5,7 @@
   "license": "ISC",
   "type": "module",
   "exports": {
+    "./api": "./api.schema.ts",
     "./auth": "./auth.schema.ts",
     "./social": "./social.schema.ts"
   }
