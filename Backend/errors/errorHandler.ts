@@ -6,6 +6,7 @@ export function errorHandler(err: unknown, req: Request, res: Response, _next: N
   const appError = mapError(err)
 
   const payload: ApiErrorResponse = {
+    message: appError.publicMessage,
     error: {
       code: appError.code,
       message: appError.publicMessage,

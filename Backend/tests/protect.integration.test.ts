@@ -10,6 +10,7 @@ describe('protect middleware integration', () => {
 
     expect(response.status).toBe(401)
     expect(response.body).toEqual({
+      message: 'Unauthorized',
       error: {
         code: 'AUTH_REQUIRED',
         message: 'Unauthorized',

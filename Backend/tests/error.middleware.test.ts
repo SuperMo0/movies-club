@@ -57,6 +57,7 @@ describe('error middleware', () => {
 
     expect(response.status).toBe(404)
     expect(response.body).toEqual({
+      message: 'Route not found',
       error: {
         code: 'NOT_FOUND',
         message: 'Route not found',
@@ -71,6 +72,7 @@ describe('error middleware', () => {
 
     expect(response.status).toBe(418)
     expect(response.body).toEqual({
+      message: 'short and stout',
       error: {
         code: 'TEAPOT',
         message: 'short and stout',
@@ -105,6 +107,7 @@ describe('error middleware', () => {
 
     expect(response.status).toBe(409)
     expect(response.body).toEqual({
+      message: 'Resource already exists',
       error: {
         code: 'UNIQUE_CONSTRAINT',
         message: 'Resource already exists',
@@ -120,6 +123,7 @@ describe('error middleware', () => {
 
     expect(response.status).toBe(500)
     expect(response.body).toEqual({
+      message: 'Internal Server Error',
       error: {
         code: 'INTERNAL_SERVER_ERROR',
         message: 'Internal Server Error',
@@ -134,6 +138,7 @@ describe('error middleware', () => {
 
     expect(response.status).toBe(503)
     expect(response.body).toEqual({
+      message: 'Service temporarily unavailable',
       error: {
         code: 'SERVICE_UNAVAILABLE',
         message: 'Service temporarily unavailable',

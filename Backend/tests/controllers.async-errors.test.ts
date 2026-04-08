@@ -102,6 +102,7 @@ describe('controllers async error flow', () => {
 
     expect(response.status).toBe(503)
     expect(response.body).toEqual({
+      message: 'Movies are being fetched, please try again later.',
       error: {
         code: 'MOVIES_DATA_NOT_FOUND',
         message: 'Movies are being fetched, please try again later.',
