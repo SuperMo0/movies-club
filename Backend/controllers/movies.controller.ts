@@ -1,47 +1,41 @@
-import type { Request, Response, NextFunction } from 'express'
-import { prisma } from './../lib/prisma.js'
+import type { Request, Response } from 'express'
+import { prisma } from './../lib/prisma.ts'
+import { AppError } from '../errors/appError.ts'
 
 let cachedMovies: any = null;
 let lastUpdate: string | null = null;
 
-export async function getTodayMovies(req: Request, res: Response, next: NextFunction) {
-    try {
+export async function getTodayMovies(req: Request, res: Response) {
+    const today = new Date().toLocaleDateString('en-CA');
 
-        const today = new Date().toLocaleDateString('en-CA');
-
-        if (cachedMovies && lastUpdate === today) {
-            return res.json({ movies: cachedMovies });
-        }
-
-        const record = await prisma.app_state.findUnique({ where: { key: 'moviesData' } });
-
-        if (!record) {
-            return res.status(503).json({ message: "Movies are being fetched, please try again later." });
-        }
-
-        let parsedData = JSON.parse(record.value);
-
-        cachedMovies = parsedData;
-        lastUpdate = today;
-
-        res.json({ movies: cachedMovies });
-
-    } catch (error) {
-        console.log("Error reading movies file:", error);
-        next(error);
+    if (cachedMovies && lastUpdate === today) {
+        return res.json({ movies: cachedMovies });
     }
+
+    const record = await prisma.app_state.findUnique({ where: { key: 'moviesData' } });
+
+    if (!record) {
+        throw new AppError({
+            statusCode: 503,
+            code: 'MOVIES_DATA_NOT_FOUND',
+            message: 'Movies data was not found in app_state',
+            publicMessage: 'Movies are being fetched, please try again later.',
+        })
+    }
+
+    const parsedData = JSON.parse(record.value);
+
+    cachedMovies = parsedData;
+    lastUpdate = today;
+
+    return res.json({ movies: cachedMovies });
 }
 
-export async function getAllMovies(req: Request, res: Response, next: NextFunction) {
-    try {
-        let movies = await prisma.movie.findMany({
-            include: {
-                genres: true,
-            }
-        })
-        res.json({ movies })
-    } catch (error) {
-        console.log("Error getting movies", error);
-        next(error);
-    }
+export async function getAllMovies(req: Request, res: Response) {
+    const movies = await prisma.movie.findMany({
+        include: {
+            genres: true,
+        }
+    })
+    return res.json({ movies })
 }

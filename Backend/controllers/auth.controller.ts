@@ -1,111 +1,125 @@
 import type { Request, Response } from "express";
-import { sign, verify } from "../lib/jwt.js";
-import * as model from "../Models/auth.model.js"
-import { compare, hash } from "../lib/bcrypt.js";
+import { sign, verify } from "../lib/jwt.ts";
+import * as model from "../Models/auth.model.ts"
+import { compare, hash } from "../lib/bcrypt.ts";
+import type { AuthSessionResponse, AuthUserResponse, ResponseSafeUser } from "../../Shared/auth.schema.ts";
 import { LoginSchema, SignupSchema } from "../../Shared/auth.schema.ts";
-function sanitizeUser(user: any) {
+import { AppError } from '../errors/appError.ts'
+
+function sanitizeUser(user: any): ResponseSafeUser | null {
     if (!user) return null;
     const { password, ...userWithoutPassword } = user;
-    return userWithoutPassword;
+    return userWithoutPassword as ResponseSafeUser;
+}
+
+function validationError(message: string, details?: unknown) {
+    return new AppError({
+        statusCode: 400,
+        code: 'VALIDATION_ERROR',
+        message,
+        publicMessage: 'Validation failed',
+        details,
+    })
 }
 
 export async function login(req: Request, res: Response) {
+    const parseResult = LoginSchema.safeParse(req.body);
 
-    try {
-        const parseResult = LoginSchema.safeParse(req.body);
-
-        if (!parseResult.success) {
-            return res.status(400).json({ message: parseResult.error.message });
-        }
-
-        const { username, password } = parseResult.data;
-
-        const user = await model.getUserByUsername(username);
-
-        if (!user) {
-            return res.status(401).json({ message: "Wrong credentials" });
-        }
-
-        const isPasswordValid = await compare(password, user.password);
-
-        if (!isPasswordValid) {
-            return res.status(401).json({ message: "Wrong credentials" });
-        }
-
-        await sign(user, res);
-
-        return res.status(200).json({ user: sanitizeUser(user) });
-
-    } catch (error) {
-        console.error("Login Error:", error);
-        return res.status(500).json({ message: "Internal Server Error" });
+    if (!parseResult.success) {
+        throw validationError(parseResult.error.message, parseResult.error.issues)
     }
+
+    const { username, password } = parseResult.data;
+
+    const user = await model.getUserByUsername(username);
+
+    if (!user) {
+        throw new AppError({
+            statusCode: 401,
+            code: 'AUTH_INVALID_CREDENTIALS',
+            message: 'Login attempted with unknown username',
+            publicMessage: 'Wrong credentials',
+        })
+    }
+
+    const isPasswordValid = await compare(password, user.password);
+
+    if (!isPasswordValid) {
+        throw new AppError({
+            statusCode: 401,
+            code: 'AUTH_INVALID_CREDENTIALS',
+            message: 'Login attempted with invalid password',
+            publicMessage: 'Wrong credentials',
+        })
+    }
+
+    await sign(user, res);
+
+    const payload: AuthUserResponse = { user: sanitizeUser(user)! };
+    return res.status(200).json(payload);
 }
 
 export async function signup(req: Request, res: Response) {
-    try {
-        const parseResult = SignupSchema.safeParse(req.body);
+    const parseResult = SignupSchema.safeParse(req.body);
 
-        if (!parseResult.success) {
-            return res.status(400).json({ message: parseResult.error.message });
-        }
-
-        let { name, username, password } = parseResult.data;
-
-        const hashedPassword = await hash(password);
-
-        const user = await model.insertUser(name, username, hashedPassword);
-
-        await sign(user, res);
-
-        return res.status(201).json({ user: sanitizeUser(user) });
-
-    } catch (error: any) {
-        if (error.code === 'P2002') {
-            return res.status(409).json({ message: "Username already exists" });
-        }
-
-        console.error("Signup Error:", error);
-        return res.status(500).json({ message: "Internal Server Error" });
+    if (!parseResult.success) {
+        throw validationError(parseResult.error.message, parseResult.error.issues)
     }
+
+    const { name, username, password } = parseResult.data;
+
+    const hashedPassword = await hash(password);
+
+    let user;
+    try {
+        user = await model.insertUser(name, username, hashedPassword);
+    } catch (error: unknown) {
+        if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'P2002') {
+            throw new AppError({
+                statusCode: 409,
+                code: 'USERNAME_CONFLICT',
+                message: 'Username already exists',
+                publicMessage: 'Username already exists',
+            })
+        }
+
+        throw error
+    }
+
+    await sign(user, res);
+
+    const payload: AuthUserResponse = { user: sanitizeUser(user)! };
+    return res.status(201).json(payload);
 }
 
 export async function check(req: Request, res: Response) {
-    try {
-        const { jwt } = req.cookies;
+    const { jwt } = req.cookies;
 
-        if (!jwt) {
-            return res.status(200).json({ user: null });
-        }
-
-
-        let userId = await verify(jwt);
-
-        if (!userId) {
-            return res.status(200).json({ user: null });
-        }
-
-
-        let user = await model.getUserById(userId);
-
-        if (!user) {
-            res.clearCookie("jwt");
-            return res.status(200).json({ user: null });
-        }
-
-        return res.status(200).json({ user: sanitizeUser(user) });
-
-    } catch (error) {
-        return res.status(200).json({ user: null });
+    if (!jwt) {
+        const payload: AuthSessionResponse = { user: null };
+        return res.status(200).json(payload);
     }
+
+    const userId = await verify(jwt).catch(() => null);
+
+    if (!userId) {
+        const payload: AuthSessionResponse = { user: null };
+        return res.status(200).json(payload);
+    }
+
+    const user = await model.getUserById(userId);
+
+    if (!user) {
+        res.clearCookie("jwt");
+        const payload: AuthSessionResponse = { user: null };
+        return res.status(200).json(payload);
+    }
+
+    const payload: AuthSessionResponse = { user: sanitizeUser(user) };
+    return res.status(200).json(payload);
 }
 
 export async function logout(req: Request, res: Response) {
-    try {
-        res.clearCookie("jwt");
-        return res.status(200).json({ message: 'Logged out successfully' });
-    } catch (error) {
-        console.error("Logout Error:", error);
-        return res.status(500).json({ message: "Error during logout" });
-    }
+    res.clearCookie("jwt");
+    return res.status(200).json({ message: 'Logged out successfully' });
 }

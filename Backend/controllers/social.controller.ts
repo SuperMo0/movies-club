@@ -1,7 +1,7 @@
-import type { Request, Response, NextFunction } from 'express';
-import { prisma } from '../lib/prisma.js'
-import v2 from '../lib/cloudinary.js'
-import { userProfileSelect } from './../Models/auth.model.js'
+import type { Request, Response } from 'express';
+import { prisma } from '../lib/prisma.ts'
+import v2 from '../lib/cloudinary.ts'
+import { userProfileSelect } from './../Models/auth.model.ts'
 import {
     userIdParamSchema,
     postIdParamSchema,
@@ -9,165 +9,144 @@ import {
     createPostBodySchema,
     updateProfileBodySchema
 } from '../../Shared/social.schema.ts'
+import { AppError } from '../errors/appError.ts'
+import { requireUserId } from '../types/authenticatedRequest.ts'
 
-export async function getFeed(req: Request, res: Response, next: NextFunction) {
-
-    try {
-        let posts = await prisma.post.findMany({
-            orderBy: { createdAt: 'desc' },
-            include: {
-                comments: true,
-                _count: { select: { likedBy: true }, }
-            }
-        })
-
-        res.json({ posts });
-    } catch (error) {
-        next(error);
-    }
+function validationError(message: string, details?: unknown) {
+    return new AppError({
+        statusCode: 400,
+        code: 'VALIDATION_ERROR',
+        message,
+        publicMessage: 'Validation failed',
+        details,
+    })
 }
 
-export async function getUserLikedPosts(req: Request & { userId: string }, res: Response) {
-    try {
-        const userId = req.userId;
+export async function getFeed(req: Request, res: Response) {
+    const posts = await prisma.post.findMany({
+        orderBy: { createdAt: 'desc' },
+        include: {
+            comments: true,
+            _count: { select: { likedBy: true }, }
+        }
+    })
 
-        const user = await prisma.user.findUnique({
-            where: {
-                id: userId
-            },
-            select: {
-                likedPosts: {
-                    select: { id: true }
+    return res.json({ posts });
+}
+
+export async function getUserLikedPosts(req: Request, res: Response) {
+    const userId = requireUserId(req);
+
+    const user = await prisma.user.findUnique({
+        where: {
+            id: userId
+        },
+        select: {
+            likedPosts: {
+                select: { id: true }
+            }
+        }
+    });
+
+    if (!user) {
+        throw new AppError({
+            statusCode: 404,
+            code: 'USER_NOT_FOUND',
+            message: `User ${userId} not found while fetching liked posts`,
+            publicMessage: 'User not found',
+        })
+    }
+
+    const likedPostIds = user.likedPosts.map(post => post.id);
+
+    return res.json({ likedPosts: likedPostIds });
+}
+
+
+export async function getUsers(req: Request, res: Response) {
+    const users = await prisma.user.findMany({
+        select: userProfileSelect
+    })
+    return res.json({ users });
+}
+
+export async function getUserPosts(req: Request, res: Response) {
+    let userId = req?.params?.userId;
+
+    const validatedParams = userIdParamSchema.safeParse({ userId });
+    if (!validatedParams.success) {
+        throw validationError(validatedParams.error.message, validatedParams.error.issues)
+    }
+    userId = validatedParams.data.userId;
+
+    const posts = await prisma.post.findMany({
+        orderBy: { createdAt: 'desc' },
+        include: {
+            comments: true,
+            _count: { select: { likedBy: true } }
+        },
+        where: {
+            authorId: userId
+        }
+    }
+    )
+    return res.json({ posts });
+}
+
+export async function likePost(req: Request, res: Response) {
+    let postId = req?.params?.postId;
+    const userId = requireUserId(req);
+
+    const validatedParams = postIdParamSchema.safeParse({ postId });
+    if (!validatedParams.success) {
+        throw validationError(validatedParams.error.message, validatedParams.error.issues)
+    }
+    postId = validatedParams.data.postId;
+
+    await prisma.post.update({
+        where: {
+            id: postId
+        },
+        data: {
+            likedBy: {
+                connect: {
+                    id: userId
                 }
             }
-        });
-
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
         }
 
-        const likedPostIds = user.likedPosts.map(post => post.id);
-
-        return res.json({ likedPosts: likedPostIds });
-
-    } catch (error) {
-        console.error("Get Liked Posts Error:", error);
-        return res.status(500).json({ message: "Internal Server Error" });
-    }
+    })
+    return res.status(201).json({ message: "done" })
 }
 
 
-export async function getUsers(req: Request, res: Response, next: NextFunction) {
-    try {
-        let users = await prisma.user.findMany({
-            select: userProfileSelect
-        })
-        res.json({ users });
-    } catch (error) {
-        console.log(error);
+export async function deleteLikePost(req: Request, res: Response) {
+    let postId = req?.params?.postId;
+    const userId = requireUserId(req);
 
-        next(error);
+    const validatedParams = postIdParamSchema.safeParse({ postId });
+    if (!validatedParams.success) {
+        throw validationError(validatedParams.error.message, validatedParams.error.issues)
     }
-}
+    postId = validatedParams.data.postId;
 
-export async function getUserPosts(req: Request, res: Response, next: NextFunction) {
-
-    try {
-        let userId = req?.params?.userId;
-
-        const validatedParams = userIdParamSchema.safeParse({ userId });
-        if (!validatedParams.success) {
-            return res.status(400).json({ message: validatedParams.error.message || 'bad request' });
-        }
-        userId = validatedParams.data.userId;
-
-        let posts = await prisma.post.findMany({
-            orderBy: { createdAt: 'desc' },
-            include: {
-                comments: true,
-                _count: { select: { likedBy: true } }
-            },
-            where: {
-                authorId: userId
-            }
-        }
-        )
-        res.json({ posts });
-    } catch (error) {
-        console.log(error);
-
-        next(error);
-    }
-
-}
-
-export async function likePost(req: Request & { userId: string }, res: Response, next: NextFunction) {
-
-    try {
-        let postId = req?.params?.postId;
-        let userId = req.userId;
-
-        const validatedParams = postIdParamSchema.safeParse({ postId });
-        if (!validatedParams.success) {
-            return res.status(400).json({ message: validatedParams.error.message || 'bad request' });
-        }
-        postId = validatedParams.data.postId;
-
-        let result = await prisma.post.update({
-            where: {
-                id: postId
-            },
-            data: {
-                likedBy: {
-                    connect: {
-                        id: userId
-                    }
+    const result = await prisma.post.update({
+        data: {
+            likedBy: {
+                disconnect: {
+                    id: userId
                 }
             }
-
-        })
-        res.status(201).json({ message: "done" })
-
-    } catch (error) {
-        console.log(error);
-        next(error)
-    }
-}
-
-
-export async function deleteLikePost(req: Request & { userId: string }, res: Response, next: NextFunction) {
-    try {
-        let postId = req?.params?.postId;
-        let userId = req.userId;
-
-        const validatedParams = postIdParamSchema.safeParse({ postId });
-        if (!validatedParams.success) {
-            return res.status(400).json({ message: validatedParams.error.message || 'bad request' });
+        },
+        select: {
+            _count: { select: { likedBy: true } }
+        },
+        where: {
+            id: postId
         }
-        postId = validatedParams.data.postId;
+    })
 
-        let result = await prisma.post.update({
-            data: {
-                likedBy: {
-                    disconnect: {
-                        id: userId
-                    }
-                }
-            },
-            select: {
-                _count: { select: { likedBy: true } }
-            },
-            where: {
-                id: postId
-            }
-        })
-
-        res.status(200).json({ message: "done", count: result._count.likedBy })
-
-    } catch (error) {
-        console.log(error);
-        next(error)
-    }
+    return res.status(200).json({ message: "done", count: result._count.likedBy })
 }
 
 
@@ -175,89 +154,80 @@ export async function deleteLikePost(req: Request & { userId: string }, res: Res
 
 
 
-export async function commentPost(req: Request & { userId: string }, res: Response, next: NextFunction) {
+export async function commentPost(req: Request, res: Response) {
+    let postId = req?.params?.postId;
+    const userId = requireUserId(req);
 
-    try {
-        let postId = req?.params?.postId;
-        let userId = req.userId;
-
-        const validatedParams = postIdParamSchema.safeParse({ postId });
-        if (!validatedParams.success) {
-            return res.status(400).json({ message: validatedParams.error.message || 'bad request' });
-        }
-        postId = validatedParams.data.postId;
-
-        const validatedBody = commentBodySchema.safeParse(req.body);
-        if (!validatedBody.success) {
-            return res.status(400).json({ message: validatedBody.error.message || 'bad request' });
-        }
-        const { content } = validatedBody.data;
-
-        let result = await prisma.comment.create({
-            data: {
-                authorId: userId,
-                content: content,
-                postId: postId,
-            }
-        })
-
-        res.status(201).json({ comment: result })
-
-    } catch (error) {
-        console.log(error);
-        next(error)
+    const validatedParams = postIdParamSchema.safeParse({ postId });
+    if (!validatedParams.success) {
+        throw validationError(validatedParams.error.message, validatedParams.error.issues)
     }
+    postId = validatedParams.data.postId;
 
+    const validatedBody = commentBodySchema.safeParse(req.body);
+    if (!validatedBody.success) {
+        throw validationError(validatedBody.error.message, validatedBody.error.issues)
+    }
+    const { content } = validatedBody.data;
+
+    const result = await prisma.comment.create({
+        data: {
+            authorId: userId,
+            content: content,
+            postId: postId,
+        }
+    })
+
+    return res.status(201).json({ comment: result })
 }
 
-export async function createPost(req: Request & { userId: string, file?: any }, res: Response, next: NextFunction) {
-    try {
-        const userId = req.userId;
-        const image = req.file;
+export async function createPost(req: Request, res: Response) {
+    const userId = requireUserId(req);
+    const image = req.file;
 
-        const validatedBody = createPostBodySchema.safeParse(req.body);
-        if (!validatedBody.success) {
-            return res.status(400).json({ message: validatedBody.error.message || 'bad request' });
-        }
-
-        let { content, movieId, rating } = validatedBody.data;
-
-        if (movieId === 'null' || movieId === '') movieId = null;
-
-
-        const dbRating = (rating && rating !== 'null') ? Number(rating) : null;
-
-        let imageUrl = null;
-
-        if (image) {
-            try {
-                imageUrl = await uploadImage(image.buffer, 'social_posts');
-            } catch (uploadError) {
-                console.error('Cloudinary Error:', uploadError);
-                return res.status(500).json({ message: 'Error uploading image' });
-            }
-        }
-
-        const post = await prisma.post.create({
-            data: {
-                authorId: userId,
-                content: content,
-                image: imageUrl,
-            },
-            include: {
-                author: {
-                    select: userProfileSelect
-                },
-                _count: { select: { likedBy: true, comments: true } }
-            }
-        });
-
-        return res.json({ post });
-
-    } catch (error) {
-        console.log(error);
-        next(error);
+    const validatedBody = createPostBodySchema.safeParse(req.body);
+    if (!validatedBody.success) {
+        throw validationError(validatedBody.error.message, validatedBody.error.issues)
     }
+
+    let { content, movieId, rating } = validatedBody.data;
+
+    if (movieId === 'null' || movieId === '') movieId = null;
+
+
+    const dbRating = (rating && rating !== 'null') ? Number(rating) : null;
+
+    let imageUrl = null;
+
+    if (image) {
+        try {
+            imageUrl = await uploadImage(image.buffer, 'social_posts');
+        } catch (error) {
+            throw new AppError({
+                statusCode: 500,
+                code: 'IMAGE_UPLOAD_FAILED',
+                message: 'Error uploading image',
+                publicMessage: 'Error uploading image',
+                details: error,
+            })
+        }
+    }
+
+    const post = await prisma.post.create({
+        data: {
+            authorId: userId,
+            content: content,
+            image: imageUrl,
+        },
+        include: {
+            author: {
+                select: userProfileSelect
+            },
+            _count: { select: { likedBy: true, comments: true } }
+        }
+    });
+
+    return res.json({ post });
 }
 
 async function uploadImage(image: any, folder: string = ''): Promise<string | null> {
@@ -281,30 +251,31 @@ async function uploadImage(image: any, folder: string = ''): Promise<string | nu
 
 }
 
-export async function updateProfile(req: Request & { userId: string, file?: any }, res: Response) {
+export async function updateProfile(req: Request, res: Response) {
+    const userId = requireUserId(req);
+    const image = req.file;
+
+    const validatedBody = updateProfileBodySchema.safeParse(req.body);
+    if (!validatedBody.success) {
+        throw validationError(validatedBody.error.message, validatedBody.error.issues)
+    }
+
+    const { name, bio } = validatedBody.data;
+
+    const updateData: any = {
+        name: name,
+        bio: bio,
+    };
+
+    if (image) {
+        const imageUrl = await uploadImage(image.buffer);
+
+        updateData.image = imageUrl;
+    }
+
+    let updatedUser;
     try {
-        const userId = req.userId;
-        const image = req.file;
-
-        const validatedBody = updateProfileBodySchema.safeParse(req.body);
-        if (!validatedBody.success) {
-            return res.status(400).json({ message: validatedBody.error.message || 'bad request' });
-        }
-
-        const { name, bio } = validatedBody.data;
-
-        const updateData: any = {
-            name: name,
-            bio: bio,
-        };
-
-        if (image) {
-            let imageUrl = await uploadImage(image.buffer);
-
-            updateData.image = imageUrl;
-        }
-
-        const updatedUser = await prisma.user.update({
+        updatedUser = await prisma.user.update({
             where: { id: userId },
             data: updateData,
             select: {
@@ -319,19 +290,21 @@ export async function updateProfile(req: Request & { userId: string, file?: any 
                 }
             }
         });
-
-        return res.json({
-            user: updatedUser,
-            message: "Profile updated successfully"
-        });
-
-    } catch (error: any) {
-        console.error("Update Profile Error:", error);
-
-        if (error.code === 'P2025') {
-            return res.status(404).json({ message: "User not found" });
+    } catch (error: unknown) {
+        if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'P2025') {
+            throw new AppError({
+                statusCode: 404,
+                code: 'USER_NOT_FOUND',
+                message: `User ${userId} not found while updating profile`,
+                publicMessage: 'User not found',
+            })
         }
 
-        return res.status(500).json({ message: "Internal server error" });
+        throw error
     }
+
+    return res.json({
+        user: updatedUser,
+        message: "Profile updated successfully"
+    });
 }
