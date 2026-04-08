@@ -15,6 +15,17 @@ afterAll(() => {
 })
 
 describe('jwt helper', () => {
+  it('throws when SECRET is missing', async () => {
+    delete process.env.SECRET
+    vi.resetModules()
+    const { sign } = await import('../lib/jwt.ts')
+    const res = { cookie: vi.fn() } as unknown as Response
+
+    await expect(sign({ id: 'user-123' }, res)).rejects.toThrow(
+      'Missing required backend environment variables: SECRET',
+    )
+  })
+
   it('does not require jsonwebtoken to load', async () => {
     vi.doMock('jsonwebtoken', () => {
       throw new Error('jsonwebtoken should not be loaded')

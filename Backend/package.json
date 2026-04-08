@@ -17,7 +17,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "pretypecheck": "prisma generate",
-    "lint": "eslint . --ext .ts"
+    "lint": "eslint . --ext .ts",
+    "pretest": "prisma generate"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.2.0",
