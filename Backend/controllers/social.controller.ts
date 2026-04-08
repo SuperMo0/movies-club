@@ -190,18 +190,16 @@ export async function createPost(req: Request, res: Response) {
         throw validationError(validatedBody.error.message, validatedBody.error.issues)
     }
 
-    let { content, movieId, rating } = validatedBody.data;
+    let { content, movieId, rating: _rating } = validatedBody.data;
 
     if (movieId === 'null' || movieId === '') movieId = null;
 
-
-    const dbRating = (rating && rating !== 'null') ? Number(rating) : null;
 
     let imageUrl = null;
 
     if (image) {
         try {
-            imageUrl = await uploadImage(image.buffer, 'social_posts');
+            imageUrl = await uploadImage(image.buffer);
         } catch (error) {
             throw new AppError({
                 statusCode: 500,
@@ -230,7 +228,7 @@ export async function createPost(req: Request, res: Response) {
     return res.json({ post });
 }
 
-async function uploadImage(image: any, folder: string = ''): Promise<string | null> {
+async function uploadImage(image: any): Promise<string | null> {
     if (!image) return null;
 
     const imageUrl = await new Promise<string>((resolve, reject) => {
