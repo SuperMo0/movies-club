@@ -1,29 +1,26 @@
-import jwt, { type JwtPayload, type Secret, type SignCallback, type VerifyErrors } from 'jsonwebtoken'
+import { SignJWT, jwtVerify, type JWTPayload } from 'jose'
 import type { Response } from 'express'
 
-export type AuthJwtPayload = JwtPayload & { id: string }
+export type AuthJwtPayload = JWTPayload & { id: string }
 
-const SECRET: Secret = process.env.SECRET ?? ''
+const SECRET = process.env.SECRET ?? ''
+const secretKey = new TextEncoder().encode(SECRET)
 
 export async function sign(user: { id: string }, res: Response): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const callback: SignCallback = (error, token) => {
-      if (error || !token) {
-        reject(error ?? new Error('Token creation failed'))
-        return
-      }
+  const token = await new SignJWT({ id: user.id })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('30d')
+    .sign(secretKey)
 
-      res.cookie('jwt', token, {
-        maxAge: 30 * 24 * 60 * 60 * 1000,
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production',
-      })
-      resolve(token)
-    }
-
-    jwt.sign({ id: user.id }, SECRET, { expiresIn: '30 days' }, callback)
+  res.cookie('jwt', token, {
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
   })
+
+  return token
 }
 
 export async function verify(token: string | undefined): Promise<string> {
@@ -31,19 +28,11 @@ export async function verify(token: string | undefined): Promise<string> {
     throw new Error('No token provided')
   }
 
-  return new Promise((resolve, reject) => {
-    jwt.verify(token, SECRET, (error: VerifyErrors | null, decodedToken?: string | JwtPayload) => {
-      if (error) {
-        reject(error)
-        return
-      }
+  const { payload } = await jwtVerify(token, secretKey)
 
-      if (!decodedToken || typeof decodedToken === 'string' || typeof (decodedToken as AuthJwtPayload).id !== 'string') {
-        reject(new Error('Invalid token payload'))
-        return
-      }
+  if (typeof (payload as AuthJwtPayload).id !== 'string') {
+    throw new Error('Invalid token payload')
+  }
 
-      resolve((decodedToken as AuthJwtPayload).id)
-    })
-  })
+  return (payload as AuthJwtPayload).id
 }
