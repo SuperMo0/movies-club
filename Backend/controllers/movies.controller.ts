@@ -13,27 +13,23 @@ async function getFallbackMovies() {
 }
 
 export async function getTodayMovies(req: Request, res: Response) {
-  const today = new Date().toLocaleDateString('en-CA')
+  const today = new Date().toLocaleDateString('en-CA');
   if (cachedMovies && lastUpdate === today) {
-    return res.json({ movies: cachedMovies })
+    return res.json({ movies: cachedMovies });
   }
 
-  const record = await prisma.app_state.findUnique({ where: { key: 'moviesData' } })
+  const record = await prisma.app_state.findUnique({ where: { key: 'moviesData' } });
 
   if (!record) {
-    cachedMovies = await getFallbackMovies()
-    lastUpdate = today
-    return res.json({ movies: cachedMovies })
+    return res.status(503).json({ message: "Movies are being fetched, please try again later." });
   }
 
-  try {
-    cachedMovies = JSON.parse(record.value)
-  } catch {
-    cachedMovies = await getFallbackMovies()
-  }
+  let parsedData = JSON.parse(record.value);
 
-  lastUpdate = today
-  return res.json({ movies: cachedMovies })
+  cachedMovies = parsedData;
+  lastUpdate = today;
+
+  res.json({ movies: cachedMovies });
 }
 
 export async function getAllMovies(req: Request, res: Response) {
