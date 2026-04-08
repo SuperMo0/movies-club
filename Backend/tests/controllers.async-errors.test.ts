@@ -1,5 +1,5 @@
 import request from 'supertest'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createApp } from '../app.ts'
 import { getUserPosts } from '../controllers/social.controller.ts'
 
@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
   getUserByUsername: vi.fn(),
   insertUser: vi.fn(),
   appStateFindUnique: vi.fn(),
+  movieFindMany: vi.fn(),
 }))
 
 vi.mock('../lib/bcrypt.ts', () => ({
@@ -34,17 +35,24 @@ vi.mock('../lib/prisma.ts', () => ({
       findUnique: mocks.appStateFindUnique,
     },
     movie: {
-      findMany: vi.fn(),
+      findMany: mocks.movieFindMany,
     },
   },
 }))
 
 describe('controllers async error flow', () => {
   beforeEach(() => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-01-01T00:00:00.000Z'))
     vi.clearAllMocks()
     mocks.getUserByUsername.mockResolvedValue(null)
     mocks.insertUser.mockResolvedValue({ id: 'user-1', username: 'alice' })
     mocks.appStateFindUnique.mockResolvedValue({ key: 'moviesData', value: '[]' })
+    mocks.movieFindMany.mockResolvedValue([])
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
   })
 
   it('routes auth login validation failures through error middleware', async () => {
@@ -94,19 +102,32 @@ describe('controllers async error flow', () => {
     })
   })
 
-  it('routes missing today movies data through error middleware', async () => {
+  it('falls back to persisted movies when today cache is missing', async () => {
     const app = createApp({ enableNonDevelopmentMiddleware: false })
     mocks.appStateFindUnique.mockResolvedValueOnce(null)
+    mocks.movieFindMany.mockResolvedValueOnce([{ id: 'movie-1', title: 'Fallback Movie' }])
 
     const response = await request(app).get('/api/movies/today')
 
-    expect(response.status).toBe(503)
+    expect(response.status).toBe(200)
     expect(response.body).toEqual({
-      message: 'Movies are being fetched, please try again later.',
-      error: {
-        code: 'MOVIES_DATA_NOT_FOUND',
-        message: 'Movies are being fetched, please try again later.',
-      },
+      movies: [{ id: 'movie-1', title: 'Fallback Movie' }],
     })
+    expect(mocks.movieFindMany).toHaveBeenCalledTimes(1)
+  })
+
+  it('falls back to persisted movies when today cache payload is malformed', async () => {
+    const app = createApp({ enableNonDevelopmentMiddleware: false })
+    vi.setSystemTime(new Date('2026-01-02T00:00:00.000Z'))
+    mocks.appStateFindUnique.mockResolvedValueOnce({ key: 'moviesData', value: '{not-json' })
+    mocks.movieFindMany.mockResolvedValueOnce([{ id: 'movie-2', title: 'Recovered Movie' }])
+
+    const response = await request(app).get('/api/movies/today')
+
+    expect(response.status).toBe(200)
+    expect(response.body).toEqual({
+      movies: [{ id: 'movie-2', title: 'Recovered Movie' }],
+    })
+    expect(mocks.movieFindMany).toHaveBeenCalledTimes(1)
   })
 })

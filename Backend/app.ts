@@ -48,7 +48,6 @@ export function createApp(options: CreateAppOptions = {}) {
   )
   app.use(express.json())
   app.use(limiter)
-
   app.use('/api/social', socialRouter)
   app.use('/api/auth', authRouter)
   app.use('/api/movies', moviesRouter)
