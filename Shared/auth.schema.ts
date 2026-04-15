@@ -11,14 +11,19 @@ export const LoginSchema = z.object({
     password: z.string().min(1, "Password is required"),
 });
 
-export type ResponseSafeUser = {
-    id: string;
-    name: string;
-    username: string;
-    image: string | null;
-    bio: string | null;
-    joinedAt: Date | string;
-};
+export const ResponseSafeUserSchema = z.object({
+    id: z.string(),
+    name: z.string(),
+    username: z.string(),
+    image: z.url(),
+    bio: z.string(),
+    joinedAt: z.date(),
+    _count: z.object({
+        followedBy: z.number(),
+        following: z.number(),
+    })
+})
+
 
 export type AuthUserResponse = {
     user: ResponseSafeUser;
@@ -28,6 +33,6 @@ export type AuthSessionResponse = {
     user: ResponseSafeUser | null;
 };
 
-
+export type ResponseSafeUser = z.infer<typeof ResponseSafeUserSchema>
 export type SignupType = z.infer<typeof SignupSchema>;
 export type LoginType = z.infer<typeof LoginSchema>;
