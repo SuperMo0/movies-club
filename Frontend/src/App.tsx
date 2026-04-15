@@ -1,4 +1,4 @@
-import { createContext, use, useMemo, useEffect, useState, useCallback } from 'react'
+import { createContext, use, useContext, useEffect, useState } from 'react'
 import { Routes, Route, Outlet } from 'react-router'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -14,8 +14,10 @@ import SocialLayout from './components/social-components/social-layout'
 
 import LoadingScreen from './components/ui/LoadingScreen'
 
+import { useQuery } from "@tanstack/react-query"
+
 // Stores
-import { useAuthStore } from './stores/auth.store'
+import { checkSession } from './api/auth'
 
 
 type LoginContextType = {
@@ -30,33 +32,23 @@ function App() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
 
-  const check = useAuthStore(s => s.check);
-  const isChecking = useAuthStore(s => s.isChecking);
-  const authUser = useAuthStore(s => s.authUser);
+  const { data, isLoading } = useQuery({ queryKey: ["checkSession"], queryFn: checkSession })
 
-  useEffect(() => {
-    check();
-  }, []);
-
-
-  const openLogin = useCallback(() => {
-    setIsSignupModalOpen(false);
-    setIsLoginModalOpen(true);
-  }, []);
-
-  const openSignup = useCallback(() => {
-    setIsLoginModalOpen(false);
-    setIsSignupModalOpen(true);
-  }, []);
-
-  const loginContextValue = useMemo(() => ({ openLogin, openSignup }), [openLogin, openSignup]);
-
-  const isDataNotReady = isChecking;
-
-  if (isDataNotReady) {
+  if (isLoading) {
     return <LoadingScreen message="Loading MovieClub..." />;
   }
 
+  const authUser = data?.user
+
+  const openLogin = () => {
+    setIsSignupModalOpen(false);
+    setIsLoginModalOpen(true);
+  }
+
+  const openSignup = () => {
+    setIsLoginModalOpen(false);
+    setIsSignupModalOpen(true);
+  }
 
   const shouldOpenLogin = isLoginModalOpen && !authUser;
   const shouldOpenSignup = isSignupModalOpen && !authUser;
@@ -64,7 +56,10 @@ function App() {
   return (
     <div className='max-w-5xl mx-auto min-h-screen relative'>
       <ToastContainer theme="dark" position="bottom-right" />
-      <LoginContext.Provider value={loginContextValue}>
+      <LoginContext.Provider value={{
+        openLogin,
+        openSignup
+      }}>
         <Login
           open={shouldOpenLogin}
           onOpenChange={() => setIsLoginModalOpen(false)}
