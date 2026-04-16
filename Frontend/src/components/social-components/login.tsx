@@ -22,7 +22,7 @@ export default function Login({ open, onOpenChange }: LoginProps) {
     const queryClient = useQueryClient();
     const { mutate, isPending } = useMutation({
         mutationFn: login,
-        onSuccess: (data, vars) => { onOpenChange(false); queryClient.setQueryData(['session'], data.user) },
+        onSuccess: (data) => { onOpenChange(false); queryClient.setQueryData(['session'], data) },
         onError: (error) => {
             if (error instanceof AxiosError)
                 setMessage(error.response!.data.message);

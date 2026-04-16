@@ -2,22 +2,30 @@ import React, { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { NavLink } from 'react-router';
-import { useAuthStore } from '@/stores/auth.store';
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { logout } from '@/api/auth';
+
+const navLinks = [
+    { name: "Movies", href: "/" },
+    { name: "Community", href: "/social" },
+];
 
 const Header = ({ onLoginClick, onSignupClick }) => {
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const authUser = useAuthStore(s => s.authUser);
-    const logout = useAuthStore(s => s.logout);
 
-    const navLinks = [
-        { name: "Movies", href: "/" },
-        { name: "Community", href: "/social" },
-    ];
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    const queryClient = useQueryClient();
+
+    const logoutMutate = useMutation({
+        mutationFn: logout,
+        onSuccess: (data) => { queryClient.setQueryData([session], data) }
+    })
 
     const handleLogout = async () => {
-        await logout();
-        setIsMobileMenuOpen(false);
+        logoutMutate.mutate();
     };
+
+    const authUser = queryClient.getQueryData(["session"])?.user;
 
     return (
         <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
