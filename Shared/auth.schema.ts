@@ -15,8 +15,8 @@ export const ResponseSafeUserSchema = z.object({
     id: z.string(),
     name: z.string(),
     username: z.string(),
-    image: z.url(),
-    bio: z.string(),
+    image: z.nullish(z.url()),
+    bio: z.nullish(z.string()),
     joinedAt: z.date(),
     _count: z.object({
         followedBy: z.number(),

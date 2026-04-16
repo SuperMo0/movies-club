@@ -6,8 +6,7 @@ import type { AuthSessionResponse, AuthUserResponse, ResponseSafeUser } from "..
 import { LoginSchema, SignupSchema } from "../../Shared/auth.schema.ts";
 import { AppError } from '../errors/appError.ts'
 
-function sanitizeUser(user: any): ResponseSafeUser | null {
-    if (!user) return null;
+function sanitizeUser(user: any) {
     const { password: _password, ...userWithoutPassword } = user;
     return userWithoutPassword as ResponseSafeUser;
 }
@@ -22,7 +21,7 @@ function validationError(message: string, details?: unknown) {
     })
 }
 
-function unauthenticatedSession(): AuthSessionResponse {
+function unauthenticatedSession() {
     return { user: null };
 }
 
@@ -38,29 +37,19 @@ export async function login(req: Request, res: Response) {
     const user = await model.getUserByUsername(username);
 
     if (!user) {
-        throw new AppError({
-            statusCode: 401,
-            code: 'AUTH_INVALID_CREDENTIALS',
-            message: 'Login attempted with unknown username',
-            publicMessage: 'Wrong credentials',
-        })
+        return res.status(401).json({ message: "Wrong credentials" })
     }
 
     const isPasswordValid = await compare(password, user.password);
 
     if (!isPasswordValid) {
-        throw new AppError({
-            statusCode: 401,
-            code: 'AUTH_INVALID_CREDENTIALS',
-            message: 'Login attempted with invalid password',
-            publicMessage: 'Wrong credentials',
-        })
+        return res.status(401).json({ message: "Wrong credentials" })
     }
 
     await sign(user, res);
 
     const payload: AuthUserResponse = { user: sanitizeUser(user)! };
-    return res.status(200).json(payload);
+    return res.json(payload);
 }
 
 export async function signup(req: Request, res: Response) {
@@ -77,16 +66,10 @@ export async function signup(req: Request, res: Response) {
     let user;
     try {
         user = await model.insertUser(name, username, hashedPassword);
-    } catch (error: unknown) {
+    } catch (error) {
         if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'P2002') {
-            throw new AppError({
-                statusCode: 409,
-                code: 'USERNAME_CONFLICT',
-                message: 'Username already exists',
-                publicMessage: 'Username already exists',
-            })
+            return res.status(409).json({ message: "Username already exists" });
         }
-
         throw error
     }
 
@@ -95,6 +78,21 @@ export async function signup(req: Request, res: Response) {
     const payload: AuthUserResponse = { user: sanitizeUser(user)! };
     return res.status(201).json(payload);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 export async function check(req: Request, res: Response) {
     const { jwt } = req.cookies;
@@ -116,8 +114,7 @@ export async function check(req: Request, res: Response) {
         return res.status(200).json(unauthenticatedSession());
     }
 
-    const payload: AuthSessionResponse = { user: sanitizeUser(user) };
-    return res.status(200).json(payload);
+    return res.status(200).json({ user });
 }
 
 export async function logout(req: Request, res: Response) {

@@ -10,7 +10,7 @@ model user {
   id         String    @id @default(uuid())
   username   String    @unique
   password   String
-  name       String?
+  name       String
   image      String?
   bio        String?
   posts      post[]
