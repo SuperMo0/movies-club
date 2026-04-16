@@ -8,9 +8,8 @@ import { Button } from '@/components/ui/button'
 import { Clapperboard } from 'lucide-react'
 import { useLoginModal } from '@/App'
 import { LoginSchema, type LoginType } from 'moviesclub-shared/auth'
-import { login } from '@/api/auth'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { AxiosError } from 'axios'
+import { useLoginMutation } from '@/hooks/use-auth-mutations.ts'
 
 type LoginProps = {
     open: boolean
@@ -19,16 +18,7 @@ type LoginProps = {
 
 export default function Login({ open, onOpenChange }: LoginProps) {
     const [message, setMessage] = useState<string | null>(null)
-    const queryClient = useQueryClient();
-    const { mutate, isPending } = useMutation({
-        mutationFn: login,
-        onSuccess: (data) => { onOpenChange(false); queryClient.setQueryData(['session'], data) },
-        onError: (error) => {
-            if (error instanceof AxiosError)
-                setMessage(error.response!.data.message);
-            else setMessage("An unexpected error occurred");
-        }
-    });
+    const { mutate, isPending } = useLoginMutation();
     const {
         register,
         handleSubmit,
@@ -39,15 +29,24 @@ export default function Login({ open, onOpenChange }: LoginProps) {
 
     const { openSignup } = useLoginModal();
 
+    function onMutationError(error: Error) {
+        if (error instanceof AxiosError)
+            setMessage(error.response!.data.message);
+        else setMessage("An unexpected error occurred");
+    }
+
     async function handleLoginButtonClick(formData: LoginType) {
-        mutate(formData);
+        mutate(formData, {
+            onSuccess: () => { onOpenChange(false) },
+            onError: onMutationError
+        });
     }
 
     async function handleGuestLogin() {
         mutate({
             username: 'guest11',
             password: '123'
-        })
+        }, { onError: onMutationError })
     }
 
     return (
