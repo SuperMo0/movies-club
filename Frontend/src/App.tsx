@@ -32,7 +32,7 @@ function App() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
 
-  const { data, isLoading } = useQuery({ queryKey: ["checkSession"], queryFn: checkSession })
+  const { data, isLoading } = useQuery({ queryKey: ["session"], queryFn: checkSession })
 
   if (isLoading) {
     return <LoadingScreen message="Loading MovieClub..." />;
