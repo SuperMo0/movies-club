@@ -119,5 +119,5 @@ export async function check(req: Request, res: Response) {
 
 export async function logout(req: Request, res: Response) {
     res.clearCookie("jwt");
-    return res.status(200).json({ message: 'Logged out successfully' });
+    return res.json({ user: null });
 }
