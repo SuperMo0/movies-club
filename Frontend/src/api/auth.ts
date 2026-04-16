@@ -1,4 +1,3 @@
-import { AxiosError, type AxiosResponse } from 'axios';
 import client from '../lib/axios.js';
 import type { ResponseSafeUser, LoginType, SignupType } from 'moviesclub-shared/auth';
 import { catchAsync } from '@/utils/catch-async.js';
@@ -6,8 +5,6 @@ import { catchAsync } from '@/utils/catch-async.js';
 type SessionResponse = {
     user: null | ResponseSafeUser
 }
-
-
 
 export const checkSession = async () => {
     const [error, data] = await catchAsync(client.get<SessionResponse>('/auth/check'));
