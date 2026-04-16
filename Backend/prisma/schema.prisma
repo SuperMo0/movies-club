@@ -23,20 +23,21 @@ model user {
 }
 
 model post {
-  id        String    @id @default(uuid())
-  content   String?
-  image     String?
-  author    user      @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  authorId  String
-  likedBy   user[]    @relation("user_like_post")
-  comments  comment[]
-  createdAt DateTime  @default(now())
-  movie     movie?    @relation(fields: [movieId], references: [id])
-  movieId   String?
-  rating    Int?
+  id         String    @id @default(uuid())
+  content    String?
+  image      String?
+  author     user      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId   String
+  likedBy    user[]    @relation("user_like_post")
+  comments   comment[]
+  createdAt  DateTime  @default(now())
+  // movie     movie?    @relation(fields: [movieId], references: [id])
+  // movieId   String?
+  rating     Int?
+  // @@index([movieId, createdAt])
+  movieTitle String? // temporary, because the database free plan can't handle 30 new movie every day.
 
   @@index([authorId, createdAt])
-  @@index([movieId, createdAt])
 }
 
 model movie {
@@ -47,7 +48,7 @@ model movie {
   image       String
   genres      genre[] @relation("movie_genre")
   watchListBy user[]  @relation("user_watch_list")
-  posts       post[]
+  // posts       post[]
 }
 
 model comment {
