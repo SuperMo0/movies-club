@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { NavLink } from 'react-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { logout } from '@/api/auth';
+import { useLogoutMutation } from '@/hooks/use-auth-mutations.ts';
 
 const navLinks = [
     { name: "Movies", href: "/" },
@@ -16,10 +17,7 @@ const Header = ({ onLoginClick, onSignupClick }) => {
 
     const queryClient = useQueryClient();
 
-    const logoutMutate = useMutation({
-        mutationFn: logout,
-        onSuccess: (data) => { queryClient.setQueryData([session], data) }
-    })
+    const logoutMutate = useLogoutMutation();
 
     const handleLogout = async () => {
         logoutMutate.mutate();
