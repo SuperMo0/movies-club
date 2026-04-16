@@ -7,6 +7,7 @@
   "exports": {
     "./api": "./api.schema.ts",
     "./auth": "./auth.schema.ts",
-    "./social": "./social.schema.ts"
+    "./social": "./social.schema.ts",
+    "./movies": "./movies.schema.ts"
   }
 }
