@@ -4,9 +4,6 @@ import React from 'react'
 
 export default function MovieHeroCard({ movie, handleMovieClick, imdbData = null }) {
 
-
-    {/* if (!movie.genre) console.log(movie);*/ }
-
     return (
         <div className="relative w-full overflow-hidden flex flex-col bg-background">
 

@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button'
 export default function MovieCard({ movie, imdbData = null }) {
     const imdbRating = typeof imdbData?.rating === 'number' ? imdbData.rating.toFixed(1) : '--'
 
-
     return (
         <div className="group relative w-full h-full rounded-xl overflow-hidden bg-card border border-white/5 transition-all duration-500 hover:scale-105 hover:shadow-neon-red hover:z-10 cursor-pointer">
 
@@ -21,7 +20,7 @@ export default function MovieCard({ movie, imdbData = null }) {
             <div className="absolute inset-0 bg-linear-to-t from-background via-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
 
 
-                <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                <div className="transform translate-y-4 hover:translate-y-0 transition-transform duration-300">
 
 
                     <h3 className="text-lg font-bold text-foreground leading-tight mb-1 drop-shadow-md">
@@ -37,7 +36,6 @@ export default function MovieCard({ movie, imdbData = null }) {
                             <a
                                 href={imdbData.imdbUrl}
                                 target="_blank"
-                                rel="noreferrer"
                                 onClick={(event) => event.stopPropagation()}
                                 className="inline-flex items-center rounded-sm bg-yellow-400 px-1.5 py-0.5 text-[10px] font-black tracking-tight text-black hover:bg-yellow-300"
                                 title="Open on IMDb"

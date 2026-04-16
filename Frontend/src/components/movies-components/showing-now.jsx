@@ -1,41 +1,14 @@
-import { useMemo, useState } from 'react'
 import MovieCard from './movie-card.jsx'
 import { Flame } from 'lucide-react'
-import { useMoviesStore } from '@/stores/movies.store';
-import { getCachedImdbTitle, getImdbCacheKey, searchImdbTitle } from '@/lib/imdb';
+import { useTodayMovies } from '@/hooks/use-movies-query.js';
 
 export default function ShowingNow({ handleMovieClick }) {
 
 
-    const todayMovies = useMoviesStore(s => s.todayMovies);
-    const [imdbByTitle, setImdbByTitle] = useState({});
-
-    const movies = useMemo(() => [...todayMovies.values()], [todayMovies]);
-
-    async function ensureImdb(movie) {
-        const key = getImdbCacheKey(movie?.title);
-        if (!key) return null;
-
-        if (imdbByTitle[key]) return imdbByTitle[key];
-
-        const cached = getCachedImdbTitle(movie.title);
-        if (cached) {
-            setImdbByTitle((prev) => ({ ...prev, [key]: cached }));
-            return cached;
-        }
-
-        const result = await searchImdbTitle(movie.title);
-        setImdbByTitle((prev) => ({ ...prev, [key]: result }));
-        return result;
-    }
-
-    function handleCardHover(movie) {
-        ensureImdb(movie);
-    }
+    const { data: todayMovies } = useTodayMovies();
 
     async function handleCardClick(movie) {
-        const imdb = await ensureImdb(movie);
-        handleMovieClick(movie, imdb);
+        handleMovieClick(movie);
     }
 
 
@@ -52,13 +25,10 @@ export default function ShowingNow({ handleMovieClick }) {
             </div>
 
             <div className="group/grid grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
-
-                {movies.map((movie, index) => (
+                {todayMovies.map((movie, index) => (
                     <div key={index} className="transition-opacity duration-300 group-hover/grid:hover:opacity-100 group-hover/grid:opacity-50"
-                        onMouseEnter={() => { handleCardHover(movie) }}
-                        onFocus={() => { handleCardHover(movie) }}
                         onClick={() => { handleCardClick(movie) }}>
-                        <MovieCard movie={movie} imdbData={imdbByTitle[getImdbCacheKey(movie.title)] || null} />
+                        <MovieCard movie={movie} />
                     </div>
                 ))}
 

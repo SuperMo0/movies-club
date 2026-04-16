@@ -8,31 +8,19 @@ import {
 } from "@/components/ui/carousel"
 import MovieHeroCard from './movie-hero-card'
 import Autoplay from "embla-carousel-autoplay"
-import { useMoviesStore } from '@/stores/movies.store';
-import { getImdbCacheKey, searchImdbTitle } from '@/lib/imdb';
+import { useTodayMovies } from '@/hooks/use-movies-query';
 
 export default function Hero({ handleMovieClick }) {
     const [api, setApi] = useState();
-    const [featuredImdb, setFeaturedImdb] = useState({});
 
-    const todayMovies = useMoviesStore(s => s.todayMovies);
+    const { data: todayMovies } = useTodayMovies();
 
     function handleInteraction() {
         if (!api) return;
-        console.log(api.plugins().autoplay.stop());
-
+        api.plugins().autoplay.stop();
     }
-    const featuredMovies = [...todayMovies.values()].slice(0, 3);
 
-    useEffect(() => {
-        featuredMovies.forEach(async (movie) => {
-            const key = getImdbCacheKey(movie?.title);
-            if (!key) return;
-
-            const result = await searchImdbTitle(movie.title);
-            setFeaturedImdb((prev) => ({ ...prev, [key]: result }));
-        });
-    }, [todayMovies]);
+    const featuredMovies = todayMovies.slice(0, 3);
 
     return (
         <div>
@@ -49,7 +37,6 @@ export default function Hero({ handleMovieClick }) {
                             <MovieHeroCard
                                 handleMovieClick={handleMovieClick}
                                 movie={movie}
-                                imdbData={featuredImdb[getImdbCacheKey(movie?.title)] || null}
                             />
                         </CarouselItem>
                     ))}
