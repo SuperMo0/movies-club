@@ -5,13 +5,19 @@ import { NavLink } from 'react-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { logout } from '@/api/auth';
 import { useLogoutMutation } from '@/hooks/use-auth-mutations.ts';
+import type { AuthSessionResponse } from 'moviesclub-shared/auth';
 
 const navLinks = [
     { name: "Movies", href: "/" },
     { name: "Community", href: "/social" },
 ];
 
-const Header = ({ onLoginClick, onSignupClick }) => {
+type HeaderProps = {
+    onLoginClick: () => void,
+    onSignupClick: () => void
+}
+
+const Header = ({ onLoginClick, onSignupClick }: HeaderProps) => {
 
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -23,7 +29,7 @@ const Header = ({ onLoginClick, onSignupClick }) => {
         logoutMutate.mutate();
     };
 
-    const authUser = queryClient.getQueryData(["session"])?.user;
+    const authUser = queryClient.getQueryData<AuthSessionResponse>(["session"])?.user;
 
     return (
         <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
