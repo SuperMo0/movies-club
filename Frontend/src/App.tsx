@@ -11,12 +11,9 @@ import Login from './components/social-components/login'
 import Signup from './components/social-components/signup'
 import Header from './components/movies-components/header'
 import SocialLayout from './components/social-components/social-layout'
-
 import LoadingScreen from './components/ui/LoadingScreen'
 
 import { useQuery } from "@tanstack/react-query"
-
-// Stores
 import { checkSession } from './api/auth'
 
 
