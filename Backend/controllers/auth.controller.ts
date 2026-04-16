@@ -2,23 +2,12 @@ import type { Request, Response } from "express";
 import { sign, verify } from "../lib/jwt.ts";
 import * as model from "../Models/auth.model.ts"
 import { compare, hash } from "../lib/bcrypt.ts";
-import type { AuthSessionResponse, AuthUserResponse, ResponseSafeUser } from "../../Shared/auth.schema.ts";
+import type { AuthUserResponse, ResponseSafeUser } from "../../Shared/auth.schema.ts";
 import { LoginSchema, SignupSchema } from "../../Shared/auth.schema.ts";
-import { AppError } from '../errors/appError.ts'
 
 function sanitizeUser(user: any) {
     const { password: _password, ...userWithoutPassword } = user;
     return userWithoutPassword as ResponseSafeUser;
-}
-
-function validationError(message: string, details?: unknown) {
-    return new AppError({
-        statusCode: 400,
-        code: 'VALIDATION_ERROR',
-        message,
-        publicMessage: 'Validation failed',
-        details,
-    })
 }
 
 function unauthenticatedSession() {
@@ -29,7 +18,7 @@ export async function login(req: Request, res: Response) {
     const parseResult = LoginSchema.safeParse(req.body);
 
     if (!parseResult.success) {
-        throw validationError(parseResult.error.message, parseResult.error.issues)
+        return res.status(401).json({ message: "Invalid input" });
     }
 
     const { username, password } = parseResult.data;
@@ -56,7 +45,7 @@ export async function signup(req: Request, res: Response) {
     const parseResult = SignupSchema.safeParse(req.body);
 
     if (!parseResult.success) {
-        throw validationError(parseResult.error.message, parseResult.error.issues)
+        return res.status(401).json({ message: "Invalid input" });
     }
 
     const { name, username, password } = parseResult.data;
@@ -79,21 +68,6 @@ export async function signup(req: Request, res: Response) {
     return res.status(201).json(payload);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 export async function check(req: Request, res: Response) {
     const { jwt } = req.cookies;
 
@@ -101,13 +75,13 @@ export async function check(req: Request, res: Response) {
         return res.status(200).json(unauthenticatedSession());
     }
 
-    const userId = await verify(jwt).catch(() => null);
+    const payload = await verify(jwt);
 
-    if (!userId) {
+    if (!payload.userId) {
         return res.status(200).json(unauthenticatedSession());
     }
 
-    const user = await model.getUserById(userId);
+    const user = await model.getUserById(payload.userId);
 
     if (!user) {
         res.clearCookie("jwt");

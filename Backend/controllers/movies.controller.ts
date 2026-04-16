@@ -1,16 +1,10 @@
 import type { Request, Response } from 'express'
 import { prisma } from './../lib/prisma.ts'
+import { getSecondsUntil3AM } from '../utils/cache.ts';
 
 let cachedMovies: any = null
 let lastUpdate: string | null = null
 
-async function getFallbackMovies() {
-  return prisma.movie.findMany({
-    include: {
-      genres: true,
-    },
-  })
-}
 
 export async function getTodayMovies(req: Request, res: Response) {
   const today = new Date().toLocaleDateString('en-CA');
@@ -29,14 +23,6 @@ export async function getTodayMovies(req: Request, res: Response) {
   cachedMovies = parsedData;
   lastUpdate = today;
 
+  res.set('Cache-Control', `public, max-age=${Math.min(getSecondsUntil3AM(), 60 * 60)}`);
   res.json({ movies: cachedMovies });
-}
-
-export async function getAllMovies(req: Request, res: Response) {
-  const movies = await prisma.movie.findMany({
-    include: {
-      genres: true,
-    },
-  })
-  return res.json({ movies })
 }
