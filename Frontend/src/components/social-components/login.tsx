@@ -9,7 +9,7 @@ import { Clapperboard } from 'lucide-react'
 import { useLoginModal } from '@/App'
 import { LoginSchema, type LoginType } from 'moviesclub-shared/auth'
 import { AxiosError } from 'axios'
-import { useLoginMutation } from '@/hooks/use-auth-mutations.ts'
+import { onMutationError, useLoginMutation } from '@/hooks/use-auth-mutations.ts'
 
 type LoginProps = {
     open: boolean
@@ -29,16 +29,10 @@ export default function Login({ open, onOpenChange }: LoginProps) {
 
     const { openSignup } = useLoginModal();
 
-    function onMutationError(error: Error) {
-        if (error instanceof AxiosError)
-            setMessage(error.response!.data.message);
-        else setMessage("An unexpected error occurred");
-    }
-
     async function handleLoginButtonClick(formData: LoginType) {
         mutate(formData, {
             onSuccess: () => { onOpenChange(false) },
-            onError: onMutationError
+            onError: (error) => { onMutationError(error, setMessage) }
         });
     }
 
@@ -46,7 +40,9 @@ export default function Login({ open, onOpenChange }: LoginProps) {
         mutate({
             username: 'guest11',
             password: '123'
-        }, { onError: onMutationError })
+        }, {
+            onError: (error) => { onMutationError(error, setMessage) }
+        })
     }
 
     return (

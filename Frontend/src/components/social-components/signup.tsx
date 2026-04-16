@@ -1,63 +1,46 @@
-import {
-    Field,
-    FieldError,
-    FieldGroup,
-    FieldLabel,
-    FieldSet,
-} from "@/components/ui/field"
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogTitle,
-} from '@/components/ui/dialog'
-
+import { Field, FieldError, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field"
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 import { Input } from "@/components/ui/input"
 import { Button } from '@/components/ui/button'
 import { User } from 'lucide-react'
-import { useAuthStore } from '@/stores/auth.store'
 import { useLoginModal } from '@/App'
 import { zodResolver } from '@hookform/resolvers/zod'
 
 import { SignupSchema } from 'moviesclub-shared/auth'
 import type { SignupType } from 'moviesclub-shared/auth'
 import { useForm } from 'react-hook-form'
+import { useState } from "react"
+import { onMutationError, useLoginMutation, useSignupMutation } from "@/hooks/use-auth-mutations.ts"
+
 
 type SignupProps = { open: boolean, onOpenChange: (x: boolean) => void }
 
 export default function Signup({ open, onOpenChange }: SignupProps) {
-    const signup = useAuthStore(s => s.signup);
-    const isSigningUp = useAuthStore(s => s.isSigningUp);
-    const guestLogin = useAuthStore(s => s.guestLogin);
-    const isLogginIn = useAuthStore(s => s.isLogginIn);
+
+    const [message, setMessage] = useState<string | null>(null)
 
     const { openLogin } = useLoginModal();
 
-    const form = useForm<SignupType>(
-        {
-            resolver: zodResolver(SignupSchema),
-            defaultValues: {
-                name: "",
-                password: "",
-                username: "",
-            }
-        }
+    const { mutate: mutateSignup, isPending: isPendingSignup } = useSignupMutation()
+    const { mutate: mutateLogin, isPending: isPendingLogin } = useLoginMutation()
+
+
+    const form = useForm<SignupType>({ resolver: zodResolver(SignupSchema) }
     )
 
     async function handleGuestLogin() {
-        let { success, message } = await guestLogin();
-        if (!success) form.setError("root", { message });
-        else onOpenChange(false);
+        mutateLogin({
+            username: 'guest11',
+            password: '123'
+        }, {
+            onError: (error) => { onMutationError(error, setMessage) }
+        })
     }
 
-    async function handleSignupButtonClick(signupData: SignupType) {
-        const { success, message } = await signup(signupData);
-        if (!success) {
-            form.setError("root", { message });
-        } else {
-            onOpenChange(false);
-            form.reset();
-        }
+    async function handleSignupButtonClick(formData: SignupType) {
+        mutateSignup(formData, {
+            onError: (error) => { onMutationError(error, setMessage) }
+        });
     }
 
     return (
@@ -77,6 +60,11 @@ export default function Signup({ open, onOpenChange }: SignupProps) {
                         <DialogDescription className='text-slate-400 text-sm mt-2'>
                             Join the community at <span className='text-red-500 font-semibold'>MovieClub</span>
                         </DialogDescription>
+                        {message && (
+                            <p className='text-slate-400 text-sm mt-2'>
+                                <span className='text-red-500 font-semibold animate-in'>{message}</span>
+                            </p>
+                        )}
 
                         {form.formState.errors.root && (
                             <p className='text-red-500 text-sm mt-3 font-medium bg-red-500/10 py-1 px-3 rounded-md animate-in fade-in slide-in-from-top-1'>
@@ -133,20 +121,20 @@ export default function Signup({ open, onOpenChange }: SignupProps) {
                             <Button
                                 className="w-full h-11"
                                 variant="form"
-                                disabled={isSigningUp}
+                                disabled={isPendingSignup}
                                 type="submit"
                             >
-                                {isSigningUp ? "Creating Account..." : "Sign Up"}
+                                {isPendingSignup ? "Creating Account..." : "Sign Up"}
                             </Button>
 
                             <Button
                                 className="w-full h-11"
                                 variant='form'
                                 onClick={handleGuestLogin}
-                                disabled={isSigningUp}
+                                disabled={isPendingLogin}
                                 type="button"
                             >
-                                {isLogginIn ? "Loggin In..." : "Login as Guest"}
+                                {isPendingLogin ? "Loggin In..." : "Login as Guest"}
                             </Button>
 
                         </FieldSet>
