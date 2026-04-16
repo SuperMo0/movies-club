@@ -33,3 +33,9 @@ export const signup = async (signupFormData: SignupType) => {
     if (error) throw error;
     return data;
 }
+
+export const logout = async () => {
+    const [error, data] = await catchAsync(client.post<SessionResponse>('/auth/logout'));
+    if (error) throw error;
+    return data;
+}
