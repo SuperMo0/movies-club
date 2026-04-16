@@ -15,6 +15,7 @@ import LoadingScreen from './components/ui/LoadingScreen'
 
 import { useQuery } from "@tanstack/react-query"
 import { checkSession } from './api/auth'
+import { useSession } from './hooks/use-auth-queries'
 
 
 type LoginContextType = {
@@ -29,13 +30,13 @@ function App() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
 
-  const { data, isLoading } = useQuery({ queryKey: ["session"], queryFn: checkSession })
+  const { data: sessionData, isLoading } = useSession();
 
   if (isLoading) {
     return <LoadingScreen message="Loading MovieClub..." />;
   }
 
-  const authUser = data?.user
+  const authUser = sessionData?.user
 
   const openLogin = () => {
     setIsSignupModalOpen(false);
