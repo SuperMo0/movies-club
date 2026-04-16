@@ -1,6 +1,7 @@
 import * as cheerio from 'cheerio'
 import axios from 'axios'
 import { prisma } from './../lib/prisma.ts'
+import type { CinemaEntry, DayEntry, Movie } from 'moviesclub-shared/movies'
 
 const HEADERS = {
   Accept: 'application/json, text/javascript, */*; q=0.01',
@@ -12,24 +13,6 @@ const HEADERS = {
 
 const base = 'https://elcinema.com'
 
-type Movie = {
-  id: string
-  image: string
-  title: string
-  description: string
-  genre: string[]
-  schedule?: DayEntry[]
-}
-
-type CinemaEntry = {
-  name: string
-  times: string[]
-}
-
-type DayEntry = {
-  date: string
-  cinemas: CinemaEntry[]
-}
 
 async function shouldFetch(): Promise<boolean> {
   try {
