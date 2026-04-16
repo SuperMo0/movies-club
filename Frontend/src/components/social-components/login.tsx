@@ -1,20 +1,16 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import {
-    Field,
-    FieldError,
-    FieldGroup,
-    FieldLabel,
-    FieldSet,
-} from "@/components/ui/field"
+import { Field, FieldError, FieldGroup, FieldLabel, FieldSet, } from "@/components/ui/field"
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 import { Input } from "@/components/ui/input"
 import { Button } from '@/components/ui/button'
 import { Clapperboard } from 'lucide-react'
-import { useAuthStore } from '@/stores/auth.store'
 import { useLoginModal } from '@/App'
 import { LoginSchema, type LoginType } from 'moviesclub-shared/auth'
+import { login } from '@/api/auth'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { AxiosError } from 'axios'
 
 type LoginProps = {
     open: boolean
@@ -22,40 +18,36 @@ type LoginProps = {
 }
 
 export default function Login({ open, onOpenChange }: LoginProps) {
-    const login = useAuthStore(s => s.login);
-    const isLogginIn = useAuthStore(s => s.isLogginIn);
-    const guestLogin = useAuthStore(s => s.guestLogin);
     const [message, setMessage] = useState<string | null>(null)
-
+    const queryClient = useQueryClient();
+    const { mutate, isPending } = useMutation({
+        mutationFn: login,
+        onSuccess: (data, vars) => { onOpenChange(false); queryClient.setQueryData(['session'], data.user) },
+        onError: (error) => {
+            if (error instanceof AxiosError)
+                setMessage(error.response!.data.message);
+            else setMessage("An unexpected error occurred");
+        }
+    });
     const {
         register,
         handleSubmit,
         formState: { errors }
     } = useForm<LoginType>({
         resolver: zodResolver(LoginSchema),
-        defaultValues: {
-            username: '',
-            password: ''
-        }
     })
 
     const { openSignup } = useLoginModal();
 
-
-    async function handleLoginButtonClick(data: LoginType) {
-        setMessage(null)
-        const { success, message } = await login(data)
-
-        if (!success) setMessage(message)
-        else onOpenChange(false);
+    async function handleLoginButtonClick(formData: LoginType) {
+        mutate(formData);
     }
 
     async function handleGuestLogin() {
-
-        let { success, message } = await guestLogin();
-
-        if (!success) setMessage(message);
-        else onOpenChange(false);
+        mutate({
+            username: 'guest11',
+            password: '123'
+        })
     }
 
     return (
@@ -132,9 +124,9 @@ export default function Login({ open, onOpenChange }: LoginProps) {
                                 variant="form"
                                 className="w-full h-11"
                                 onClick={handleGuestLogin}
-                                disabled={isLogginIn}
+                                disabled={isPending}
                             >
-                                {isLogginIn ? "Loggin In..." : "Login as Guest"}
+                                {isPending ? "Loggin In..." : "Login as Guest"}
                             </Button>
                         </FieldSet>
                     </form>
