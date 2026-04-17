@@ -4,7 +4,7 @@ import type { Movie } from "moviesclub-shared/movies"
 
 type TodayMoviesResponse = {
     movies: Movie[];
-} | null
+}
 
 export async function fetchTodayMovies() {
     let [error, data] = await catchAsync(client.get<TodayMoviesResponse>('/movies/today'));
