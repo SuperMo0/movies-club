@@ -2,8 +2,8 @@ import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 import api from '../lib/axios.js';
 import { toast } from "react-toastify";
-import { useAuthStore } from '@/stores/auth.store.js';
 import { enableMapSet } from 'immer'
+import { useSession } from "@/hooks/use-auth-queries.js";
 
 enableMapSet();
 
@@ -72,7 +72,8 @@ export const useSocialStore = create(immer((set, get) => ({
     createNewPost: async (formData) => {
         set((state) => { state.isUploading = true; });
 
-        const { authUser } = useAuthStore.getState();
+        const { data: session } = useSession();
+        const authUser = session.user;
 
         const content = formData.get('content');
         const imageFile = formData.get('image');
@@ -186,7 +187,9 @@ export const useSocialStore = create(immer((set, get) => ({
 
 
     commentPost: async (post, content) => {
-        const currentUser = useAuthStore.getState().authUser;
+
+        const { data: session } = useSession();
+        const authUser = session.user;
 
         // Optimistic Comment
         const tempId = Date.now();
@@ -194,7 +197,7 @@ export const useSocialStore = create(immer((set, get) => ({
             id: tempId,
             content: content,
             createdAt: new Date().toISOString(),
-            authorId: currentUser.id,
+            authorId: authUser.id,
             postId: post.id
         };
 
