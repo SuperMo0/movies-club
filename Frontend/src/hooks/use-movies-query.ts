@@ -1,8 +1,8 @@
 import { fetchTodayMovies } from "@/api/movies"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query"
 
 export function useTodayMovies() {
-    return useQuery({
+    return useSuspenseQuery({
         queryKey: ["today-movies"],
         queryFn: fetchTodayMovies,
         staleTime: Infinity
