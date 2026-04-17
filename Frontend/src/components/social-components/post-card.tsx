@@ -1,31 +1,39 @@
-import { useState } from 'react'
+import { useState, type ChangeEvent } from 'react'
 import { Heart, MessageCircle, Share2, MoreHorizontal, Film, Send } from 'lucide-react'
 import { useSocialStore } from '@/stores/social.store';
-import { useMoviesStore } from '@/stores/movies.store';
-import { useAuthStore } from '@/stores/auth.store';
 import { NavLink } from 'react-router';
 import { useLoginModal } from '@/App';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import RatingStars from '@/components/social-components/rating-stars';
 import { PostActionButton } from '@/components/ui/post-action-button';
+import { useSession } from '@/hooks/use-auth-queries';
+import { useUserLikedPosts, useUsers } from '@/hooks/use-social-queries';
+import defaultAvatar from '/default-avatar.jpg';
+import PostComment from './comment';
+import type { ResponseSafeUser } from 'moviesclub-shared/auth';
+import type { Post } from 'moviesclub-shared/social';
 
-const DEFAULT_AVATAR = "https://i.pinimg.com/originals/e7/ba/95/e7ba955b143cda691280e1d0fd23ada6.jpg"
+type postCardProps = {
+    user: ResponseSafeUser,
+    post: Post
+}
 
-export default function PostCard({ user, post }) {
+export default function PostCard({ user, post }: postCardProps) {
 
-    const likedPosts = useSocialStore(s => s.likedPosts);
     const togglePostLike = useSocialStore(s => s.togglePostLike);
     const commentPost = useSocialStore(s => s.commentPost);
 
+    const { data: userLikedPosts } = useUserLikedPosts();
+
+    const { data: session } = useSession();
+    const authUser = session?.user;
+
     const [comment, setComment] = useState('');
-    const users = useSocialStore(s => s.users);
-    const allMovies = useMoviesStore(s => s.allMovies);
-    const authUser = useAuthStore(s => s.authUser);
+
     const { openLogin } = useLoginModal();
 
-    const isLiked = (likedPosts?.has(post.id));
-    const movie = allMovies.get(post.movieId) || allMovies.get("2094918");  // this will break because we are not saving movies to the data base 
+    const isLiked = !!(userLikedPosts?.find((p) => p == post.id)) || false;
 
     async function handleLikePost() {
         if (!authUser) {
@@ -40,7 +48,6 @@ export default function PostCard({ user, post }) {
             openLogin();
             return;
         }
-
         const content = comment.trim();
         if (!content) return;
 
@@ -55,7 +62,7 @@ export default function PostCard({ user, post }) {
                 <div className='flex gap-3'>
                     <NavLink to={`/social/user/${user.id}`}>
                         <img
-                            src={user.image || DEFAULT_AVATAR}
+                            src={user.image || defaultAvatar}
                             className='w-10 h-10 rounded-full bg-slate-800 object-cover'
                             alt={user.name}
                         />
@@ -65,17 +72,16 @@ export default function PostCard({ user, post }) {
                             <NavLink to={`/social/user/${user.id}`}>
                                 <span className='font-bold text-white'>{user.name}</span>
                                 &#32;
-                                <span className='text-xs text-slate-500'>{post.createdAt.slice(0, 10)}</span>
+                                <span className='text-xs text-slate-500'>{post.createdAt}</span>
                             </NavLink>
                         </div>
 
-
-                        {movie && (
+                        {post.movieTitle && (
                             <div className='flex items-center gap-2 mt-0.5 text-xs text-slate-400'>
                                 <span className='flex items-center gap-1 text-red-400 font-medium'>
-                                    <Film className='w-3 h-3' /> {movie.title}
+                                    <Film className='w-3 h-3' /> {post.movieTitle}
                                 </span>
-                                <RatingStars rating={post.rating} />
+                                {post.rating && <RatingStars rating={post.rating} />}
                             </div>
                         )}
                     </div>
@@ -94,50 +100,28 @@ export default function PostCard({ user, post }) {
             )}
 
             <div className='flex items-center gap-6 text-slate-500 py-3 border-t border-slate-800/50 mb-1'>
-                <PostActionButton onClick={handleLikePost} icon={Heart} count={post._count.likedBy} active={isLiked} tone='pink' />
-                <PostActionButton icon={MessageCircle} count={post.comments?.length || 0} tone='blue' />
-                <PostActionButton icon={Share2} tone='green' />
+                <PostActionButton onClick={handleLikePost} Icon={Heart} count={post._count.likedBy} active={isLiked} tone='pink' />
+                <PostActionButton Icon={MessageCircle} count={post.comments?.length || 0} tone='blue' />
+                <PostActionButton Icon={Share2} tone='green' />
             </div>
 
             <div className='bg-slate-950/30 rounded-lg p-3 border border-slate-800/50'>
-
-                {post.comments && post.comments.length > 0 && (
-                    <div className='space-y-4 mb-4 pl-1'>
-                        {post.comments.map((comment) => (
-                            <div key={comment.id} className='flex gap-3'>
-                                <img
-                                    src={users.get(comment.authorId).image || DEFAULT_AVATAR}
-                                    className='w-7 h-7 rounded-full border border-slate-800 shrink-0 object-cover'
-                                    alt=""
-                                />
-                                <div className='flex-1'>
-                                    <div className='bg-slate-800/50 rounded-2xl rounded-tl-none px-3 py-2 inline-block'>
-                                        <div className='flex items-baseline gap-2'>
-                                            <span className='text-xs font-bold text-slate-200'>{users.get(comment.authorId).name}</span>
-                                        </div>
-                                        <p className='text-xs text-slate-300 leading-snug mt-0.5'>{comment.content}</p>
-                                    </div>
-                                    <div className='flex gap-3 mt-1 ml-1'>
-                                        <Button type='button' variant='social-link' className='text-[10px]'>Like</Button>
-                                        <Button type='button' variant='social-link' className='text-[10px]'>Reply</Button>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-
+                <div className='space-y-4 mb-4 pl-1'>
+                    {post.comments.map((comment) => {
+                        return <PostComment comment={comment} />
+                    })}
+                </div>
 
                 <div className='flex gap-3 items-center'>
                     <img
-                        src={authUser?.image || DEFAULT_AVATAR}
+                        src={authUser?.image || defaultAvatar}
                         className='w-8 h-8 rounded-full border border-slate-700 bg-slate-800 object-cover'
                         alt="Me"
                     />
                     <div className='relative flex-1 group'>
                         <Input
                             value={comment}
-                            onChange={(e) => { setComment(e.target.value) }}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) => { setComment(e.target!.value) }}
                             type="text"
                             placeholder="Write a comment..."
                             variant="social"

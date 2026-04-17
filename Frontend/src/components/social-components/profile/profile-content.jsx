@@ -1,4 +1,3 @@
-import React from 'react';
 import PostCard from '@/components/social-components/post-card';
 import NewPostEditor from '@/components/social-components/new-post-editor';
 import { Button } from '@/components/ui/button';

@@ -13,7 +13,6 @@ export default function SocialProfile() {
 
     if (!user) return <div className="h-screen w-full flex items-center justify-center text-white bg-slate-950 text-center">User not found</div>;
 
-
     return (
         <>
             <ProfileImageCropper
