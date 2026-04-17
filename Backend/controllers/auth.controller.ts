@@ -69,26 +69,17 @@ export async function signup(req: Request, res: Response) {
 }
 
 export async function check(req: Request, res: Response) {
-    const { jwt } = req.cookies;
 
-    if (!jwt) {
-        return res.status(200).json(unauthenticatedSession());
-    }
-
-    const payload = await verify(jwt);
-
-    if (!payload.userId) {
-        return res.status(200).json(unauthenticatedSession());
-    }
-
-    const user = await model.getUserById(payload.userId);
-
-    if (!user) {
+    try {
+        const { jwt } = req.cookies;
+        const payload = await verify(jwt);
+        const { userId } = payload;
+        const user = await model.getUserById(userId);
+        return res.status(200).json({ user });
+    } catch (error) {
         res.clearCookie("jwt");
         return res.status(200).json(unauthenticatedSession());
     }
-
-    return res.status(200).json({ user });
 }
 
 export async function logout(req: Request, res: Response) {
