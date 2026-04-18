@@ -28,7 +28,7 @@ export function useUserLikedPosts() {
     const authUser = session?.user;
 
     return useQuery({
-        queryKey: ["user", 'liked'],
+        queryKey: ["userLikedPosts"],
         queryFn: fetchUserLikedPosts,
         staleTime: 60 * 15,
         enabled: authUser != null

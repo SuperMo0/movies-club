@@ -1,4 +1,3 @@
-import React from 'react'
 import SocialFeed from '@/components/social-components/social-feed'
 import Trending from '@/components/social-components/trending'
 

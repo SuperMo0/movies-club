@@ -1,7 +1,7 @@
 import { catchAsync } from "@/utils/catch-async";
 import client from "@/lib/axios"
 import type { ResponseSafeUser } from "moviesclub-shared/auth";
-import type { Post } from 'moviesclub-shared/social'
+import type { Comment, createCommentBody, createPostBody, Post } from 'moviesclub-shared/social'
 
 
 type FetchAppUsersResponse = {
@@ -30,6 +30,39 @@ export async function fetchAppPosts() {
     if (error) throw error;
     return data.posts;
 }
+export type ServerMessage = {
+    message: string
+}
+
+type POSTLikePostResponse = ServerMessage;
+export async function POSTLikePost(postId: string) {
+    const [error, data] = await catchAsync(client.post<POSTLikePostResponse>(`/social/like/${postId}`));
+    if (error) throw error;
+    return data;
+}
+
+type DELETELikePostResponse = ServerMessage;
+export async function DELETELikePost(postId: string) {
+    const [error, data] = await catchAsync(client.delete<DELETELikePostResponse>(`/social/like/${postId}`));
+    if (error) throw error;
+    return data;
+}
+
+type POSTCommentResponse = {
+    comment: Comment
+};
+export async function POSTComment(variables: { comment: createCommentBody, postId: string },) {
+    const [error, data] = await catchAsync(client.post<POSTCommentResponse>(`social/comment/${variables.postId}`, variables.comment));
+    if (error) throw error;
+    return data;
+}
 
 
-
+type POSTPostResponse = {
+    post: Post
+};
+export async function POSTPost(post: createPostBody) {
+    const [error, data] = await catchAsync(client.post<POSTPostResponse>('/social/post', post));
+    if (error) throw error;
+    return data;
+}
