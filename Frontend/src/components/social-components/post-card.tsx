@@ -1,6 +1,5 @@
 import { useState, type ChangeEvent } from 'react'
 import { Heart, MessageCircle, Share2, MoreHorizontal, Film, Send } from 'lucide-react'
-import { useSocialStore } from '@/stores/social.store';
 import { NavLink } from 'react-router';
 import { useLoginModal } from '@/App';
 import { Button } from '@/components/ui/button';
@@ -13,6 +12,7 @@ import defaultAvatar from '/default-avatar.jpg';
 import PostComment from './comment';
 import type { ResponseSafeUser } from 'moviesclub-shared/auth';
 import type { Post } from 'moviesclub-shared/social';
+import { useDELETELikePost, usePOSTComment, usePOSTLikePost } from '@/hooks/use-social-mutations';
 
 type postCardProps = {
     user: ResponseSafeUser,
@@ -21,13 +21,13 @@ type postCardProps = {
 
 export default function PostCard({ user, post }: postCardProps) {
 
-    const togglePostLike = useSocialStore(s => s.togglePostLike);
-    const commentPost = useSocialStore(s => s.commentPost);
+    const { mutate: mutatePostComment } = usePOSTComment();
+    const { mutate: mutatePostLike } = usePOSTLikePost();
+    const { mutate: mutatePostUnlike } = useDELETELikePost();
 
-    const { data: userLikedPosts } = useUserLikedPosts();
+    const userLikedPosts = useUserLikedPosts().data;
 
-    const { data: session } = useSession();
-    const authUser = session?.user;
+    const authUser = useSession().data?.user;
 
     const [comment, setComment] = useState('');
 
@@ -36,22 +36,17 @@ export default function PostCard({ user, post }: postCardProps) {
     const isLiked = !!(userLikedPosts?.find((p) => p == post.id)) || false;
 
     async function handleLikePost() {
-        if (!authUser) {
-            openLogin();
-            return;
-        }
-        (isLiked) ? await togglePostLike(post, -1) : await togglePostLike(post, 1);
+        if (!authUser) return openLogin();
+        (isLiked) ? mutatePostLike(post.id) : mutatePostUnlike(post.id);
     }
 
     async function handleCommentPost() {
-        if (!authUser) {
-            openLogin();
-            return;
-        }
+        if (!authUser) return openLogin();
+
         const content = comment.trim();
         if (!content) return;
 
-        await commentPost(post, content);
+        mutatePostComment({ postId: post.id, comment: { content } });
         setComment('');
     }
 
@@ -108,7 +103,7 @@ export default function PostCard({ user, post }: postCardProps) {
             <div className='bg-slate-950/30 rounded-lg p-3 border border-slate-800/50'>
                 <div className='space-y-4 mb-4 pl-1'>
                     {post.comments.map((comment) => {
-                        return <PostComment comment={comment} />
+                        return <PostComment key={comment.id} comment={comment} />
                     })}
                 </div>
 
