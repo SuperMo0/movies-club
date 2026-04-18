@@ -4,8 +4,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { SelectedMovieCard, MovieSelectorDropdown } from '@/components/social-components/movie-selectors';
 import { ImagePreview } from '@/components/social-components/image-preview';
 import { useNewPostEditor } from '@/hooks/use-new-post-editor';
+import defaultAvatar from '/default-avatar.jpg';
 
-const DEFAULT_AVATAR = "https://i.pinimg.com/originals/e7/ba/95/e7ba955b143cda691280e1d0fd23ada6.jpg"
 
 export default function NewPostEditor() {
 
@@ -19,7 +19,7 @@ export default function NewPostEditor() {
         <div className='bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-lg'>
             <div className='flex gap-4'>
                 <img
-                    src={authUser?.image || DEFAULT_AVATAR}
+                    src={authUser?.image || defaultAvatar}
                     className='w-10 h-10 rounded-full bg-slate-800 object-cover'
                     alt="My Avatar"
                 />
