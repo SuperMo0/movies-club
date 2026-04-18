@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
-import { useAuthStore } from '@/stores/auth.store';
 import { useSocialStore } from '@/stores/social.store';
 import { useLoginModal } from '@/App';
 import { toast } from 'react-toastify';
+import { useSession } from './use-auth-queries';
 
 export function useNewPostEditor() {
     const [content, setContent] = useState('');
@@ -11,9 +11,11 @@ export function useNewPostEditor() {
     const [showMoviePicker, setShowMoviePicker] = useState(false);
     const [image, setImage] = useState(null);
 
-    const authUser = useAuthStore(s => s.authUser);
     const createNewPost = useSocialStore(s => s.createNewPost);
     const { openLogin } = useLoginModal();
+
+    const { data: session } = useSession();
+    const authUser = session.user;
 
     const pickerRef = useRef(null);
     const fileInputRef = useRef(null);

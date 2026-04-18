@@ -1,24 +1,26 @@
 import { useState, useRef } from 'react';
-import { useAuthStore } from '@/stores/auth.store';
 import { useParams } from 'react-router';
 import { useSocialStore } from '@/stores/social.store';
 import api from '@/lib/axios';
 import { toast } from 'react-toastify';
+import { useSession } from './use-auth-queries';
+import { usePosts, useUsers } from './use-social-queries';
 
 export const defaultAvatar = "https://i.pinimg.com/originals/e7/ba/95/e7ba955b143cda691280e1d0fd23ada6.jpg";
 
 export function useSocialProfile() {
-    const authUser = useAuthStore(state => state.authUser);
-    const check = useAuthStore(state => state.check);
+
     const { id } = useParams();
+
+    const authUser = useSession().data.user;
 
     const isOwner = authUser?.id === id;
 
-    const user = useSocialStore(state => {
-        return isOwner ? authUser : state.users?.get(id);
-    });
+    const users = useUsers().data;
 
-    const posts = useSocialStore(state => state.userPosts?.get(id) || []);
+    const user = users.find((u) => u.id == id);
+
+    const posts = usePosts().data.filter(p => p.authorId == id);
 
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);

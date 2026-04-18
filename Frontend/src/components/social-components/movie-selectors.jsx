@@ -1,15 +1,17 @@
 import { useState } from 'react';
 import { Film, Star, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useMoviesStore } from '@/stores/movies.store';
+import { useTodayMovies } from '@/hooks/use-movies-query';
 
 const RATING_SCALE = [1, 2, 3, 4, 5];
 
 export function SelectedMovieCard({ selectedMovie, rating, setRating, onClear }) {
-    const todayMovies = useMoviesStore(s => s.todayMovies);
+
     const [hoverRating, setHoverRating] = useState(0);
 
-    const movie = todayMovies.get(selectedMovie);
+    const { data: todayMovies } = useTodayMovies();
+
+    const movie = todayMovies.find((m) => m.id = selectedMovie);
     if (!movie) return null;
 
     return (
@@ -53,7 +55,8 @@ export function SelectedMovieCard({ selectedMovie, rating, setRating, onClear })
 }
 
 export function MovieSelectorDropdown({ isVisible, onClose, onSelect }) {
-    const todayMovies = useMoviesStore(s => s.todayMovies);
+
+    const { data: todayMovies } = useTodayMovies();
 
     if (!isVisible) return null;
 
@@ -62,7 +65,7 @@ export function MovieSelectorDropdown({ isVisible, onClose, onSelect }) {
             <div className="px-3 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider bg-slate-900/50">
                 Recent Releases
             </div>
-            {[...todayMovies.values()].map(movie => (
+            {todayMovies.map(movie => (
                 <Button
                     key={movie.id}
                     type='button'
