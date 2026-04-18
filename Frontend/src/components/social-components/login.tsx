@@ -8,8 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Clapperboard } from 'lucide-react'
 import { useLoginModal } from '@/App'
 import { LoginSchema, type LoginType } from 'moviesclub-shared/auth'
-import { AxiosError } from 'axios'
-import { onMutationError, useLoginMutation } from '@/hooks/use-auth-mutations.ts'
+import { onMutationError, useLoginMutation } from '@/hooks/use-auth-mutations'
 
 type LoginProps = {
     open: boolean

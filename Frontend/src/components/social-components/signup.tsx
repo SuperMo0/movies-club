@@ -10,7 +10,7 @@ import { SignupSchema } from 'moviesclub-shared/auth'
 import type { SignupType } from 'moviesclub-shared/auth'
 import { useForm } from 'react-hook-form'
 import { useState } from "react"
-import { onMutationError, useLoginMutation, useSignupMutation } from "@/hooks/use-auth-mutations.ts"
+import { onMutationError, useLoginMutation, useSignupMutation } from "@/hooks/use-auth-mutations"
 
 
 type SignupProps = { open: boolean, onOpenChange: (x: boolean) => void }

@@ -22,7 +22,7 @@ const textareaVariants = cva(
   }
 )
 
-function Textarea({ className, variant, ...props }) {
+function Textarea({ className = "", variant, ...props }) {
   return (
     <textarea
       data-slot="textarea"

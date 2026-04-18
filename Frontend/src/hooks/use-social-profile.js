@@ -1,6 +1,5 @@
 import { useState, useRef } from 'react';
 import { useParams } from 'react-router';
-import { useSocialStore } from '@/stores/social.store';
 import api from '@/lib/axios';
 import { toast } from 'react-toastify';
 import { useSession } from './use-auth-queries';
