@@ -20,13 +20,13 @@ const inputVariants = cva(
     },
   }
 )
-
+type Variant = "default" | "form" | "social" | "profile-edit" | "profile-disabled";
 function Input({
   className = "",
   type,
-  variant = "default",
+  variant,
   ...props
-}) {
+}: { variant: Variant } & React.ComponentProps<"input">) {
   return (
     <input
       type={type}

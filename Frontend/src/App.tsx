@@ -13,8 +13,6 @@ import Header from './components/movies-components/header'
 import SocialLayout from './components/social-components/social-layout'
 import LoadingScreen from './components/ui/LoadingScreen'
 
-import { useQuery } from "@tanstack/react-query"
-import { checkSession } from './api/auth'
 import { useSession } from './hooks/use-auth-queries'
 
 

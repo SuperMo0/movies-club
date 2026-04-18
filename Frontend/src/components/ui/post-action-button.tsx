@@ -1,7 +1,16 @@
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { type ElementType } from 'react';
 
-export function PostActionButton({ onClick, icon: Icon, count, active = false, tone = 'slate', className }) {
+type PostActionPropsType = {
+    onClick?: () => void,
+    Icon: ElementType,
+    count?: null | number,
+    active?: boolean,
+    tone?: "pink" | "blue" | "green" | "slate",
+    className?: string
+}
+export function PostActionButton({ onClick = () => { }, Icon, count = null, active = false, tone = 'slate', className = "" }: PostActionPropsType) {
     const toneClasses = {
         pink: active ? 'text-pink-600' : 'text-slate-500 hover:text-pink-500',
         blue: 'text-slate-500 hover:text-blue-400',
