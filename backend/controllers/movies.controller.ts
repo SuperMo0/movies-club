@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express'
-import { prisma } from './../lib/prisma.ts'
+import { prisma } from '../lib/prisma.ts'
 import { getSecondsUntil3AM } from '../utils/cache.ts';
 
 let cachedMovies: any[] = []

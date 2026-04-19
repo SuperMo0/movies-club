@@ -1,8 +1,8 @@
 import type { Request, Response } from 'express';
 import { prisma } from '../lib/prisma.ts'
 import v2 from '../lib/cloudinary.ts'
-import { userProfileSelect } from './../Models/auth.model.ts'
-import { createPostBodySchema, updateProfileBodySchema, IdSchema, commentSchema } from '../../Shared/social.schema.ts'
+import { userProfileSelect } from '../Models/auth.model.ts'
+import { createPostBodySchema, updateProfileBodySchema, IdSchema, commentSchema } from 'moviesclub-shared/social'
 
 export async function getFeed(req: Request, res: Response) {
     const posts = await prisma.post.findMany({

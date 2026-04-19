@@ -2,8 +2,8 @@ import type { Request, Response } from "express";
 import { sign, verify } from "../lib/jwt.ts";
 import * as model from "../Models/auth.model.ts"
 import { compare, hash } from "../lib/bcrypt.ts";
-import type { AuthUserResponse, ResponseSafeUser } from "../../Shared/auth.schema.ts";
-import { LoginSchema, SignupSchema } from "../../Shared/auth.schema.ts";
+import type { AuthUserResponse, ResponseSafeUser } from "moviesclub-shared/auth";
+import { LoginSchema, SignupSchema } from "moviesclub-shared/auth";
 
 function sanitizeUser(user: any) {
     const { password: _password, ...userWithoutPassword } = user;

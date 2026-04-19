@@ -18,15 +18,23 @@
     "node": "24.12.0"
   },
   "workspaces": [
-    "Backend",
-    "Frontend",
-    "Shared"
+    "backend",
+    "frontend",
+    "shared"
   ],
   "scripts": {
-    "dev:backend": "npm run dev --prefix Backend",
-    "dev:frontend": "npm run dev --prefix Frontend",
-    "build": "npm run build --prefix Backend && npm run build --prefix Frontend",
-    "start": "npm run start --prefix Backend",
-    "lint:backend": "npm run lint --prefix Backend"
+    "build": "npm run build -w backend && npm run build -w frontend",
+    "start": "npm run start -w backend",
+    "lint:backend": "npm run lint -w backend"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.20.0",
+    "prisma": "^7.7.0"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.7.0",
+    "@prisma/client": "^7.7.0",
+    "dotenv": "^17.4.2",
+    "pg": "^8.20.0"
   }
 }

@@ -1,6 +1,6 @@
 import * as cheerio from 'cheerio'
 import axios from 'axios'
-import { prisma } from './../lib/prisma.ts'
+import { prisma } from '../lib/prisma.ts'
 import type { CinemaEntry, DayEntry, Movie } from 'moviesclub-shared/movies'
 
 const HEADERS = {

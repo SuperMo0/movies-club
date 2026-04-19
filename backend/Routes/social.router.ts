@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import * as controller from '../controllers/social.controller.ts'
-import protect from './../middlewares/protect.ts'
+import protect from '../middlewares/protect.ts'
 import multer from 'multer'
 
 const router = Router()
