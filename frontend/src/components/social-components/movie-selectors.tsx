@@ -1,4 +1,4 @@
-import { useState, type ComponentProps } from 'react';
+import { useState } from 'react';
 import { Film, Star, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTodayMovies } from '@/hooks/use-movies-query';
@@ -68,17 +68,16 @@ export function SelectedMovieCard({ movieTitle, rating, setRating, onClear }: Se
 }
 
 type MovieSelector = {
-    onOpenChange: (x: boolean) => void
-    onSelect: (movieTitle: string) => void
+    onChange: (movieTitle: string) => void
     value?: string
 }
 
-export function MovieSelectorDropdown({ value, onOpenChange, onSelect }: MovieSelector) {
+export function MovieSelectorDropdown({ value, onChange }: MovieSelector) {
 
     const { data: todayMovies } = useTodayMovies();
 
     return (
-        <Select value={value} onOpenChange={onOpenChange} onValueChange={onSelect}>
+        <Select value={value} onValueChange={onChange}>
             <SelectTrigger className="w-full max-w-48">
                 <SelectValue placeholder="Rate a movie" />
                 <Film className='w-5 h-5' />
