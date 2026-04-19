@@ -1,5 +1,5 @@
 import express from 'express'
-import type { Express, Request, Response } from 'express'
+import type { Express, NextFunction, Request, Response } from 'express'
 import authRouter from './Routes/auth.router.ts'
 import socialRouter from './Routes/social.router.ts'
 import moviesRouter from './Routes/movies.router.ts'
@@ -12,6 +12,7 @@ import compression from 'compression'
 import helmet from 'helmet'
 import { notFound } from './errors/notFound.ts'
 import { errorHandler } from './errors/errorHandler.ts'
+import { signuploadform } from './utils/signupload.ts'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -52,7 +53,20 @@ export function createApp(options: CreateAppOptions = {}) {
   app.use('/api/auth', authRouter)
   app.use('/api/movies', moviesRouter)
   options.configureApp?.(app)
+
+  app.get('/api/signupload', function (req: Request, res: Response, next: NextFunction) {
+    const sig = signuploadform()
+    res.json({
+      signature: sig.signature,
+      timestamp: sig.timestamp,
+      cloudname: process.env.CLOUDINARY_CLOUD_NAME,
+      apikey: process.env.CLOUDINARY_API_KEY
+    })
+  })
+
   app.use('/api', notFound)
+
+
 
   if (enableNonDevelopmentMiddleware) {
     app.use(

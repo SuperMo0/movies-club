@@ -1,8 +1,7 @@
 import type { Request, Response } from 'express';
 import { prisma } from '../lib/prisma.ts'
-import v2 from '../lib/cloudinary.ts'
 import { userProfileSelect } from '../Models/auth.model.ts'
-import { createPostBodySchema, updateProfileBodySchema, IdSchema, commentSchema } from 'moviesclub-shared/social'
+import { updateProfileBodySchema, IdSchema, commentSchema, createPostBodyServerSchema, type createPostBodyServer } from 'moviesclub-shared/social'
 
 export async function getFeed(req: Request, res: Response) {
     const posts = await prisma.post.findMany({
@@ -164,26 +163,22 @@ export async function commentPost(req: Request, res: Response) {
     return res.status(201).json({ comment: result })
 }
 
-export async function createPost(req: Request, res: Response) {
-    const userId = req.userId!;
-    const image = req.file;
+export async function createPost(req: Request<{}, {}, createPostBodyServer>, res: Response) {
 
-    const validatedBody = createPostBodySchema.safeParse(req.body);
+    const userId = req.userId!;
+
+    const validatedBody = createPostBodyServerSchema.safeParse(req.body);
     if (!validatedBody.success) {
         return res.status(403).json({ message: validatedBody.error.message });
     }
 
-    let { content, movieTitle, rating } = validatedBody.data;
-
-    let imageUrl = null;
-
-    if (image) imageUrl = await uploadImage(image.buffer);
+    let { content, movieTitle, rating, image } = validatedBody.data;
 
     const post = await prisma.post.create({
         data: {
             authorId: userId,
             content: content,
-            image: imageUrl,
+            image: image || null,
             movieTitle: movieTitle || null,
             rating: rating || null
         },
@@ -198,20 +193,9 @@ export async function createPost(req: Request, res: Response) {
     return res.json({ post });
 }
 
-async function uploadImage(image: any): Promise<string | null> {
-    if (!image) return null;
 
-    const response = await v2.uploader.upload(image, {
-        resource_type: "image",
-    })
-
-    return response.secure_url;
-}
-
-export async function updateProfile(req: Request, res: Response) {
+export async function updateProfile(req: Request<{}, {}, createPostBodyServer>, res: Response) {
     const userId = req.userId!;
-
-    const image = req.file;
 
     const validatedBody = updateProfileBodySchema.safeParse(req.body);
     if (!validatedBody.success) {
@@ -224,11 +208,6 @@ export async function updateProfile(req: Request, res: Response) {
         name: name,
         bio: bio,
     };
-
-    if (image) {
-        const imageUrl = await uploadImage(image.buffer);
-        updateData.image = imageUrl;
-    }
 
     let updatedUser;
 

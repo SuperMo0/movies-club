@@ -1,10 +1,21 @@
 import { z } from 'zod';
 
-export const createPostBodySchema = z.object({
+export const createPostBodyClientSchema = z.object({
     content: z.string().min(1, "Content is required"),
-    movieTitle: z.string().nullable(),
-    rating: z.number().nullable(),
-    image: z.file().optional(),
+    movieTitle: z.string().nullable().optional(),
+    rating: z.number().nullable().optional(),
+    image: z.file().optional().nullable().refine((f) => {
+        return !f || (f.type.startsWith('image'))
+    })
+}).refine((d) => !(d.rating && !d.movieTitle), { error: "Invalid input found a rating without a movieTitle" });
+
+
+export const createPostBodyServerSchema = z.object({
+    content: z.string().min(1, "Content is required"),
+    movieTitle: z.string().nullable().optional(),
+    rating: z.number().nullable().optional(),
+    image: z.url().optional().nullable()
+
 }).refine((d) => !(d.rating && !d.movieTitle), { error: "Invalid input found a rating without a movieTitle" });
 
 export const updateProfileBodySchema = z.object({
@@ -44,4 +55,5 @@ export const postSchema = z.object({
 export type Post = z.infer<typeof postSchema>
 export type Comment = z.infer<typeof commentSchema>
 export type createCommentBody = z.infer<typeof createCommentBodySchema>
-export type createPostBody = z.infer<typeof createPostBodySchema>
+export type createPostBodyClient = z.infer<typeof createPostBodyClientSchema>
+export type createPostBodyServer = z.infer<typeof createPostBodyServerSchema>
