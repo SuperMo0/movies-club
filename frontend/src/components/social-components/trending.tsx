@@ -1,4 +1,4 @@
-import { TrendingUp, Flame, Hash } from 'lucide-react'
+import { TrendingUp, Flame } from 'lucide-react'
 
 export default function Trending() {
     const trends = [
@@ -11,7 +11,6 @@ export default function Trending() {
 
     return (
         <div className='flex flex-col gap-6'>
-            {/* Trending Card */}
             <div className='bg-slate-900 border border-slate-800 rounded-xl p-5'>
                 <h3 className='text-lg font-bold text-white mb-4 flex items-center gap-2'>
                     <TrendingUp className='w-5 h-5 text-red-500' /> Trending Now
@@ -36,7 +35,6 @@ export default function Trending() {
                 </button>
             </div>
 
-            {/* Suggestion Card */}
             <div className='bg-slate-900 border border-slate-800 rounded-xl p-5'>
                 <h3 className='text-lg font-bold text-white mb-4 flex items-center gap-2'>
                     <Flame className='w-5 h-5 text-orange-500' /> Hot Discussions
@@ -56,6 +54,6 @@ export default function Trending() {
     )
 }
 // Helper component for the Trending logic if needed
-function MoreHorizontal({ className }) {
+function MoreHorizontal({ className }: { className: string }) {
     return <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" /></svg>
 }
