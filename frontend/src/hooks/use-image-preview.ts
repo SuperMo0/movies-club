@@ -1,16 +1,8 @@
 import { useState, useRef, type ChangeEvent } from 'react';
-import { useSession } from './use-auth-queries';
 
-export function useNewPostEditor() {
-
-
-    const [showMoviePicker, setShowMoviePicker] = useState(false);
+export function useImagePreview() {
 
     const [image, setImage] = useState<string | null>(null);
-
-    const authUser = useSession().data?.user;
-
-    const pickerRef = useRef(null);
 
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -29,19 +21,9 @@ export function useNewPostEditor() {
     };
 
     return {
-        state: {
-            showMoviePicker,
-            image,
-            authUser,
-        },
-        refs: {
-            pickerRef,
-            fileInputRef,
-        },
-        actions: {
-            setShowMoviePicker,
-            handleImageUpload,
-            removeImage,
-        }
+        fileInputRef,
+        image,
+        handleImageUpload,
+        removeImage,
     };
 }
