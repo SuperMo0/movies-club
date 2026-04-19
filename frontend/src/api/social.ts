@@ -1,7 +1,7 @@
 import { catchAsync } from "@/utils/catch-async";
 import client from "@/lib/axios"
 import type { ResponseSafeUser } from "moviesclub-shared/auth";
-import type { Comment, createCommentBody, createPostBody, Post } from 'moviesclub-shared/social'
+import type { Comment, createCommentBody, createPostBodyServer, createPostBodyClient, Post } from 'moviesclub-shared/social'
 
 
 type FetchAppUsersResponse = {
@@ -61,8 +61,54 @@ export async function POSTComment(variables: { comment: createCommentBody, postI
 type POSTPostResponse = {
     post: Post
 };
-export async function POSTPost(post: createPostBody) {
-    const [error, data] = await catchAsync(client.post<POSTPostResponse>('/social/post', post));
+export async function handleNewPostMutation(post: createPostBodyClient) {
+
+    let signError, signData;
+
+    if (post.image) {
+        [signError, signData] = await GETSignUpload();
+    }
+
+
+    if (signError && post.image) throw signError;
+
+    const formData = createCloudinaryFormData(signData, post);
+
+    const secureURL = await POSTCloudinary(signData, formData);
+
+    post.image = secureURL;
+}
+
+export async function POSTPost(post: createPostBodyServer) {
+    const [error, data] = await catchAsync(client.postForm<POSTPostResponse>('/social/post', post));
     if (error) throw error;
+    return data;
+}
+
+export async function GETSignUpload() {
+    return await catchAsync(client.get('/signupload'));
+}
+
+export function createCloudinaryFormData(signData: any, post: createPostBodyClient) {
+
+    const formData = new FormData();
+    formData.append("file", post.image!);
+    formData.append("api_key", signData.apikey);
+    formData.append("timestamp", signData.timestamp);
+    formData.append("signature", signData.signature);
+    formData.append("folder", "signed_upload_demo");
+    return formData;
+}
+
+export async function POSTCloudinary(signData: any, formData: FormData) {
+
+    const url = "https://api.cloudinary.com/v1_1/" + signData.cloudname + "/auto/upload";
+
+    const [error, data] = await catchAsync(client.post(url, formData));
+
+    if (error) throw error
+
+    console.log(data);
+
     return data;
 }
