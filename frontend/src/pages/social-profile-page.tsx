@@ -30,6 +30,8 @@ export default function SocialProfile() {
         // todo: refactor profile sidebar so that we can use a proper form component here
         // <form onSubmit={form.handleSubmit(handleProfileUpdate)}></form>
         <>
+            <p className='text-red-500'>some functionalities are not working currently as I'm migrating everything to react-router, typescript and react-hook-form</p>
+            <p className='text-red-600'>{"4/20/2026"}</p>
             <ProfileImageCropper
                 showCropper={showCropper}
                 setShowCropper={setShowCropper}
