@@ -2,6 +2,8 @@ import { catchAsync } from "@/utils/catch-async";
 import client from "@/lib/axios"
 import type { ResponseSafeUser } from "moviesclub-shared/auth";
 import { type Comment, type Post, type CreatePostBodyServer, type CreatePostBodyClient, type CreateCommentBody } from 'moviesclub-shared/social'
+import imageCompression from 'browser-image-compression';
+
 
 
 type FetchAppUsersResponse = {
@@ -66,6 +68,13 @@ export async function handleNewPostMutation(post: CreatePostBodyClient) {
     let signError, signData, secureURL;
 
     if (post.image) {
+
+        post.image = await imageCompression(post.image, {
+            maxSizeMB: 1,
+            maxWidthOrHeight: 1920,
+            useWebWorker: true,
+        });
+
         [signError, signData] = await GETSignUpload();
 
         if (signError && post.image) throw signError;
@@ -111,11 +120,9 @@ export async function POSTCloudinary(signData: any, formData: FormData): Promise
 
     const url = "https://api.cloudinary.com/v1_1/" + signData.cloudname + "/image/upload";
 
-    const [error, data] = await catchAsync(client.post(url, formData));
+    const [error, data] = await catchAsync(client.post(url, formData, { withCredentials: false }));
 
     if (error) throw error
 
-    console.log(data);
-
-    return data as string;
+    return data.secure_url as string;
 }
