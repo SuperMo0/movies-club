@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Select, SelectItem, SelectTrigger, SelectValue, SelectContent } from '@/components/ui/select';
 import { CalendarDays, MapPin, Clock } from 'lucide-react';
-import { searchImdbTitle } from '@/lib/imdb';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 
 export default function MovieBookingModal({ open, onOpenChange, movie, imdbData = null }) {
@@ -9,33 +8,10 @@ export default function MovieBookingModal({ open, onOpenChange, movie, imdbData 
     const todayStr = new Date().toLocaleDateString('en-CA');
     const schedule = movie?.schedule || [];
 
-    const [resolvedImdb, setResolvedImdb] = useState(imdbData);
     const [selectedDate, setSelectedDate] = useState('');
     const [selectedCinemaIndex, setSelectedCinemaIndex] = useState("0");
     const [selectedTime, setSelectedTime] = useState(null);
 
-    useEffect(() => {
-        let isMounted = true;
-
-        if (!open || !movie) return;
-
-        setResolvedImdb(imdbData || null);
-
-        if (imdbData) {
-            return;
-        }
-
-        async function fetchImdb() {
-            const result = await searchImdbTitle(movie.title);
-            if (isMounted) setResolvedImdb(result);
-        }
-
-        fetchImdb();
-
-        return () => {
-            isMounted = false;
-        };
-    }, [open, movie, imdbData]);
 
     useEffect(() => {
         if (!movie || !open) return;
