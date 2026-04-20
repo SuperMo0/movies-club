@@ -13,9 +13,7 @@ const cronDebug = debug('cron')
 app.listen(PORT, async () => {
   console.log('server running on port: ', PORT)
 
-  if (env.NODE_ENV != 'development') {
-    await start()
-  }
+  await start()
 
   cron.schedule('0 3 * * *', async () => {
     cronDebug('Running daily updates')

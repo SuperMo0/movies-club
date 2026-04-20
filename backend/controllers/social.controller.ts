@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import { prisma } from '../lib/prisma.ts'
 import { userProfileSelect } from '../Models/auth.model.ts'
-import { updateProfileBodySchema, IdSchema, commentSchema, createPostBodyServerSchema, type createPostBodyServer } from 'moviesclub-shared/social'
+import { updateProfileBodySchema, IdSchema, commentSchema, createPostBodyServerSchema, type CreatePostBodyServer } from 'moviesclub-shared/social'
 
 export async function getFeed(req: Request, res: Response) {
     const posts = await prisma.post.findMany({
@@ -163,12 +163,13 @@ export async function commentPost(req: Request, res: Response) {
     return res.status(201).json({ comment: result })
 }
 
-export async function createPost(req: Request<{}, {}, createPostBodyServer>, res: Response) {
+export async function createPost(req: Request<{}, {}, CreatePostBodyServer>, res: Response) {
 
     const userId = req.userId!;
 
     const validatedBody = createPostBodyServerSchema.safeParse(req.body);
     if (!validatedBody.success) {
+        console.log(validatedBody.error.message);
         return res.status(403).json({ message: validatedBody.error.message });
     }
 
@@ -194,7 +195,7 @@ export async function createPost(req: Request<{}, {}, createPostBodyServer>, res
 }
 
 
-export async function updateProfile(req: Request<{}, {}, createPostBodyServer>, res: Response) {
+export async function updateProfile(req: Request, res: Response) {
     const userId = req.userId!;
 
     const validatedBody = updateProfileBodySchema.safeParse(req.body);
@@ -229,6 +230,5 @@ export async function updateProfile(req: Request<{}, {}, createPostBodyServer>, 
 
     return res.json({
         user: updatedUser,
-        message: "Success"
     });
 }
