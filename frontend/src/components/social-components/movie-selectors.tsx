@@ -77,7 +77,7 @@ export function MovieSelectorDropdown({ value, onChange }: MovieSelector) {
     const { data: todayMovies } = useTodayMovies();
 
     return (
-        <Select value={value} onValueChange={onChange}>
+        <Select name='select movie' value={value} onValueChange={onChange}>
             <SelectTrigger className="w-full max-w-48">
                 <SelectValue placeholder="Rate a movie" />
                 <Film className='w-5 h-5' />
