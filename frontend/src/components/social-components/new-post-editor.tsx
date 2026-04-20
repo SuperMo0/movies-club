@@ -50,7 +50,7 @@ export default function NewPostEditor() {
                             {...form.register('content')}
                             placeholder="What did you watch today?"
                             variant="social"
-                            id='new post content'
+                            name="new post content"
                         />
 
                         <ImagePreview image={image} onRemove={removeImage} />
