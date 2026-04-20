@@ -17,8 +17,8 @@ model user {
   joinedAt   DateTime  @default(now())
   comments   comment[]
   posts      post[]
-  user_A     user[]    @relation("UserFollow")
-  user_B     user[]    @relation("UserFollow")
+  following  user[]    @relation("UserFollow")
+  followedBy user[]    @relation("UserFollow")
   likedPosts post[]    @relation("user_like_post")
   watchList  movie[]   @relation("user_watch_list")
 }
