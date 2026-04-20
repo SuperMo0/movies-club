@@ -42,7 +42,6 @@ export default function ProfileHeader({ user, isOwner, startEditing }: ProfileHe
                         {/* Actions */}
                         <div className='flex gap-2 md:gap-3 shrink-0'>
                             {!isOwner && <button>follow</button>}
-
                             {isOwner && (
                                 <Button
                                     type="button"
