@@ -7,7 +7,7 @@ import { imagePreview } from '../../lib/imagePreview'
 const minWidth = 200;
 
 
-export default function Cropper({ closeModal, image }) {
+export default function Cropper({ closeModal, image, form }) {
 
     const [crop, setCrop] = useState(null);
 
@@ -21,7 +21,9 @@ export default function Cropper({ closeModal, image }) {
     // todo : use browser image compression for non blocking compression
     function handleCropButton() {
         imagePreview(imageRef.current, canvasRef.current, convertToPixelCrop(crop, imageRef.current.width, imageRef.current.height));
-        closeModal(canvasRef.current.toDataURL('image/jpeg', 0.7));
+        const imageURL = canvasRef.current.toDataURL('image/jpeg', 0.7);
+        form.setValue('image', new File([imageURL], "user-profile", { type: 'image' }))
+        closeModal(imageURL);
     }
 
     const onImageLoad = (e) => {
