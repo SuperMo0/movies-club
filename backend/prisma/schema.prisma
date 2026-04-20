@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -19,12 +14,12 @@ model user {
   name       String
   image      String?
   bio        String?
-  posts      post[]
-  followedBy user[]    @relation("UserFollow")
-  following  user[]    @relation("UserFollow")
-  likedPosts post[]    @relation("user_like_post")
-  comments   comment[]
   joinedAt   DateTime  @default(now())
+  comments   comment[]
+  posts      post[]
+  user_A     user[]    @relation("UserFollow")
+  user_B     user[]    @relation("UserFollow")
+  likedPosts post[]    @relation("user_like_post")
   watchList  movie[]   @relation("user_watch_list")
 }
 
@@ -32,16 +27,13 @@ model post {
   id         String    @id @default(uuid())
   content    String?
   image      String?
-  author     user      @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId   String
-  likedBy    user[]    @relation("user_like_post")
-  comments   comment[]
   createdAt  DateTime  @default(now())
-  // movie     movie?    @relation(fields: [movieId], references: [id])
-  // movieId   String?
   rating     Int?
-  // @@index([movieId, createdAt])
-  movieTitle String? // temporary, because the database free plan can't handle 30 new movie every day.
+  movieTitle String?
+  comments   comment[]
+  author     user      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  likedBy    user[]    @relation("user_like_post")
 
   @@index([authorId, createdAt])
 }
@@ -54,17 +46,16 @@ model movie {
   image       String
   genres      genre[] @relation("movie_genre")
   watchListBy user[]  @relation("user_watch_list")
-  // posts       post[]
 }
 
 model comment {
   id        String   @id @default(uuid())
   content   String
-  author    user     @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId  String
-  post      post?    @relation(fields: [postId], references: [id])
   postId    String?
   createdAt DateTime @default(now())
+  author    user     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  post      post?    @relation(fields: [postId], references: [id])
 
   @@index([postId, createdAt])
   @@index([authorId, createdAt])
