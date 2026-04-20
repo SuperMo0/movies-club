@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import { prisma } from '../lib/prisma.ts'
 import { userProfileSelect } from '../Models/auth.model.ts'
-import { updateProfileBodySchema, IdSchema, commentSchema, createPostBodyServerSchema, type CreatePostBodyServer } from 'moviesclub-shared/social'
+import { IdSchema, commentSchema, createPostBodyServerSchema, type CreatePostBodyServer, type UpdateProfileBodyServer, updateProfileBodyServerSchema } from 'moviesclub-shared/social'
 
 export async function getFeed(req: Request, res: Response) {
     const posts = await prisma.post.findMany({
@@ -195,37 +195,25 @@ export async function createPost(req: Request<{}, {}, CreatePostBodyServer>, res
 }
 
 
-export async function updateProfile(req: Request, res: Response) {
+export async function updateProfile(req: Request<{}, {}, UpdateProfileBodyServer>, res: Response) {
+
     const userId = req.userId!;
 
-    const validatedBody = updateProfileBodySchema.safeParse(req.body);
+    const validatedBody = updateProfileBodyServerSchema.safeParse(req.body);
     if (!validatedBody.success) {
         return res.status(403).json({ message: validatedBody.error.message });
     }
 
-    const { name, bio } = validatedBody.data;
+    const { name, bio, image } = validatedBody.data;
 
-    const updateData: any = {
-        name: name,
-        bio: bio,
-    };
-
-    let updatedUser;
-
-    updatedUser = await prisma.user.update({
+    const updatedUser = await prisma.user.update({
         where: { id: userId },
-        data: updateData,
-        select: {
-            id: true,
-            username: true,
-            name: true,
-            image: true,
-            bio: true,
-            joinedAt: true,
-            _count: {
-                select: { followedBy: true, following: true }
-            }
-        }
+        data: {
+            bio: bio ?? undefined,
+            name: name ?? undefined,
+            image: image ?? undefined
+        },
+        select: userProfileSelect
     });
 
     return res.json({
