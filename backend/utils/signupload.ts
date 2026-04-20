@@ -1,7 +1,7 @@
 
 import { v2 } from 'cloudinary'
 
-const apiSecret = v2.config().api_secret;
+const apiSecret = process.env.CLOUDINARY_API_SECRET;
 
 export const signuploadform = () => {
     const timestamp = Math.round((new Date).getTime() / 1000);
