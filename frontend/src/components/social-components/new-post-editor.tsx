@@ -50,6 +50,7 @@ export default function NewPostEditor() {
                             {...form.register('content')}
                             placeholder="What did you watch today?"
                             variant="social"
+                            id='new post content'
                         />
 
                         <ImagePreview image={image} onRemove={removeImage} />
@@ -66,7 +67,7 @@ export default function NewPostEditor() {
                                         field.onChange(e);
                                     }}
                                     onClear={() => {
-                                        form.setValue('movieTitle', "");
+                                        form.setValue('movieTitle', null);
                                         form.setValue('rating', null);
                                     }}
                                 />
@@ -93,9 +94,7 @@ export default function NewPostEditor() {
                                     }}
                                 />
 
-                                <Button
-                                    type='button'
-                                    variant='social-icon'
+                                <Button type='button' variant='social-icon'
                                     onClick={() => fileInputRef.current!.click()}
                                     data-active={!!image}
                                 >
@@ -109,18 +108,13 @@ export default function NewPostEditor() {
                                     render={({ field }) => (
                                         <MovieSelectorDropdown
                                             onChange={field.onChange}
-                                            value={field.value ?? undefined}
+                                            value={field.value ?? ""}
                                         />
 
                                     )}
                                 />
                             </div>
-                            <Button
-                                type='submit'
-                                variant='form'
-                                size='pill'
-                                disabled={isPending}
-                            >
+                            <Button type='submit' variant='form' size='pill' disabled={isPending}>
                                 Post <Send className='w-4 h-4' />
                             </Button>
                         </div>
