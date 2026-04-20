@@ -54,6 +54,6 @@ export const postSchema = z.object({
 
 export type Post = z.infer<typeof postSchema>
 export type Comment = z.infer<typeof commentSchema>
-export type createCommentBody = z.infer<typeof createCommentBodySchema>
-export type createPostBodyClient = z.infer<typeof createPostBodyClientSchema>
-export type createPostBodyServer = z.infer<typeof createPostBodyServerSchema>
+export type CreateCommentBody = z.infer<typeof createCommentBodySchema>
+export type CreatePostBodyClient = z.infer<typeof createPostBodyClientSchema>
+export type CreatePostBodyServer = z.infer<typeof createPostBodyServerSchema>
