@@ -76,7 +76,7 @@ export function createApp(options: CreateAppOptions = {}) {
           scriptSrc: ["'self'", "'unsafe-inline'"],
           styleSrc: ["'self'", "'unsafe-inline'"],
           imgSrc: ["'self'", 'https:'],
-          connectSrc: ["'self'", process.env.FRONTEND_URL || 'http://localhost:5173', 'https://api.imdbapi.dev'],
+          connectSrc: ["'self'", process.env.FRONTEND_URL || 'http://localhost:5173', 'https://api.cloudinary.com/v1_1/dclszdyzb/image/upload'],
         },
       }),
     )
