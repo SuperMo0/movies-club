@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import 'react-image-crop/dist/ReactCrop.css'
 import { ReactCrop, convertToPixelCrop, centerCrop, makeAspectCrop } from 'react-image-crop';
 import { imagePreview } from '../../lib/imagePreview'
@@ -18,7 +18,7 @@ export default function Cropper({ closeModal, image }) {
     function handleCropChange(pixel, percent) {
         setCrop(percent)
     }
-
+    // todo : use browser image compression for non blocking compression
     function handleCropButton() {
         imagePreview(imageRef.current, canvasRef.current, convertToPixelCrop(crop, imageRef.current.width, imageRef.current.height));
         closeModal(canvasRef.current.toDataURL('image/jpeg', 0.7));
