@@ -2,15 +2,21 @@ import { useState, useEffect } from 'react';
 import { Select, SelectItem, SelectTrigger, SelectValue, SelectContent } from '@/components/ui/select';
 import { CalendarDays, MapPin, Clock } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
+import type { Movie } from 'moviesclub-shared/movies';
 
-export default function MovieBookingModal({ open, onOpenChange, movie, imdbData = null }) {
+type MovieBookingModalProps = {
+    open: () => void,
+    onOpenChange: () => void,
+    movie: Movie
+}
+export default function MovieBookingModal({ open, onOpenChange, movie }: MovieBookingModalProps) {
 
     const todayStr = new Date().toLocaleDateString('en-CA');
     const schedule = movie?.schedule || [];
 
     const [selectedDate, setSelectedDate] = useState('');
     const [selectedCinemaIndex, setSelectedCinemaIndex] = useState("0");
-    const [selectedTime, setSelectedTime] = useState(null);
+    const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
 
     useEffect(() => {
@@ -30,17 +36,17 @@ export default function MovieBookingModal({ open, onOpenChange, movie, imdbData 
 
     const currentTimes = availableCinemas[Number(selectedCinemaIndex)]?.times || [];
 
-    const handleDateChange = (newDate) => {
+    const handleDateChange = (newDate: string) => {
         setSelectedDate(newDate);
         setSelectedTime(null);
     };
 
-    const handleCinemaChange = (newIndex) => {
+    const handleCinemaChange = (newIndex: string) => {
         setSelectedCinemaIndex(newIndex);
         setSelectedTime(null);
     };
 
-    const formatDate = (dateString) => {
+    const formatDate = (dateString: string) => {
         if (!dateString) return '';
         const date = new Date(dateString);
         return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
@@ -85,18 +91,8 @@ export default function MovieBookingModal({ open, onOpenChange, movie, imdbData 
                         </DialogDescription>
                         <div className="mt-3 flex items-center gap-2">
                             <span className="text-xs font-semibold uppercase tracking-wide text-yellow-500">
-                                IMDb {typeof resolvedImdb?.rating === 'number' ? resolvedImdb.rating.toFixed(1) : '--'}
+                                IMDb
                             </span>
-                            {resolvedImdb?.imdbUrl && (
-                                <a
-                                    href={resolvedImdb.imdbUrl}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="inline-flex items-center rounded-sm bg-yellow-400 px-1.5 py-0.5 text-[10px] font-black tracking-tight text-black hover:bg-yellow-300"
-                                >
-                                    IMDb
-                                </a>
-                            )}
                         </div>
                     </div>
 
