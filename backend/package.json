@@ -8,9 +8,9 @@
   "main": "index.ts",
   "scripts": {
     "dev": "NODE_ENV=development node --watch index.ts",
-    "build": "prisma generate && tsup-node index.ts --format esm",
+    "build": "prisma generate && tsdown index.ts",
     "typecheck": "tsc --noEmit",
-    "start": "NODE_ENV=production node dist/index.js",
+    "start": "NODE_ENV=production node dist/index.mjs",
     "prisma:generate": "prisma generate",
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
@@ -40,7 +40,7 @@
     "node-cron": "^4.2.1",
     "pg": "^8.17.1",
     "prisma": "^7.2.0",
-    "tsup": "^8.5.1",
+    "tsdown": "^0.21.9",
     "zod": "^4.3.6"
   },
   "devDependencies": {

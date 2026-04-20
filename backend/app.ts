@@ -81,7 +81,7 @@ export function createApp(options: CreateAppOptions = {}) {
       }),
     )
 
-    const staticPath = path.join(__dirname, '..', '..', 'Frontend', 'dist')
+    const staticPath = path.join(__dirname, '..', '..', 'frontend', 'dist')
 
     app.use(express.static(staticPath))
 
