@@ -120,6 +120,7 @@ export default function PostCard({ user, post }: postCardProps) {
                             type="text"
                             placeholder="Write a comment..."
                             variant="social"
+                            name='post comment'
                         />
                         <Button
                             type='button'
