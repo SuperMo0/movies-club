@@ -1,39 +1,43 @@
-import { Image as ImageIcon, Film, Send } from 'lucide-react'
+import { Image as ImageIcon, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { SelectedMovieCard, MovieSelectorDropdown } from '@/components/social-components/movie-selectors';
 import { ImagePreview } from '@/components/social-components/image-preview';
-import { useNewPostEditor } from '@/hooks/use-new-post-editor';
+import { useImagePreview } from '@/hooks/use-image-preview';
 import defaultAvatar from '/default-avatar.jpg';
-import type { Movie } from 'moviesclub-shared/movies';
-import { useState, type ChangeEvent } from 'react';
 import { usePOSTPost } from '@/hooks/use-social-mutations';
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod';
-import { createPostBodySchema, type createPostBody } from 'moviesclub-shared/social';
+import { createPostBodyClientSchema, type CreatePostBodyClient } from 'moviesclub-shared/social';
+import { useSession } from '@/hooks/use-auth-queries';
+import type { SubmitEventHandler } from 'react';
+import imageCompression from 'browser-image-compression';
+
 
 export default function NewPostEditor() {
 
-    const { state, refs, actions } = useNewPostEditor();
-    const { showMoviePicker, image, authUser } = state;
-    const { pickerRef, fileInputRef } = refs;
-    const { setShowMoviePicker, handleImageUpload, removeImage } = actions;
+    const { fileInputRef, handleImageUpload, image, removeImage } = useImagePreview();
 
-    const form = useForm<createPostBody>({
-        resolver: zodResolver(createPostBodySchema),
-        defaultValues: {
-            content: "",
-            movieTitle: "",
-            rating: null,
-        }
+    const authUser = useSession().data?.user;
+
+    const form = useForm<CreatePostBodyClient>({
+        resolver: zodResolver(createPostBodyClientSchema),
     })
 
     const selectedMovie = form.watch('movieTitle');
 
-    const { mutate: mutatePosts } = usePOSTPost();
+    const { mutate: mutatePosts, isPending } = usePOSTPost();
 
-    function handlePostSubmit(data: createPostBody) {
-        console.log(data);
+    async function handlePostSubmit(data: CreatePostBodyClient) {
+        if (data.image) {
+            data.image = await imageCompression(data.image, {
+                maxSizeMB: 1,
+                maxWidthOrHeight: 1920,
+                useWebWorker: true,
+            })
+        }
+
+        mutatePosts(data);
     }
 
     return (
@@ -61,7 +65,7 @@ export default function NewPostEditor() {
                             render={({ field }) => (
                                 <SelectedMovieCard
                                     movieTitle={selectedMovie}
-                                    rating={field.value}
+                                    rating={field.value ?? null}
                                     setRating={(e) => {
                                         field.onChange(e);
                                     }}
@@ -77,12 +81,20 @@ export default function NewPostEditor() {
 
                         <div className='flex justify-between items-center'>
                             <div className='flex gap-2 relative'>
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    hidden
-                                    ref={fileInputRef}
-                                    onChange={handleImageUpload}
+                                <Controller
+                                    control={form.control}
+                                    name='image'
+                                    render={({ field }) => {
+                                        return <input
+                                            type="file"
+                                            accept="image/*"
+                                            id='image'
+                                            hidden
+                                            ref={(node) => { field.ref(node); fileInputRef.current = node }}
+                                            onChange={(e) => { handleImageUpload(e); field.onChange(e.target.files?.[0]) }}
+                                        />
+
+                                    }}
                                 />
 
                                 <Button
@@ -100,16 +112,13 @@ export default function NewPostEditor() {
                                     name='movieTitle'
                                     render={({ field }) => (
                                         <MovieSelectorDropdown
-                                            onOpenChange={setShowMoviePicker}
-                                            onSelect={field.onChange}
+                                            onChange={field.onChange}
                                             value={field.value ?? undefined}
                                         />
 
                                     )}
                                 />
-
                             </div>
-
                             <Button
                                 type='submit'
                                 variant='form'
