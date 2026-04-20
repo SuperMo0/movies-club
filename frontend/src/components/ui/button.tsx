@@ -4,6 +4,40 @@ import { cva } from "class-variance-authority";
 
 import { cn } from "@/lib/utils"
 
+type Variatn =
+  "form" |
+  "default" |
+  "destructive" |
+  "outline" |
+  "secondary" |
+  "ghost" |
+  "social-action" |
+  "social-ghost" |
+  "social-link" |
+  "input-action" |
+  "image-remove" |
+  "social-icon" |
+  "dropdown-item" |
+  "star-action" |
+  "clear-action" |
+  "profile-edit" |
+  "profile-save" |
+  "profile-cancel" |
+  "profile-follow-active" |
+  "profile-follow" |
+  "profile-tab-active" |
+  "profile-tab" |
+  "link";
+
+
+type Sizes = "default" |
+  "sm" |
+  "lg" |
+  "pill" |
+  "icon" |
+  "icon-sm" |
+  "icon-lg";
+
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
   {
@@ -76,7 +110,7 @@ function Button({
   size = "default",
   asChild = false,
   ...props
-}) {
+}: { variant: Variatn, size?: Sizes, asChild?: boolean } & React.ComponentProps<'button'>) {
   const Comp = asChild ? Slot : "button"
 
   return (
