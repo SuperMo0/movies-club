@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { NavLink } from 'react-router';
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { logout } from '@/api/auth';
-import { useLogoutMutation } from '@/hooks/use-auth-mutations.ts';
+import { useQueryClient } from '@tanstack/react-query'
+import { useLogoutMutation } from '@/hooks/use-auth-mutations.tsx';
 import type { AuthSessionResponse } from 'moviesclub-shared/auth';
 
 const navLinks = [
