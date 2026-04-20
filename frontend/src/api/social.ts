@@ -1,7 +1,7 @@
 import { catchAsync } from "@/utils/catch-async";
 import client from "@/lib/axios"
 import type { ResponseSafeUser } from "moviesclub-shared/auth";
-import type { Comment, createCommentBody, createPostBodyServer, createPostBodyClient, Post } from 'moviesclub-shared/social'
+import { type Comment, type Post, type CreatePostBodyServer, type CreatePostBodyClient, type CreateCommentBody } from 'moviesclub-shared/social'
 
 
 type FetchAppUsersResponse = {
@@ -51,7 +51,7 @@ export async function DELETELikePost(postId: string) {
 type POSTCommentResponse = {
     comment: Comment
 };
-export async function POSTComment(variables: { comment: createCommentBody, postId: string },) {
+export async function POSTComment(variables: { comment: CreateCommentBody, postId: string },) {
     const [error, data] = await catchAsync(client.post<POSTCommentResponse>(`social/comment/${variables.postId}`, variables.comment));
     if (error) throw error;
     return data;
@@ -61,25 +61,32 @@ export async function POSTComment(variables: { comment: createCommentBody, postI
 type POSTPostResponse = {
     post: Post
 };
-export async function handleNewPostMutation(post: createPostBodyClient) {
+export async function handleNewPostMutation(post: CreatePostBodyClient) {
 
-    let signError, signData;
+    let signError, signData, secureURL;
 
     if (post.image) {
         [signError, signData] = await GETSignUpload();
+
+        if (signError && post.image) throw signError;
+
+        const formData = createCloudinaryFormData(signData, post);
+
+        secureURL = await POSTCloudinary(signData, formData);
     }
 
+    let newPost: CreatePostBodyServer = {
+        content: post.content,
+        movieTitle: post.movieTitle,
+        rating: post.rating,
+        image: secureURL
+    }
 
-    if (signError && post.image) throw signError;
+    return POSTPost(newPost);
 
-    const formData = createCloudinaryFormData(signData, post);
-
-    const secureURL = await POSTCloudinary(signData, formData);
-
-    post.image = secureURL;
 }
 
-export async function POSTPost(post: createPostBodyServer) {
+export async function POSTPost(post: CreatePostBodyServer) {
     const [error, data] = await catchAsync(client.postForm<POSTPostResponse>('/social/post', post));
     if (error) throw error;
     return data;
@@ -89,7 +96,7 @@ export async function GETSignUpload() {
     return await catchAsync(client.get('/signupload'));
 }
 
-export function createCloudinaryFormData(signData: any, post: createPostBodyClient) {
+export function createCloudinaryFormData(signData: any, post: CreatePostBodyClient) {
 
     const formData = new FormData();
     formData.append("file", post.image!);
@@ -100,9 +107,9 @@ export function createCloudinaryFormData(signData: any, post: createPostBodyClie
     return formData;
 }
 
-export async function POSTCloudinary(signData: any, formData: FormData) {
+export async function POSTCloudinary(signData: any, formData: FormData): Promise<string> {
 
-    const url = "https://api.cloudinary.com/v1_1/" + signData.cloudname + "/auto/upload";
+    const url = "https://api.cloudinary.com/v1_1/" + signData.cloudname + "/image/upload";
 
     const [error, data] = await catchAsync(client.post(url, formData));
 
@@ -110,5 +117,5 @@ export async function POSTCloudinary(signData: any, formData: FormData) {
 
     console.log(data);
 
-    return data;
+    return data as string;
 }
