@@ -1,5 +1,5 @@
-import { DELETELikePost, POSTComment, POSTLikePost, POSTPost } from '@/api/social'
-import { useMutation, useQueryClient, type MutationFunction } from '@tanstack/react-query'
+import { DELETELikePost, handleNewPostMutation, POSTComment, POSTLikePost } from '@/api/social'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 
 export function usePOSTLikePost() {
@@ -33,7 +33,7 @@ export function usePOSTComment() {
 export function usePOSTPost() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: POSTPost,
-        onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['posts'] }) }
+        mutationFn: handleNewPostMutation,
+        onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['posts'] }) },
     })
 }
