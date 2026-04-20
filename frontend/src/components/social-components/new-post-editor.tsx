@@ -10,8 +10,6 @@ import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createPostBodyClientSchema, type CreatePostBodyClient } from 'moviesclub-shared/social';
 import { useSession } from '@/hooks/use-auth-queries';
-import type { SubmitEventHandler } from 'react';
-import imageCompression from 'browser-image-compression';
 
 
 export default function NewPostEditor() {
@@ -29,19 +27,17 @@ export default function NewPostEditor() {
     const { mutate: mutatePosts, isPending } = usePOSTPost();
 
     async function handlePostSubmit(data: CreatePostBodyClient) {
-        if (data.image) {
-            data.image = await imageCompression(data.image, {
-                maxSizeMB: 1,
-                maxWidthOrHeight: 1920,
-                useWebWorker: true,
-            })
-        }
-
-        mutatePosts(data);
+        mutatePosts(data, {
+            onSuccess: () => { form.reset(), removeImage() },
+            onError: () => {
+                form.setError('root', { message: 'Unexpected error, please try again later.' })
+            }
+        });
     }
 
     return (
         <form onSubmit={form.handleSubmit(handlePostSubmit)}>
+            {Object.values(form.formState.errors).map((x, ix) => <p key={ix} className='text-red-600'>* {x.message}</p>)}
             <div className='bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-lg'>
                 <div className='flex gap-4'>
                     <img
@@ -123,6 +119,7 @@ export default function NewPostEditor() {
                                 type='submit'
                                 variant='form'
                                 size='pill'
+                                disabled={isPending}
                             >
                                 Post <Send className='w-4 h-4' />
                             </Button>
@@ -130,6 +127,6 @@ export default function NewPostEditor() {
                     </div>
                 </div>
             </div>
-        </form>
+        </form >
     )
 }
