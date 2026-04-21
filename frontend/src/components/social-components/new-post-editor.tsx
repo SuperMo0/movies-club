@@ -10,7 +10,7 @@ import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createPostBodyClientSchema, type CreatePostBodyClient } from 'moviesclub-shared/social';
 import { useSession } from '@/hooks/use-auth-queries';
-
+import { compressImage } from '@/utils/compress-image'
 
 export default function NewPostEditor() {
 
@@ -27,6 +27,10 @@ export default function NewPostEditor() {
     const { mutate: mutatePosts, isPending } = usePOSTPost();
 
     async function handlePostSubmit(data: CreatePostBodyClient) {
+
+        if (data.image) {
+            data.image = await compressImage(data.image);
+        }
         mutatePosts(data, {
             onSuccess: () => { form.reset(), removeImage() },
             onError: () => {
