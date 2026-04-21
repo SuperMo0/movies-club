@@ -1,8 +1,9 @@
 import { catchAsync } from "@/utils/catch-async";
 import client from "@/lib/axios"
 import type { ResponseSafeUser } from "moviesclub-shared/auth";
-import { type Comment, type Post, type CreatePostBodyServer, type CreatePostBodyClient, type CreateCommentBody } from 'moviesclub-shared/social'
+import { type Comment, type Post, type CreatePostBodyServer, type CreatePostBodyClient, type CreateCommentBody, type UpdateProfileBodyServer } from 'moviesclub-shared/social'
 import imageCompression from 'browser-image-compression';
+import type { MutationFunction } from '@tanstack/react-query'
 
 
 
@@ -63,36 +64,19 @@ export async function POSTComment(variables: { comment: CreateCommentBody, postI
 type POSTPostResponse = {
     post: Post
 };
-export async function handleNewPostMutation(post: CreatePostBodyClient) {
 
-    let signError, signData, secureURL;
-
-    if (post.image) {
-
-        post.image = await imageCompression(post.image, {
-            maxSizeMB: 1,
-            maxWidthOrHeight: 1920,
-            useWebWorker: true,
-        });
-
-        [signError, signData] = await GETSignUpload();
-
-        if (signError && post.image) throw signError;
-
-        const formData = createCloudinaryFormData(signData, post);
-
-        secureURL = await POSTCloudinary(signData, formData);
+export function handleFormDataImage<T, B>(callBack: (x: T) => Promise<B>) {
+    return async (data: T & { image?: File | null | undefined }) => {
+        let signError, signData, secureURL;
+        if (data.image) {
+            [signError, signData] = await GETSignUpload();
+            if (signError) throw signError;
+            const formData = createCloudinaryFormData(signData, data);
+            secureURL = await POSTCloudinary(signData, formData);
+        }
+        let newData: T = { ...data, image: secureURL }
+        return callBack(newData);
     }
-
-    let newPost: CreatePostBodyServer = {
-        content: post.content,
-        movieTitle: post.movieTitle,
-        rating: post.rating,
-        image: secureURL
-    }
-
-    return POSTPost(newPost);
-
 }
 
 export async function POSTPost(post: CreatePostBodyServer) {
@@ -101,14 +85,23 @@ export async function POSTPost(post: CreatePostBodyServer) {
     return data;
 }
 
+
+export async function PUTUserProfile(UpdatedProfileData: UpdateProfileBodyServer) {
+    const [error, data] = await catchAsync(client.postForm<ResponseSafeUser>('/social/post', UpdatedProfileData));
+    if (error) throw error;
+    return data;
+}
+
+
+
 export async function GETSignUpload() {
     return await catchAsync(client.get('/signupload'));
 }
 
-export function createCloudinaryFormData(signData: any, post: CreatePostBodyClient) {
+export function createCloudinaryFormData(signData: any, data: { image?: File | null | undefined }) {
 
     const formData = new FormData();
-    formData.append("file", post.image!);
+    formData.append("file", data.image!);
     formData.append("api_key", signData.apikey);
     formData.append("timestamp", signData.timestamp);
     formData.append("signature", signData.signature);
