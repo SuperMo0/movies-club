@@ -11,6 +11,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { createPostBodyClientSchema, type CreatePostBodyClient } from 'moviesclub-shared/social';
 import { useSession } from '@/hooks/use-auth-queries';
 import { compressImage } from '@/utils/compress-image'
+import { useLoginModal } from '@/App';
 
 export default function NewPostEditor() {
 
@@ -21,6 +22,8 @@ export default function NewPostEditor() {
     const form = useForm<CreatePostBodyClient>({
         resolver: zodResolver(createPostBodyClientSchema),
     })
+
+    const { openLogin } = useLoginModal()
 
     const selectedMovie = form.watch('movieTitle');
 
@@ -54,7 +57,6 @@ export default function NewPostEditor() {
                             {...form.register('content')}
                             placeholder="What did you watch today?"
                             variant="social"
-                            name="new post content"
                         />
 
                         <ImagePreview image={image} onRemove={removeImage} />
@@ -118,7 +120,13 @@ export default function NewPostEditor() {
                                     )}
                                 />
                             </div>
-                            <Button type='submit' variant='form' size='pill' disabled={isPending}>
+                            <Button type='submit' variant='form' size='pill' disabled={isPending}
+                                onClick={(e) => {
+                                    if (!authUser) {
+                                        e.preventDefault();
+                                        openLogin();
+                                    }
+                                }}>
                                 Post <Send className='w-4 h-4' />
                             </Button>
                         </div>
