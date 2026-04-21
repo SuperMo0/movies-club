@@ -1,6 +1,5 @@
 import { useState, useRef, type ChangeEvent } from 'react';
 import { useParams } from 'react-router';
-import api from '@/lib/axios';
 import { useSession } from './use-auth-queries';
 import { usePosts, useUsers } from './use-social-queries';
 

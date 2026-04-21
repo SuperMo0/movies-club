@@ -27,9 +27,6 @@ export default function Home() {
 
     return (
         <div className="relative min-h-screen bg-slate-950">
-            <p className='text-red-500'>some functionalities are not working currently as I'm migrating everything to react-router, typescript and react-hook-form</p>
-            <p className='text-red-600'>{"4/20/2026"}</p>
-
             <MovieBookingModal
                 open={isModalOpen}
                 onOpenChange={handleModalOpenChange}

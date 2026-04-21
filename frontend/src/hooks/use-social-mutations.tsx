@@ -1,5 +1,9 @@
-import { DELETELikePost, handleNewPostMutation, POSTComment, POSTLikePost } from '@/api/social'
+import type { SessionResponse } from '@/api/auth';
+import { DELETELikePost, orchesteratePostCreation, orchesterateProfileUpadate, POSTComment, POSTLikePost, PUTUserProfile, SignAndUploadCloudinary, type POSTPostResponse } from '@/api/social'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import type { AxiosError } from 'axios';
+import type { ResponseSafeUser } from 'moviesclub-shared/auth';
+import type { Post, UpdateProfileBodyClient, UpdateProfileBodyServer } from 'moviesclub-shared/social';
 
 
 export function usePOSTLikePost() {
@@ -7,7 +11,15 @@ export function usePOSTLikePost() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: POSTLikePost,
-        onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['userLikedPosts'] }) }
+        onMutate: (id) => {
+            queryClient.setQueryData<string[]>(["userLikedPosts"], (s) => [...s!, id])
+            queryClient.setQueryData<Post[]>(["posts"], (s) => {
+                const post = s!.find(p => p.id == id)
+                return s?.map(p => p.id == id ? { ...p, _count: { likedBy: post!._count.likedBy + 1 } } : p);
+            })
+            // todo :return the previous state so that in case of failure we can rollback easily
+        },
+        onError: (e) => { console.log(e); }
     })
 }
 
@@ -16,7 +28,14 @@ export function useDELETELikePost() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: DELETELikePost,
-        onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['userLikedPosts'] }) }
+        onMutate: (id) => {
+            queryClient.setQueryData<string[]>(["userLikedPosts"], (s) => s?.filter(d => d != id))
+            queryClient.setQueryData<Post[]>(["posts"], (s) => {
+                const post = s!.find(p => p.id == id)
+                return s?.map(p => p.id == id ? { ...p, _count: { likedBy: post!._count.likedBy - 1 } } : p);
+            })
+            // todo :return the previous state so that in case of failure we can rollback easily
+        },
     })
 }
 
@@ -29,11 +48,47 @@ export function usePOSTComment() {
     })
 }
 
-
+// todo: swap the real post with the optimistic one for better experince
+// todo: handle rollback failure
 export function usePOSTPost() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: handleNewPostMutation,
-        onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['posts'] }) },
+        mutationFn: orchesteratePostCreation,
+        onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['posts'] }) }, // todo: just swap instead of requesting posts again
+        onMutate: (newPost) => {
+            queryClient.setQueryData(["posts"], (currentPosts: Post[]): Post[] => {
+                let secureURL: string | undefined
+                if (newPost.image) {
+                    secureURL = URL.createObjectURL(newPost.image);
+                }
+                let state = [{
+                    ...newPost,
+                    image: secureURL,
+                    createdAt: new Date().toString(),
+                    authorId: queryClient.getQueryData<SessionResponse>(["session"])?.user?.id!,
+                    id: crypto.randomUUID(),
+                    comments: [],
+                    _count: { likedBy: 0 }
+                }, ...currentPosts]
+                return state;
+            })
+        }
+    })
+}
+
+export function usePUTUserProfile() {
+
+    const queryClient = useQueryClient();
+    return useMutation<ResponseSafeUser, Error | AxiosError, UpdateProfileBodyClient>({
+        mutationFn: orchesterateProfileUpadate,
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ['users'] })
+        },
+        onSuccess: (user) => {
+            queryClient.setQueryData<SessionResponse>(["session"], (d) => { return { user } })
+            queryClient.setQueryData<ResponseSafeUser[]>(["users"], (d) => {
+                d?.map(u => u.id == user.id ? user : u);
+            })
+        }
     })
 }
