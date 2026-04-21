@@ -21,7 +21,7 @@ export const postSchema = z.object({
     id: z.uuidv4(),
     content: z.string(),
     movieTitle: z.string().nullish().optional(),
-    rating: z.number().nullish().optional(),
+    rating: z.coerce.number().nullish().optional(),
     image: z.url().nullish().nullable(),
     authorId: z.uuidv4(),
     createdAt: z.string(),
@@ -33,8 +33,8 @@ export const postSchema = z.object({
 
 export const createPostBodyClientSchema = z.object({
     content: z.string().min(1, "Content is required"),
-    movieTitle: z.string().nullable().optional(),
-    rating: z.number().nullable().optional(),
+    movieTitle: z.string().nullish().optional(),
+    rating: z.number().nullish().optional(),
     image: z.file().optional().nullable().refine((f) => {
         return !f || (f.type.startsWith('image'))
     })
@@ -43,7 +43,7 @@ export const createPostBodyClientSchema = z.object({
 export const createPostBodyServerSchema = z.object({
     content: z.string().min(1, "Content is required"),
     movieTitle: z.string().nullable().optional(),
-    rating: z.number().nullable().optional(),
+    rating: z.coerce.number().nullish().optional(),
     image: z.url().optional().nullable()
 
 }).refine((d) => !(d.rating && !d.movieTitle), { error: "Invalid input found a rating without a movieTitle" });
