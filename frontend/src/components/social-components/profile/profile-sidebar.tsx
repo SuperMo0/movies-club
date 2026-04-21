@@ -3,7 +3,7 @@ import { MapPin, Link as LinkIcon, Calendar } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import type { ResponseSafeUser } from 'moviesclub-shared/auth';
 import type { Post, UpdateProfileBodyClient } from 'moviesclub-shared/social';
-import type { UseFormReturn } from 'react-hook-form';
+import { useFormContext, type UseFormReturn } from 'react-hook-form';
 
 /* todo: allow user to edit his location and external link and refactor this into 2 components: dump and editor */
 
@@ -11,15 +11,16 @@ type ProfileSidebarProps = {
     user: ResponseSafeUser,
     posts: Post[],
     isEditing: boolean
-    form: UseFormReturn<UpdateProfileBodyClient>
 }
-export default function ProfileSidebar({ user, posts, isEditing, form }: ProfileSidebarProps) {
+export default function ProfileSidebar({ user, posts, isEditing }: ProfileSidebarProps) {
 
     const stats = [
         { label: 'Reviews', value: posts.length },
         { label: 'Followers', value: user._count?.followedBy || 0 },
         { label: 'Following', value: user._count?.following || 0 },
     ];
+
+    const form = useFormContext<UpdateProfileBodyClient>();
 
     return (
         <div className='w-full md:w-1/3 flex flex-col gap-6'>

@@ -3,12 +3,11 @@ import ProfileImageCropper from '@/components/social-components/profile/profile-
 import ProfileHeader from '@/components/social-components/profile/profile-header';
 import ProfileSidebar from '@/components/social-components/profile/profile-sidebar';
 import ProfileContent from '@/components/social-components/profile/profile-content';
-import { useParams } from 'react-router';
 import ProfileHeaderEditor from '@/components/social-components/profile/profile-header-editor';
-import { act } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { updateProfileBodyClientSchema, type UpdateProfileBodyClient } from 'moviesclub-shared/social';
+import { updateProfileBodyClientSchema, type UpdateProfileBodyClient, type UpdateProfileBodyServer } from 'moviesclub-shared/social';
+import { usePUTUserProfile } from '@/hooks/use-social-mutations';
 
 export default function SocialProfile() {
 
@@ -18,32 +17,30 @@ export default function SocialProfile() {
 
     if (!state.user) return <div className="h-screen w-full flex items-center justify-center text-white bg-slate-950 text-center">User not found</div>;
 
+    const { mutate: mutateProfile } = usePUTUserProfile();
+
     const form = useForm({
         resolver: zodResolver(updateProfileBodyClientSchema)
     })
 
-    function handleProfileUpdate(formData: UpdateProfileBodyClient) {
-        console.log(formData);
+    async function handleProfileUpdate(formData: UpdateProfileBodyClient) {
+        mutateProfile(formData, {
+            onSuccess: actions.cancelEditing
+        });
     }
 
     return (
-        // todo: refactor profile sidebar so that we can use a proper form component here
-        // <form onSubmit={form.handleSubmit(handleProfileUpdate)}></form>
-        <>
-            <p className='text-red-500'>some functionalities are not working currently as I'm migrating everything to react-router, typescript and react-hook-form</p>
-            <p className='text-red-600'>{"4/20/2026"}</p>
+        <FormProvider {...form} >
+            <form onSubmit={form.handleSubmit(handleProfileUpdate)} id='profile-form' />
             <ProfileImageCropper
                 showCropper={showCropper}
                 setShowCropper={setShowCropper}
                 rawImageForCropper={rawImageForCropper}
                 onCropComplete={onCropComplete}
-                form={form}
             />
-
             <div className='bg-slate-950 min-h-screen pb-12'>
                 {isEditing ?
                     <ProfileHeaderEditor
-                        form={form}
                         actions={actions}
                         fileInputRef={refs.fileInputRef}
                         user={state.user}
@@ -58,11 +55,11 @@ export default function SocialProfile() {
                 }
                 <div className='max-w-4xl mx-auto px-4 md:px-8 mb-8'>
                     <div className='flex flex-col md:flex-row gap-8'>
-                        <ProfileSidebar form={form} isEditing={state.isEditing} posts={state.posts} user={state.user} />
+                        <ProfileSidebar isEditing={state.isEditing} posts={state.posts} user={state.user} />
                         <ProfileContent state={state} />
                     </div>
                 </div>
             </div>
-        </>
+        </FormProvider>
     );
 }
