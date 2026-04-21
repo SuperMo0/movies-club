@@ -1,11 +1,18 @@
 import { catchAsync } from "@/utils/catch-async";
 import client from "@/lib/axios"
 import type { ResponseSafeUser } from "moviesclub-shared/auth";
-import { type Comment, type Post, type CreatePostBodyServer, type CreatePostBodyClient, type CreateCommentBody, type UpdateProfileBodyServer } from 'moviesclub-shared/social'
-import imageCompression from 'browser-image-compression';
-import type { MutationFunction } from '@tanstack/react-query'
+import { type Comment, type Post, type CreatePostBodyServer, type CreateCommentBody, type UpdateProfileBodyServer, type CreatePostBodyClient, type UpdateProfileBodyClient } from 'moviesclub-shared/social'
+import { compressImage } from "@/utils/compress-image";
 
 
+export async function SignAndUploadCloudinary(data: File) {
+    let signError, signData;
+    [signError, signData] = await GETSignUpload();
+    if (signError) throw signError;
+    const formData = createCloudinaryFormData(signData, data);
+    const secureURL = await POSTCloudinary(signData, formData);
+    return secureURL;
+}
 
 type FetchAppUsersResponse = {
     users: ResponseSafeUser[]
@@ -60,24 +67,9 @@ export async function POSTComment(variables: { comment: CreateCommentBody, postI
     return data;
 }
 
-
-type POSTPostResponse = {
+export type POSTPostResponse = {
     post: Post
 };
-
-export function handleFormDataImage<T, B>(callBack: (x: T) => Promise<B>) {
-    return async (data: T & { image?: File | null | undefined }) => {
-        let signError, signData, secureURL;
-        if (data.image) {
-            [signError, signData] = await GETSignUpload();
-            if (signError) throw signError;
-            const formData = createCloudinaryFormData(signData, data);
-            secureURL = await POSTCloudinary(signData, formData);
-        }
-        let newData: T = { ...data, image: secureURL }
-        return callBack(newData);
-    }
-}
 
 export async function POSTPost(post: CreatePostBodyServer) {
     const [error, data] = await catchAsync(client.postForm<POSTPostResponse>('/social/post', post));
@@ -87,21 +79,20 @@ export async function POSTPost(post: CreatePostBodyServer) {
 
 
 export async function PUTUserProfile(UpdatedProfileData: UpdateProfileBodyServer) {
-    const [error, data] = await catchAsync(client.postForm<ResponseSafeUser>('/social/post', UpdatedProfileData));
+    const [error, data] = await catchAsync(client.putForm<ResponseSafeUser>('/social/profile', UpdatedProfileData));
     if (error) throw error;
     return data;
 }
-
 
 
 export async function GETSignUpload() {
     return await catchAsync(client.get('/signupload'));
 }
 
-export function createCloudinaryFormData(signData: any, data: { image?: File | null | undefined }) {
+export function createCloudinaryFormData(signData: any, file: File) {
 
     const formData = new FormData();
-    formData.append("file", data.image!);
+    formData.append("file", file);
     formData.append("api_key", signData.apikey);
     formData.append("timestamp", signData.timestamp);
     formData.append("signature", signData.signature);
@@ -118,4 +109,33 @@ export async function POSTCloudinary(signData: any, formData: FormData): Promise
     if (error) throw error
 
     return data.secure_url as string;
+}
+
+// todo: make this function generic
+export async function orchesteratePostCreation(formData: CreatePostBodyClient) {
+
+    let newFormData: CreatePostBodyServer;
+    let secureURL: string | undefined;
+    if (formData.image) {
+        formData.image = await compressImage(formData.image);
+        secureURL = await SignAndUploadCloudinary(formData.image);
+    }
+
+    newFormData = { ...formData, image: secureURL };
+
+    return await POSTPost(newFormData);
+}
+
+export async function orchesterateProfileUpadate(formData: UpdateProfileBodyClient) {
+
+    let newFormData: UpdateProfileBodyServer;
+    let secureURL: string | undefined;
+    if (formData.image) {
+        formData.image = await compressImage(formData.image);
+        secureURL = await SignAndUploadCloudinary(formData.image);
+    }
+
+    newFormData = { ...formData, image: secureURL };
+
+    return await PUTUserProfile(newFormData);
 }
