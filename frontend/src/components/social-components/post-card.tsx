@@ -37,7 +37,7 @@ export default function PostCard({ user, post }: postCardProps) {
 
     async function handleLikePost() {
         if (!authUser) return openLogin();
-        (isLiked) ? mutatePostLike(post.id) : mutatePostUnlike(post.id);
+        (isLiked) ? mutatePostUnlike(post.id) : mutatePostLike(post.id);
     }
 
     async function handleCommentPost() {

@@ -10,7 +10,6 @@ import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createPostBodyClientSchema, type CreatePostBodyClient } from 'moviesclub-shared/social';
 import { useSession } from '@/hooks/use-auth-queries';
-import { compressImage } from '@/utils/compress-image'
 import { useLoginModal } from '@/App';
 
 export default function NewPostEditor() {
@@ -29,16 +28,13 @@ export default function NewPostEditor() {
 
     const { mutate: mutatePosts, isPending } = usePOSTPost();
 
-    async function handlePostSubmit(data: CreatePostBodyClient) {
-
-        if (data.image) {
-            data.image = await compressImage(data.image);
-        }
-        mutatePosts(data, {
-            onSuccess: () => { form.reset(), removeImage() },
-            onError: () => {
-                form.setError('root', { message: 'Unexpected error, please try again later.' })
-            }
+    async function handlePostSubmit(formData: CreatePostBodyClient) {
+        //todo: we need to take a snapshot so in case of failure we can return the post form status
+        form.reset();
+        removeImage();
+        mutatePosts(formData, {
+            onSuccess: () => { form.reset(); removeImage() },
+            onError: (e) => { form.setError('root', e) }
         });
     }
 
@@ -68,7 +64,7 @@ export default function NewPostEditor() {
                             render={({ field }) => (
                                 <SelectedMovieCard
                                     movieTitle={selectedMovie}
-                                    rating={field.value ?? null}
+                                    rating={field.value}
                                     setRating={(e) => {
                                         field.onChange(e);
                                     }}
