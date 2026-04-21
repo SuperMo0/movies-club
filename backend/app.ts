@@ -40,7 +40,7 @@ export function createApp(options: CreateAppOptions = {}) {
   })
 
   app.use(corsOptions)
-  app.use(helmet())
+  // app.use(helmet())
   app.use(cookieParser())
   app.use(
     compression({

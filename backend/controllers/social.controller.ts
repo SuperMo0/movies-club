@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import { prisma } from '../lib/prisma.ts'
 import { userProfileSelect } from '../Models/auth.model.ts'
-import { IdSchema, commentSchema, createPostBodyServerSchema, type CreatePostBodyServer, type UpdateProfileBodyServer, updateProfileBodyServerSchema } from 'moviesclub-shared/social'
+import { IdSchema, commentSchema, createPostBodyServerSchema, type CreatePostBodyServer, type UpdateProfileBodyServer, updateProfileBodyServerSchema, createCommentBodySchema } from 'moviesclub-shared/social'
 
 export async function getFeed(req: Request, res: Response) {
     const posts = await prisma.post.findMany({
@@ -146,7 +146,7 @@ export async function commentPost(req: Request, res: Response) {
     }
     postId = validatedParam.data;
 
-    const validatedBody = commentSchema.safeParse(req.body);
+    const validatedBody = createCommentBodySchema.safeParse(req.body);
     if (!validatedBody.success) {
         return res.status(403).json({ message: validatedBody.error.message });
     }
