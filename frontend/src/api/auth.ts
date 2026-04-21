@@ -2,7 +2,7 @@ import client from '../lib/axios.js';
 import type { ResponseSafeUser, LoginType, SignupType } from 'moviesclub-shared/auth';
 import { catchAsync } from '@/utils/catch-async.js';
 
-type SessionResponse = {
+export type SessionResponse = {
     user: null | ResponseSafeUser
 }
 
