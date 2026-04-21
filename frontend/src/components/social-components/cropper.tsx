@@ -1,32 +1,47 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, type ChangeEvent } from 'react'
 import 'react-image-crop/dist/ReactCrop.css'
-import { ReactCrop, convertToPixelCrop, centerCrop, makeAspectCrop } from 'react-image-crop';
+import { ReactCrop, convertToPixelCrop, centerCrop, makeAspectCrop, type PercentCrop, type PixelCrop } from 'react-image-crop';
 import { imagePreview } from '../../lib/imagePreview'
+import { useFormContext } from 'react-hook-form';
+import { type UpdateProfileBodyClient } from 'moviesclub-shared/social';
 
 
 const minWidth = 200;
 
+type CropperProps = {
+    closeModal: (x: string) => void,
+    image: string
+}
 
-export default function Cropper({ closeModal, image, form }) {
+export default function Cropper({ closeModal, image }: CropperProps) {
 
-    const [crop, setCrop] = useState(null);
+    const [crop, setCrop] = useState<PercentCrop | null>(null);
 
-    let canvasRef = useRef();
+    let canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-    const imageRef = useRef();
+    const imageRef = useRef<HTMLImageElement | null>(null);
 
-    function handleCropChange(pixel, percent) {
+    const form = useFormContext<UpdateProfileBodyClient>();
+
+
+    function handleCropChange(pixel: PixelCrop, percent: PercentCrop) {
         setCrop(percent)
     }
-    // todo : use browser image compression for non blocking compression
     function handleCropButton() {
+        if (!(crop && imageRef.current && canvasRef.current)) return;
         imagePreview(imageRef.current, canvasRef.current, convertToPixelCrop(crop, imageRef.current.width, imageRef.current.height));
-        const imageURL = canvasRef.current.toDataURL('image/jpeg', 0.7);
-        form.setValue('image', new File([imageURL], "user-profile", { type: 'image' }))
-        closeModal(imageURL);
+        canvasRef.current.toBlob((blob) => {
+            if (!blob) return;
+            form.setValue('image', new File([blob], "user-profile-crop.jpg", { type: 'image/jpg' }), {
+                shouldDirty: true,
+                shouldValidate: true
+            })
+            const imageURL = URL.createObjectURL(blob);
+            closeModal(imageURL);
+        }, "image/jpg", 0.7);
     }
 
-    const onImageLoad = (e) => {
+    const onImageLoad = (e: ChangeEvent<HTMLImageElement>) => {
         const { width, height } = e.currentTarget;
         const cropWidthInPercent = (minWidth / width) * 100;
 
@@ -48,7 +63,7 @@ export default function Cropper({ closeModal, image, form }) {
                 className='max-h-[80vh] mx-auto'
                 minWidth={minWidth}
                 circularCrop={true}
-                crop={crop}
+                crop={crop ?? undefined}
                 aspect={1}
                 onChange={handleCropChange}>
                 <img onLoad={onImageLoad} className='max-h-full mx-auto' ref={imageRef} src={image} alt="" />
