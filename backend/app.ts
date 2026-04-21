@@ -69,17 +69,18 @@ export function createApp(options: CreateAppOptions = {}) {
 
 
   if (enableNonDevelopmentMiddleware) {
-    app.use(
-      helmet.contentSecurityPolicy({
-        directives: {
-          defaultSrc: ["'self'"],
-          scriptSrc: ["'self'", "'unsafe-inline'"],
-          styleSrc: ["'self'", "'unsafe-inline'"],
-          imgSrc: ["'self'", 'https:'],
-          connectSrc: ["'self'", process.env.FRONTEND_URL || 'http://localhost:5173', 'https://api.cloudinary.com/v1_1/dclszdyzb/image/upload'],
-        },
-      }),
-    )
+    // todo: read some docs and articles about this so we understand it better.
+    // app.use(
+    //   helmet.contentSecurityPolicy({
+    //     directives: {
+    //       defaultSrc: ["'self'"],
+    //       scriptSrc: ["'self'", "'unsafe-inline'"],
+    //       styleSrc: ["'self'", "'unsafe-inline'"],
+    //       imgSrc: ["'self'", 'https:'],
+    //       connectSrc: ["'self'", process.env.FRONTEND_URL || 'http://localhost:5173', 'https://api.cloudinary.com/v1_1/dclszdyzb/image/upload'],
+    //     },
+    //   }),
+    // )
 
     const staticPath = path.join(__dirname, '..', '..', 'frontend', 'dist')
 
