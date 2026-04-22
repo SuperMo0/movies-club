@@ -8,8 +8,6 @@ export default function SocialFeed() {
 
     const { data: posts, isError: isPostsError } = usePosts();
 
-    const { data: users, isError: isUsersError } = useUsers();
-
     const authUser = useSession().data?.user;
 
     return (
@@ -17,12 +15,10 @@ export default function SocialFeed() {
             <NewPostEditor />
             <div className='flex flex-col gap-6'>
                 {
-                    (!users || !posts) ? [1, 2, 3].map((x, y) => (<PostSkeleton key={y} />))
+                    (!posts) ? [1, 2, 3].map((x, y) => (<PostSkeleton key={y} />))
                         :
                         posts.map((post) => {
-                            const isOwner = authUser?.id === post.authorId;
-                            const user = isOwner ? authUser : users.find(u => u.id == post.authorId);
-                            return <PostCard key={post.id} post={post} user={user!} />
+                            return <PostCard key={post.id} post={post} />
                         })
                 }
 
