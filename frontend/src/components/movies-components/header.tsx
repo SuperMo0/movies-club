@@ -63,8 +63,8 @@ const Header = ({ onLoginClick, onSignupClick }: HeaderProps) => {
                                 Logout
                             </Button>
 
-                            <NavLink to={`/social/user/${authUser.id}`}>
-                                <Button className="shadow-neon-red hover:shadow-neon-intense transition-all duration-300">
+                            <NavLink to={`/social/users/${authUser.username}`}>
+                                <Button variant='default'>
                                     My Profile
                                 </Button>
                             </NavLink>
@@ -75,7 +75,7 @@ const Header = ({ onLoginClick, onSignupClick }: HeaderProps) => {
                                 Login
                             </Button>
                             <Button
-                                className="shadow-neon-red hover:shadow-neon-intense transition-all duration-300"
+                                variant='default'
                                 onClick={onSignupClick}
                             >
                                 Signup
@@ -110,9 +110,9 @@ const Header = ({ onLoginClick, onSignupClick }: HeaderProps) => {
                     <div className="flex flex-col gap-3 mt-4 pt-4 border-t border-border/40">
                         {authUser ? (
                             <>
-                                <NavLink to={`/social/user/${authUser.id}`} onClick={() => setIsMobileMenuOpen(false)}>
-                                    <Button className="w-full shadow-neon-red">
-                                        Profile
+                                <NavLink to={`/social/users/${authUser.username}`} onClick={() => setIsMobileMenuOpen(false)}>
+                                    <Button className="w-full shadow-neon-red" variant='default'>
+                                        My Profile
                                     </Button>
                                 </NavLink>
 
@@ -137,7 +137,7 @@ const Header = ({ onLoginClick, onSignupClick }: HeaderProps) => {
                                     Login
                                 </Button>
                                 <Button
-                                    className="shadow-neon-red"
+                                    variant='default'
                                     onClick={() => {
                                         onSignupClick();
                                         setIsMobileMenuOpen(false);
