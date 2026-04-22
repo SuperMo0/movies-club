@@ -1,10 +1,24 @@
 import { catchAsync } from "@/utils/catch-async";
 import client from "@/lib/axios"
 import type { ResponseSafeUser } from "moviesclub-shared/auth";
-import { type Comment, type Post, type CreatePostBodyServer, type CreatePostBodyClient, type CreateCommentBody } from 'moviesclub-shared/social'
-import imageCompression from 'browser-image-compression';
+import { type Comment, type Post, type CreatePostBodyServer, type CreateCommentBody, type UpdateProfileBodyServer, type CreatePostBodyClient, type UpdateProfileBodyClient, type UserProfileData } from 'moviesclub-shared/social'
+import { compressImage } from "@/utils/compress-image";
+import { type QueryFunctionContext } from "@tanstack/query-core"
+import { use } from "react";
+import type { SessionResponse } from "./auth";
 
+export type ServerMessage = {
+    message: string
+}
 
+export async function SignAndUploadCloudinary(data: File) {
+    let signError, signData;
+    [signError, signData] = await GETSignUpload();
+    if (signError) throw signError;
+    const formData = createCloudinaryFormData(signData, data);
+    const secureURL = await POSTCloudinary(signData, formData);
+    return secureURL;
+}
 
 type FetchAppUsersResponse = {
     users: ResponseSafeUser[]
@@ -32,8 +46,12 @@ export async function fetchAppPosts() {
     if (error) throw error;
     return data.posts;
 }
-export type ServerMessage = {
-    message: string
+
+export async function GETProfileData(c: QueryFunctionContext) {
+    const [_, username] = c.queryKey;
+    const [error, data] = await catchAsync(client.get<UserProfileData>(`/social/users/${username}`));
+    if (error) throw error;
+    return data;
 }
 
 type POSTLikePostResponse = ServerMessage;
@@ -59,41 +77,9 @@ export async function POSTComment(variables: { comment: CreateCommentBody, postI
     return data;
 }
 
-
-type POSTPostResponse = {
+export type POSTPostResponse = {
     post: Post
 };
-export async function handleNewPostMutation(post: CreatePostBodyClient) {
-
-    let signError, signData, secureURL;
-
-    if (post.image) {
-
-        post.image = await imageCompression(post.image, {
-            maxSizeMB: 1,
-            maxWidthOrHeight: 1920,
-            useWebWorker: true,
-        });
-
-        [signError, signData] = await GETSignUpload();
-
-        if (signError && post.image) throw signError;
-
-        const formData = createCloudinaryFormData(signData, post);
-
-        secureURL = await POSTCloudinary(signData, formData);
-    }
-
-    let newPost: CreatePostBodyServer = {
-        content: post.content,
-        movieTitle: post.movieTitle,
-        rating: post.rating,
-        image: secureURL
-    }
-
-    return POSTPost(newPost);
-
-}
 
 export async function POSTPost(post: CreatePostBodyServer) {
     const [error, data] = await catchAsync(client.postForm<POSTPostResponse>('/social/post', post));
@@ -101,14 +87,22 @@ export async function POSTPost(post: CreatePostBodyServer) {
     return data;
 }
 
+
+export async function PUTUserProfile(UpdatedProfileData: UpdateProfileBodyServer) {
+    const [error, data] = await catchAsync(client.putForm<SessionResponse>('/social/profile', UpdatedProfileData));
+    if (error) throw error;
+    return data;
+}
+
+
 export async function GETSignUpload() {
     return await catchAsync(client.get('/signupload'));
 }
 
-export function createCloudinaryFormData(signData: any, post: CreatePostBodyClient) {
+export function createCloudinaryFormData(signData: any, file: File) {
 
     const formData = new FormData();
-    formData.append("file", post.image!);
+    formData.append("file", file);
     formData.append("api_key", signData.apikey);
     formData.append("timestamp", signData.timestamp);
     formData.append("signature", signData.signature);
@@ -125,4 +119,33 @@ export async function POSTCloudinary(signData: any, formData: FormData): Promise
     if (error) throw error
 
     return data.secure_url as string;
+}
+
+// todo: make this function generic
+export async function orchesteratePostCreation(formData: CreatePostBodyClient) {
+
+    let newFormData: CreatePostBodyServer;
+    let secureURL: string | undefined;
+    if (formData.image) {
+        formData.image = await compressImage(formData.image);
+        secureURL = await SignAndUploadCloudinary(formData.image);
+    }
+
+    newFormData = { ...formData, image: secureURL };
+
+    return await POSTPost(newFormData);
+}
+
+export async function orchesterateProfileUpadate(formData: UpdateProfileBodyClient) {
+
+    let newFormData: UpdateProfileBodyServer;
+    let secureURL: string | undefined;
+    if (formData.image) {
+        formData.image = await compressImage(formData.image);
+        secureURL = await SignAndUploadCloudinary(formData.image);
+    }
+
+    newFormData = { ...formData, image: secureURL };
+
+    return await PUTUserProfile(newFormData);
 }

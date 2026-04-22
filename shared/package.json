@@ -4,6 +4,7 @@
   "description": "Shared Types",
   "license": "ISC",
   "type": "module",
+  "main": "index.ts",
   "exports": {
     "./api": "./api.schema.ts",
     "./auth": "./auth.schema.ts",

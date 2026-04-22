@@ -1,20 +1,16 @@
-import React, { type ChangeEvent, type Dispatch, type RefObject, type SetStateAction } from 'react';
-import { Camera, Edit3, UserMinus, UserPlus, X, Check } from 'lucide-react';
+import { Edit3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-
 import defaultAvatar from '/default-avatar.jpg'
-import { useSession } from '@/hooks/use-auth-queries';
-import type { ResponseSafeUser } from 'moviesclub-shared/auth';
 import ProfileBanner from './Profile-banner';
+import type { UserProfileData } from 'moviesclub-shared/social';
 
 type ProfileHeaderProps = {
-    user: ResponseSafeUser
+    profileData: UserProfileData
     isOwner: boolean
     startEditing: () => void;
 }
 
-export default function ProfileHeader({ user, isOwner, startEditing }: ProfileHeaderProps) {
+export default function ProfileHeader({ profileData, isOwner, startEditing }: ProfileHeaderProps) {
 
     function handleSaveChanges() {
         console.log('mutating profile');
@@ -28,15 +24,15 @@ export default function ProfileHeader({ user, isOwner, startEditing }: ProfileHe
                     {/* Avatar */}
                     <div className='relative group shrink-0'>
                         <div className='w-32 h-32 md:w-40 md:h-40 rounded-full border-[6px] border-slate-950 overflow-hidden bg-slate-800 shadow-xl relative'>
-                            <img src={user.image || defaultAvatar} alt={user.name} className='w-full h-full object-cover' />
+                            <img src={profileData.image || defaultAvatar} alt={profileData.name} className='w-full h-full object-cover' />
                         </div>
                     </div>
 
                     <div className='flex-1 flex flex-row items-end justify-between gap-4 w-full md:w-auto pb-2'>
                         {/* Name and Username */}
                         <div className='text-left mt-2 md:mt-0 flex-1 min-w-0'>
-                            <h1 className='text-2xl md:text-3xl font-bold text-white leading-tight truncate'>{user.name}</h1>
-                            <p className='text-slate-500 font-medium truncate'>@{user.username}</p>
+                            <h1 className='text-2xl md:text-3xl font-bold text-white leading-tight truncate'>{profileData.name}</h1>
+                            <p className='text-slate-500 font-medium truncate'>@{profileData.username}</p>
                         </div>
 
                         {/* Actions */}

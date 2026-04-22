@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { login, logout, signup } from '@/api/auth';
 import { AxiosError } from 'axios';
+import type { ResponseSafeUser } from 'moviesclub-shared/auth';
 
 export function useLoginMutation() {
     const queryClient = useQueryClient();
@@ -14,10 +15,12 @@ export function useLoginMutation() {
 
 export function useSignupMutation() {
     const queryClient = useQueryClient();
-
     return useMutation({
         mutationFn: signup,
-        onSuccess: (data) => { queryClient.setQueryData(['session'], data) },
+        onSuccess: (data) => {
+            queryClient.setQueryData(['session'], data);
+            queryClient.setQueryData<ResponseSafeUser[]>(["users"], (s: any) => [...s, data.user]);
+        },
     });
 }
 

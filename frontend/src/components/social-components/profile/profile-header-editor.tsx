@@ -1,19 +1,15 @@
-import React, { type ChangeEvent, type Dispatch, type RefObject, type SetStateAction } from 'react';
-import { Camera, Edit3, UserMinus, UserPlus, X, Check } from 'lucide-react';
+import { type ChangeEvent, type Dispatch, type RefObject, type SetStateAction } from 'react';
+import { Camera, X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-
-const defaultBanner = "https://wallpapercave.com/wp/wp10021077.jpg";
-import defaultAvatar from '/default-avatar.jpg'
-import { useSession } from '@/hooks/use-auth-queries';
-import type { ResponseSafeUser } from 'moviesclub-shared/auth';
 import ProfileBanner from './Profile-banner';
-import { Controller, type UseFormReturn } from 'react-hook-form';
-import { type UpdateProfileBodyClient } from 'moviesclub-shared/social';
+import { Controller } from 'react-hook-form';
+import { type UpdateProfileBodyClient, type UserProfileData } from 'moviesclub-shared/social';
+import { useFormContext } from 'react-hook-form';
 
 type ProfileHeaderProps = {
 
-    user: ResponseSafeUser
+    profileData: UserProfileData
     previewImage?: string | null
     fileInputRef: RefObject<HTMLInputElement | null>
     actions: {
@@ -23,16 +19,13 @@ type ProfileHeaderProps = {
         onCropComplete: (croppedDataUrl: string) => Promise<void>;
         setShowCropper: Dispatch<SetStateAction<boolean>>;
     }
-    form: UseFormReturn<UpdateProfileBodyClient>
 }
 
-export default function ProfileHeaderEditor({ user, previewImage, fileInputRef, actions, form }: ProfileHeaderProps) {
+export default function ProfileHeaderEditor({ profileData, previewImage, fileInputRef, actions }: ProfileHeaderProps) {
 
     const { cancelEditing, onFileSelect } = actions;
 
-    function handleSaveChanges() {
-        console.log('mutating profile');
-    }
+    const form = useFormContext<UpdateProfileBodyClient>();
 
     const isPending = false;
     return (
@@ -45,7 +38,7 @@ export default function ProfileHeaderEditor({ user, previewImage, fileInputRef, 
                     {/* Avatar */}
                     <div className='relative group shrink-0'>
                         <div className='w-32 h-32 md:w-40 md:h-40 rounded-full border-[6px] border-slate-950 overflow-hidden bg-slate-800 shadow-xl relative'>
-                            <img src={previewImage!} alt={user.name} className='w-full h-full object-cover' />
+                            <img src={previewImage!} alt={profileData.name} className='w-full h-full object-cover' />
                             <label className="absolute inset-0 bg-black/50 flex items-center justify-center cursor-pointer hover:bg-black/60 transition-colors">
                                 <Camera className="w-8 h-8 text-white opacity-80" />
                                 <Controller
@@ -57,7 +50,9 @@ export default function ProfileHeaderEditor({ user, previewImage, fileInputRef, 
                                             className='sr-only'
                                             ref={(node) => { fileInputRef.current = node; field.ref(node) }}
                                             accept="image/*"
-                                            onChange={(e) => { onFileSelect(e); field.onChange(e.target.files![0]) }} />
+                                            onChange={onFileSelect}
+                                            onClick={() => { if (fileInputRef.current) fileInputRef.current.value = "" }}
+                                        />
                                     }}
 
                                 />
@@ -71,9 +66,10 @@ export default function ProfileHeaderEditor({ user, previewImage, fileInputRef, 
                             <div className="flex flex-col gap-2 w-full md:max-w-md">
                                 <Input
                                     {...form.register('name')}
-                                    defaultValue={user.name}
+                                    defaultValue={profileData.name}
                                     variant="profile-edit"
                                     placeholder="Display Name"
+                                    autoComplete='null'
                                 />
                             </div>
 
@@ -93,6 +89,7 @@ export default function ProfileHeaderEditor({ user, previewImage, fileInputRef, 
                                 </Button>
                                 <Button
                                     type="submit"
+                                    form='profile-form'
                                     // disabled={isSaving}
                                     variant="profile-save"
                                     className="px-4 py-2 text-sm h-auto"

@@ -18,7 +18,7 @@ const RATING_SCALE = [1, 2, 3, 4, 5];
 
 type SelectMovieCardProps = {
     movieTitle: string | null,
-    rating: number | null,
+    rating?: number | null | string,
     setRating: (r: number) => void,
     onClear: () => void
 }
@@ -47,7 +47,7 @@ export function SelectedMovieCard({ movieTitle, rating, setRating, onClear }: Se
                         onMouseLeave={() => setHoverRating(0)}
                     >
                         <Star
-                            className={`w-5 h-5 transition-colors ${star <= (hoverRating || rating!)
+                            className={`w-5 h-5 transition-colors ${star <= (Number(hoverRating) || Number(rating))
                                 ? 'fill-yellow-500 text-yellow-500'
                                 : 'text-slate-600'
                                 }`}

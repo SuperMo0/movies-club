@@ -38,7 +38,7 @@ export default function Login({ open, onOpenChange }: LoginProps) {
     async function handleGuestLogin() {
         mutate({
             username: 'guest11',
-            password: '123'
+            password: '123456'
         }, {
             onError: (error) => { onMutationError(error, setMessage) }
         })

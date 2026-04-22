@@ -7,7 +7,7 @@ const router = Router()
 
 router.get('/feed', controller.getFeed)
 router.get('/users', controller.getUsers)
-router.get('/posts/:userId', controller.getUserPosts)
+router.get('/users/:username', controller.getUserPosts)
 
 router.use(protect)
 

@@ -1,34 +1,23 @@
 import { useState, useRef, type ChangeEvent } from 'react';
 import { useParams } from 'react-router';
-import api from '@/lib/axios';
 import { useSession } from './use-auth-queries';
-import { usePosts, useUsers } from './use-social-queries';
+import { useProfileData } from './use-social-queries';
 
 export const defaultAvatar = "https://i.pinimg.com/originals/e7/ba/95/e7ba955b143cda691280e1d0fd23ada6.jpg";
 
 // todo: refactor this to seperate cropping states from user profile state
 export function useSocialProfile() {
 
-    const { id } = useParams();
-
     const authUser = useSession().data?.user;
-
-    const users = useUsers().data;
-
-    const user = users.find((u) => u.id == id);
-
-    const isOwner = user?.id == id
-
-    const posts = usePosts().data.filter(p => p.authorId == id);
-
-    const fileInputRef = useRef<HTMLInputElement | null>(null);
-
     const [previewImage, setPreviewImage] = useState(authUser?.image);
     const [rawImageForCropper, setRawImageForCropper] = useState<string | null>(null);
     const [showCropper, setShowCropper] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const { username } = useParams();
+    const { data: profileData, isPending } = useProfileData(username!);
 
-
+    const isOwner = authUser?.id == profileData?.id || false
 
     function startEditing() {
         setPreviewImage(authUser?.image || defaultAvatar);
@@ -62,13 +51,13 @@ export function useSocialProfile() {
 
     return {
         state: {
-            user,
-            posts,
+            isPending,
             previewImage,
             rawImageForCropper,
             showCropper,
             isEditing,
-            isOwner
+            isOwner,
+            profileData
         },
         refs: {
             fileInputRef
