@@ -13,6 +13,7 @@ import PostComment from './comment';
 import type { ResponseSafeUser } from 'moviesclub-shared/auth';
 import type { Post } from 'moviesclub-shared/social';
 import { useDELETELikePost, usePOSTComment, usePOSTLikePost } from '@/hooks/use-social-mutations';
+import PostImage from './post-image';
 
 type postCardProps = {
     user: ResponseSafeUser,
@@ -67,7 +68,7 @@ export default function PostCard({ user, post }: postCardProps) {
                             <NavLink to={`/social/user/${user.id}`}>
                                 <span className='font-bold text-white'>{user.name}</span>
                                 &#32;
-                                <span className='text-xs text-slate-500'>{post.createdAt}</span>
+                                <span className='text-xs text-slate-500'>{new Date(post.createdAt).toLocaleDateString()}</span>
                             </NavLink>
                         </div>
 
@@ -90,7 +91,7 @@ export default function PostCard({ user, post }: postCardProps) {
 
             {post.image && (
                 <div className='mb-4 rounded-xl overflow-hidden border border-slate-800'>
-                    <img src={post.image} className='w-full object-cover max-h-100' alt="Post content" />
+                    <PostImage src={post.image} />
                 </div>
             )}
 
