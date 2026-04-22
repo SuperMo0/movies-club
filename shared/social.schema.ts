@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ResponseSafeUserSchema } from './auth.schema.ts'
 
 // general schemas 
 export const IdSchema = z.uuidv4("Invalid id");
@@ -13,7 +14,8 @@ export const commentSchema = z.object({
     content: z.string(),
     authorId: z.uuidv4(),
     createdAt: z.string(),
-    postId: z.uuidv4()
+    postId: z.uuidv4(),
+    author: ResponseSafeUserSchema
 });
 
 // post schemas
@@ -28,7 +30,8 @@ export const postSchema = z.object({
     _count: z.object({
         likedBy: z.number()
     }),
-    comments: z.array(commentSchema)
+    comments: z.array(commentSchema),
+    author: ResponseSafeUserSchema
 });
 
 export const createPostBodyClientSchema = z.object({
@@ -47,6 +50,10 @@ export const createPostBodyServerSchema = z.object({
     image: z.url().optional().nullable()
 
 }).refine((d) => !(d.rating && !d.movieTitle), { error: "Invalid input found a rating without a movieTitle" });
+
+// user Profile Data schema 
+
+export const userProfileData = ResponseSafeUserSchema.extend({ posts: z.array(postSchema.omit({ author: true })) })
 
 // update profile schemas
 export const updateProfileBodyBaseSchema = z.object({
@@ -72,3 +79,4 @@ export type CreatePostBodyClient = z.infer<typeof createPostBodyClientSchema>
 export type CreatePostBodyServer = z.infer<typeof createPostBodyServerSchema>
 export type UpdateProfileBodyClient = z.infer<typeof updateProfileBodyClientSchema>
 export type UpdateProfileBodyServer = z.infer<typeof updateProfileBodyServerSchema>
+export type UserProfileData = z.infer<typeof userProfileData>
