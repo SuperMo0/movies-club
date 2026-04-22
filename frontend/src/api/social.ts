@@ -5,6 +5,7 @@ import { type Comment, type Post, type CreatePostBodyServer, type CreateCommentB
 import { compressImage } from "@/utils/compress-image";
 import { type QueryFunctionContext } from "@tanstack/query-core"
 import { use } from "react";
+import type { SessionResponse } from "./auth";
 
 export type ServerMessage = {
     message: string
@@ -88,7 +89,7 @@ export async function POSTPost(post: CreatePostBodyServer) {
 
 
 export async function PUTUserProfile(UpdatedProfileData: UpdateProfileBodyServer) {
-    const [error, data] = await catchAsync(client.putForm<ResponseSafeUser>('/social/profile', UpdatedProfileData));
+    const [error, data] = await catchAsync(client.putForm<SessionResponse>('/social/profile', UpdatedProfileData));
     if (error) throw error;
     return data;
 }

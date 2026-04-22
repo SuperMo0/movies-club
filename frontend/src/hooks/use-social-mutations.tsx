@@ -3,7 +3,7 @@ import { DELETELikePost, orchesteratePostCreation, orchesterateProfileUpadate, P
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { AxiosError } from 'axios';
 import type { ResponseSafeUser } from 'moviesclub-shared/auth';
-import type { Post, UpdateProfileBodyClient, UpdateProfileBodyServer } from 'moviesclub-shared/social';
+import type { Post, UpdateProfileBodyClient, UpdateProfileBodyServer, UserProfileData } from 'moviesclub-shared/social';
 
 
 export function usePOSTLikePost() {
@@ -61,11 +61,13 @@ export function usePOSTPost() {
                 if (newPost.image) {
                     secureURL = URL.createObjectURL(newPost.image);
                 }
+                const authUser = queryClient.getQueryData<SessionResponse>(["session"])?.user!
                 let state = [{
                     ...newPost,
                     image: secureURL,
+                    author: authUser,
                     createdAt: new Date().toString(),
-                    authorId: queryClient.getQueryData<SessionResponse>(["session"])?.user?.id!,
+                    authorId: authUser.id,
                     id: crypto.randomUUID(),
                     comments: [],
                     _count: { likedBy: 0 }
@@ -79,16 +81,14 @@ export function usePOSTPost() {
 export function usePUTUserProfile() {
 
     const queryClient = useQueryClient();
-    return useMutation<ResponseSafeUser, Error | AxiosError, UpdateProfileBodyClient>({
+    return useMutation<SessionResponse, Error | AxiosError, UpdateProfileBodyClient>({
         mutationFn: orchesterateProfileUpadate,
         onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ['users'] })
         },
-        onSuccess: (user) => {
-            queryClient.setQueryData<SessionResponse>(["session"], (d) => { return { user } })
-            queryClient.setQueryData<ResponseSafeUser[]>(["users"], (d) => {
-                d?.map(u => u.id == user.id ? user : u);
-            })
+        onSuccess: (data) => {
+            queryClient.setQueryData<SessionResponse>(["session"], (d) => { return data })
+            queryClient.setQueryData<UserProfileData>(["profile", data.user!.username], (d) => { if (d) return { ...d, ...data.user } })
         }
     })
 }
