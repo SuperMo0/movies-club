@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent } from 'react'
+import { useRef, useState, type ChangeEvent } from 'react'
 import { Heart, MessageCircle, Share2, MoreHorizontal, Film, Send } from 'lucide-react'
 import { NavLink } from 'react-router';
 import { useLoginModal } from '@/App';
@@ -14,6 +14,7 @@ import type { ResponseSafeUser } from 'moviesclub-shared/auth';
 import type { Post } from 'moviesclub-shared/social';
 import { useDELETELikePost, usePOSTComment, usePOSTLikePost } from '@/hooks/use-social-mutations';
 import PostImage from './post-image';
+import { Label } from 'radix-ui';
 
 type postCardProps = {
     user: ResponseSafeUser,
@@ -27,10 +28,10 @@ export default function PostCard({ user, post }: postCardProps) {
     const { mutate: mutatePostUnlike } = useDELETELikePost();
 
     const userLikedPosts = useUserLikedPosts().data;
-
     const authUser = useSession().data?.user;
-
     const [comment, setComment] = useState('');
+
+    const commentRef = useRef<HTMLInputElement | null>(null);
 
     const { openLogin } = useLoginModal();
 
@@ -97,7 +98,7 @@ export default function PostCard({ user, post }: postCardProps) {
 
             <div className='flex items-center gap-6 text-slate-500 py-3 border-t border-slate-800/50 mb-1'>
                 <PostActionButton onClick={handleLikePost} Icon={Heart} count={post._count.likedBy} active={isLiked} tone='pink' />
-                <PostActionButton Icon={MessageCircle} count={post.comments?.length || 0} tone='blue' />
+                <PostActionButton onClick={() => { commentRef.current?.focus() }} Icon={MessageCircle} count={post.comments?.length || 0} tone='blue' />
                 <PostActionButton Icon={Share2} tone='green' />
             </div>
 
@@ -121,7 +122,8 @@ export default function PostCard({ user, post }: postCardProps) {
                             type="text"
                             placeholder="Write a comment..."
                             variant="social"
-                            name='post comment'
+                            name='post-comment'
+                            ref={commentRef}
                         />
                         <Button
                             type='button'
