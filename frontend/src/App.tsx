@@ -76,7 +76,7 @@ function App() {
             <Route index element={<Home />} />
             <Route element={<SocialLayout />}>
               <Route path='social' element={<SocialMainPage />} />
-              <Route path='social/user/:id' element={<SocialProfile />} />
+              <Route path='social/users/:username' element={<SocialProfile />} />
             </Route>
           </Route>
         </Routes>
