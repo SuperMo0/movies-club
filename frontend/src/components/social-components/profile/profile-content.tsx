@@ -1,9 +1,14 @@
 import PostCard from '@/components/social-components/post-card';
 import NewPostEditor from '@/components/social-components/new-post-editor';
 import { Button } from '@/components/ui/button';
+import type { UserProfileData } from 'moviesclub-shared/social';
 
-export default function ProfileContent({ state }) {
-    const { user, posts, isOwner } = state;
+type profileContentProps = {
+    profileData: UserProfileData,
+    isOwner: boolean
+}
+export default function ProfileContent({ profileData, isOwner }: profileContentProps) {
+
 
     return (
         <div className='flex-1'>
@@ -26,8 +31,8 @@ export default function ProfileContent({ state }) {
             </div>
 
             <div className='flex flex-col gap-6'>
-                {posts.length > 0 ? posts.map((post) => (
-                    <PostCard key={post.id} post={post} user={user} />
+                {profileData.posts.length > 0 ? profileData.posts.map((post) => (
+                    <PostCard key={post.id} post={post} profileData={profileData} />
                 )) : (
                     <div className="text-slate-500 text-center py-10">No posts yet.</div>
                 )}

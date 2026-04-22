@@ -1,23 +1,20 @@
-import React from 'react';
 import { MapPin, Link as LinkIcon, Calendar } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
-import type { ResponseSafeUser } from 'moviesclub-shared/auth';
-import type { Post, UpdateProfileBodyClient } from 'moviesclub-shared/social';
-import { useFormContext, type UseFormReturn } from 'react-hook-form';
+import type { UpdateProfileBodyClient, UserProfileData } from 'moviesclub-shared/social';
+import { useFormContext } from 'react-hook-form';
 
 /* todo: allow user to edit his location and external link and refactor this into 2 components: dump and editor */
 
 type ProfileSidebarProps = {
-    user: ResponseSafeUser,
-    posts: Post[],
+    profileData: UserProfileData,
     isEditing: boolean
 }
-export default function ProfileSidebar({ user, posts, isEditing }: ProfileSidebarProps) {
+export default function ProfileSidebar({ profileData, isEditing }: ProfileSidebarProps) {
 
     const stats = [
-        { label: 'Reviews', value: posts.length },
-        { label: 'Followers', value: user._count?.followedBy || 0 },
-        { label: 'Following', value: user._count?.following || 0 },
+        { label: 'Reviews', value: profileData.posts.length },
+        { label: 'Followers', value: profileData._count?.followedBy || 0 },
+        { label: 'Following', value: profileData._count?.following || 0 },
     ];
 
     const form = useFormContext<UpdateProfileBodyClient>();
@@ -29,13 +26,13 @@ export default function ProfileSidebar({ user, posts, isEditing }: ProfileSideba
                 {isEditing ? (
                     <Textarea
                         {...form.register('bio')}
-                        defaultValue={user.bio || ""}
+                        defaultValue={profileData.bio || ""}
                         variant="profile-bio"
                         placeholder="Tell us about yourself..."
                     />
                 ) : (
                     <p className='text-slate-300 leading-relaxed text-sm md:text-base'>
-                        {user.bio || "No bio yet."}
+                        {profileData.bio || "No bio yet."}
                     </p>
                 )}
 
@@ -44,10 +41,10 @@ export default function ProfileSidebar({ user, posts, isEditing }: ProfileSideba
                         <MapPin className='w-4 h-4' /> everywhere
                     </div>
                     <div className='flex items-center gap-2'>
-                        <LinkIcon className='w-4 h-4' /> <a href="#" className='text-red-400 hover:underline'>letterboxd.com/{user.username}</a>
+                        <LinkIcon className='w-4 h-4' /> <a href="#" className='text-red-400 hover:underline'>letterboxd.com/{profileData.username}</a>
                     </div>
                     <div className='flex items-center gap-2'>
-                        <Calendar className='w-4 h-4' /> {`Joined ${user.joinedAt}`}
+                        <Calendar className='w-4 h-4' /> {`Joined ${profileData.joinedAt}`}
                     </div>
                 </div>
             </div>

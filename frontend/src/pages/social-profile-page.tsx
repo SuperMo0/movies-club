@@ -6,8 +6,9 @@ import ProfileContent from '@/components/social-components/profile/profile-conte
 import ProfileHeaderEditor from '@/components/social-components/profile/profile-header-editor';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { updateProfileBodyClientSchema, type UpdateProfileBodyClient, type UpdateProfileBodyServer } from 'moviesclub-shared/social';
+import { updateProfileBodyClientSchema, type UpdateProfileBodyClient } from 'moviesclub-shared/social';
 import { usePUTUserProfile } from '@/hooks/use-social-mutations';
+import LoadingScreen from '@/components/ui/LoadingScreen';
 
 export default function SocialProfile() {
 
@@ -15,7 +16,6 @@ export default function SocialProfile() {
     const { showCropper, rawImageForCropper, isEditing } = state;
     const { onCropComplete, setShowCropper } = actions;
 
-    if (!state.user) return <div className="h-screen w-full flex items-center justify-center text-white bg-slate-950 text-center">User not found</div>;
 
     const { mutate: mutateProfile } = usePUTUserProfile();
 
@@ -28,6 +28,8 @@ export default function SocialProfile() {
             onSuccess: actions.cancelEditing
         });
     }
+
+    if (!state.profileData) return <LoadingScreen message='loading user profile...'></LoadingScreen>;
 
     return (
         <FormProvider {...form} >
@@ -43,20 +45,19 @@ export default function SocialProfile() {
                     <ProfileHeaderEditor
                         actions={actions}
                         fileInputRef={refs.fileInputRef}
-                        user={state.user}
+                        profileData={state.profileData}
                         previewImage={state.previewImage} />
                     : <ProfileHeader
                         isOwner={state.isOwner}
                         startEditing={actions.startEditing}
-                        user={state.user}
-                        key={state.user.id}
+                        profileData={state.profileData}
                     />
 
                 }
                 <div className='max-w-4xl mx-auto px-4 md:px-8 mb-8'>
                     <div className='flex flex-col md:flex-row gap-8'>
-                        <ProfileSidebar isEditing={state.isEditing} posts={state.posts} user={state.user} />
-                        <ProfileContent state={state} />
+                        <ProfileSidebar isEditing={state.isEditing} profileData={state.profileData} />
+                        <ProfileContent profileData={state.profileData} isOwner={state.isOwner} />
                     </div>
                 </div>
             </div>
