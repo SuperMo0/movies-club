@@ -1,14 +1,17 @@
 import type { Request, Response } from 'express';
 import { prisma } from '../lib/prisma.ts'
 import { userProfileSelect } from '../Models/auth.model.ts'
-import { IdSchema, commentSchema, createPostBodyServerSchema, type CreatePostBodyServer, type UpdateProfileBodyServer, updateProfileBodyServerSchema, createCommentBodySchema } from 'moviesclub-shared/social'
+import { IdSchema, createPostBodyServerSchema, type CreatePostBodyServer, type UpdateProfileBodyServer, updateProfileBodyServerSchema, createCommentBodySchema } from 'moviesclub-shared/social'
 
 export async function getFeed(req: Request, res: Response) {
     const posts = await prisma.post.findMany({
         orderBy: { createdAt: 'desc' },
         include: {
-            comments: true,
-            _count: { select: { likedBy: true }, }
+            comments: {
+                include: { author: { select: userProfileSelect } },
+            },
+            _count: { select: { likedBy: true }, },
+            author: { select: userProfileSelect }
         }
     })
     return res.json({ posts });
@@ -50,28 +53,32 @@ export async function getUsers(req: Request, res: Response) {
     return res.json({ users });
 }
 
-export async function getUserPosts(req: Request<{ userId: string }>, res: Response) {
+export async function getUserPosts(req: Request<{ username: string }>, res: Response) {
 
-    const userId = req.params.userId;
+    console.log('here');
 
-    let parseResult = IdSchema.safeParse(userId);
+    const username = req.params.username;
 
-    if (parseResult.error) {
-        return res.status(403).json({ message: parseResult.error.message });
-    }
-
-    const posts = await prisma.post.findMany({
-        orderBy: { createdAt: 'desc' },
-        include: {
-            comments: true,
-            _count: { select: { likedBy: true } }
-        },
+    const userData = await prisma.user.findFirst({
         where: {
-            authorId: userId
-        }
-    }
-    )
-    return res.json({ posts });
+            username: username
+        },
+        include: {
+            posts: {
+                orderBy: { createdAt: 'desc' },
+                include: {
+                    comments: { include: { author: { select: userProfileSelect } } },
+                    _count: {
+                        select: { likedBy: true }
+                    }
+                },
+            }
+        },
+        omit: {
+            password: true
+        },
+    })
+    return res.json(userData);
 }
 
 export async function likePost(req: Request, res: Response) {
