@@ -1,9 +1,14 @@
 import { catchAsync } from "@/utils/catch-async";
 import client from "@/lib/axios"
 import type { ResponseSafeUser } from "moviesclub-shared/auth";
-import { type Comment, type Post, type CreatePostBodyServer, type CreateCommentBody, type UpdateProfileBodyServer, type CreatePostBodyClient, type UpdateProfileBodyClient } from 'moviesclub-shared/social'
+import { type Comment, type Post, type CreatePostBodyServer, type CreateCommentBody, type UpdateProfileBodyServer, type CreatePostBodyClient, type UpdateProfileBodyClient, type UserProfileData } from 'moviesclub-shared/social'
 import { compressImage } from "@/utils/compress-image";
+import { type QueryFunctionContext } from "@tanstack/query-core"
+import { use } from "react";
 
+export type ServerMessage = {
+    message: string
+}
 
 export async function SignAndUploadCloudinary(data: File) {
     let signError, signData;
@@ -40,8 +45,12 @@ export async function fetchAppPosts() {
     if (error) throw error;
     return data.posts;
 }
-export type ServerMessage = {
-    message: string
+
+export async function GETProfileData(c: QueryFunctionContext) {
+    const [_, username] = c.queryKey;
+    const [error, data] = await catchAsync(client.get<UserProfileData>(`/social/users/${username}`));
+    if (error) throw error;
+    return data;
 }
 
 type POSTLikePostResponse = ServerMessage;
