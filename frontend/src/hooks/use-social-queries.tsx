@@ -1,23 +1,25 @@
 import { fetchAppPosts, fetchAppUsers, fetchUserLikedPosts } from "@/api/social";
-import { useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { useSession } from "./use-auth-queries";
 
 
 
 export function usePosts() {
 
-    return useSuspenseQuery({
+    return useQuery({
         queryKey: ["posts"],
         queryFn: fetchAppPosts,
         staleTime: 60 * 15,
+        throwOnError: true,
     });
 }
 
 export function useUsers() {
-    return useSuspenseQuery({
+    return useQuery({
         queryKey: ["users"],
         queryFn: fetchAppUsers,
         staleTime: 60 * 15,
+        throwOnError: true,
     });
 
 }
@@ -31,7 +33,8 @@ export function useUserLikedPosts() {
         queryKey: ["userLikedPosts"],
         queryFn: fetchUserLikedPosts,
         staleTime: 60 * 15,
-        enabled: authUser != null
+        enabled: authUser != null,
+        throwOnError: true
     });
 
 }
