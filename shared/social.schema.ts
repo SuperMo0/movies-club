@@ -26,6 +26,7 @@ export const postSchema = z.object({
     rating: z.coerce.number().nullish().optional(),
     image: z.url().nullish().nullable(),
     authorId: z.uuidv4(),
+    authorUsername: z.string(),
     createdAt: z.string(),
     _count: z.object({
         likedBy: z.number()

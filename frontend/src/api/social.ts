@@ -55,15 +55,15 @@ export async function GETProfileData(c: QueryFunctionContext) {
 }
 
 type POSTLikePostResponse = ServerMessage;
-export async function POSTLikePost(postId: string) {
-    const [error, data] = await catchAsync(client.post<POSTLikePostResponse>(`/social/like/${postId}`));
+export async function POSTLikePost(post: Omit<Post, "author">) {
+    const [error, data] = await catchAsync(client.post<POSTLikePostResponse>(`/social/like/${post.id}`));
     if (error) throw error;
     return data;
 }
 
 type DELETELikePostResponse = ServerMessage;
-export async function DELETELikePost(postId: string) {
-    const [error, data] = await catchAsync(client.delete<DELETELikePostResponse>(`/social/like/${postId}`));
+export async function DELETELikePost(post: Omit<Post, "author">) {
+    const [error, data] = await catchAsync(client.delete<DELETELikePostResponse>(`/social/like/${post.id}`));
     if (error) throw error;
     return data;
 }
@@ -87,12 +87,35 @@ export async function POSTPost(post: CreatePostBodyServer) {
     return data;
 }
 
-
 export async function PUTUserProfile(UpdatedProfileData: UpdateProfileBodyServer) {
     const [error, data] = await catchAsync(client.putForm<SessionResponse>('/social/profile', UpdatedProfileData));
     if (error) throw error;
     return data;
 }
+
+export type POSTFollowResponse = {
+    userId: string
+}
+export async function POSTFollowUser(targetId: string) {
+    const [error, data] = await catchAsync(client.post<POSTFollowResponse>(`/social/follow/${targetId}`));
+    if (error) throw error;
+    return data;
+}
+
+export async function DELETEFollowUser(targetId: string) {
+    const [error, data] = await catchAsync(client.delete<POSTFollowResponse>(`/social/follow/${targetId}`));
+    if (error) throw error;
+    return data;
+}
+
+export type GETFollowsResponse = string[];
+
+export async function GETUserFollows() {
+    const [error, data] = await catchAsync(client.get<GETFollowsResponse>('/social/follows/'));
+    if (error) throw error;
+    return data;
+}
+
 
 
 export async function GETSignUpload() {
