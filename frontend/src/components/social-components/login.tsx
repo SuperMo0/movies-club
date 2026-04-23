@@ -90,6 +90,8 @@ export default function Login({ open, onOpenChange }: LoginProps) {
                                         placeholder="Enter your username"
                                         variant="form"
                                         {...register('username')}
+                                        name='username'
+                                        autoComplete='username'
                                     />
                                     <FieldError>{errors.username?.message}</FieldError>
                                 </Field>

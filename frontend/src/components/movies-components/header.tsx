@@ -37,10 +37,10 @@ const Header = ({ onLoginClick, onSignupClick }: HeaderProps) => {
         <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
             <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
 
-                <h1 className="text-2xl font-extrabold tracking-tight transition-all hover:opacity-90">
+                <NavLink to={"/"}><h1 className="text-2xl font-extrabold tracking-tight transition-all hover:opacity-90">
                     Movie
                     <span className="text-primary drop-shadow-glow-red">Club</span>
-                </h1>
+                </h1></NavLink>
 
                 <nav className="hidden gap-8 md:flex">
                     {navLinks.map((link) => (

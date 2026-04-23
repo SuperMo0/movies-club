@@ -79,7 +79,7 @@ export function MovieSelectorDropdown({ value, onChange }: MovieSelector) {
     return (
         <Select name='select movie' value={value} onValueChange={onChange}>
             <SelectTrigger className="w-full max-w-48">
-                <SelectValue placeholder="Rate a movie" />
+                <SelectValue />
                 <Film className='w-5 h-5' />
             </SelectTrigger>
             <SelectContent>
