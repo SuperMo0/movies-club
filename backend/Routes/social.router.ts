@@ -12,10 +12,16 @@ router.get('/users/:username', controller.getUserPosts)
 router.use(protect)
 
 router.get('/liked', controller.getUserLikedPosts)
+router.get('/follows', controller.getUserFollows)
 router.post('/like/:postId', controller.likePost)
-router.delete('/like/:postId', controller.deleteLikePost)
+router.post('/follow/:userId', controller.followUser)
 router.post('/comment/:postId', controller.commentPost)
 router.post('/post', multer().single('image'), controller.createPost)
+
+
 router.put('/profile', multer().single('image'), controller.updateProfile)
+
+router.delete('/like/:postId', controller.deleteLikePost)
+router.delete('/follow/:userId', controller.deleteFollowUser)
 
 export default router

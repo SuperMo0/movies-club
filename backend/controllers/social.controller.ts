@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import { prisma } from '../lib/prisma.ts'
 import { userProfileSelect } from '../Models/auth.model.ts'
-import { IdSchema, createPostBodyServerSchema, type CreatePostBodyServer, type UpdateProfileBodyServer, updateProfileBodyServerSchema, createCommentBodySchema } from 'moviesclub-shared/social'
+import { IdSchema, createPostBodyServerSchema, type CreatePostBodyServer, type UpdateProfileBodyServer, updateProfileBodyServerSchema, createCommentBodySchema, type Post } from 'moviesclub-shared/social'
 
 export async function getFeed(req: Request, res: Response) {
     const posts = await prisma.post.findMany({
@@ -14,7 +14,9 @@ export async function getFeed(req: Request, res: Response) {
             author: { select: userProfileSelect }
         }
     })
-    return res.json({ posts });
+
+    const postsWithUsername = posts.map(p => { return { ...p, authorUsername: p.author.username } })
+    return res.json({ posts: postsWithUsername });
 }
 
 export async function getUserLikedPosts(req: Request, res: Response) {
@@ -55,10 +57,7 @@ export async function getUsers(req: Request, res: Response) {
 
 export async function getUserPosts(req: Request<{ username: string }>, res: Response) {
 
-    console.log('here');
-
     const username = req.params.username;
-
     const userData = await prisma.user.findFirst({
         where: {
             username: username
@@ -78,7 +77,10 @@ export async function getUserPosts(req: Request<{ username: string }>, res: Resp
             password: true
         },
     })
-    return res.json(userData);
+    if (!userData) return res.status(404).json({ message: "not found" });
+    const userDataAltred = { ...userData, posts: userData.posts.map(p => { return { ...p, authorUsername: userData.username } }) };
+
+    return res.json(userDataAltred);
 }
 
 export async function likePost(req: Request, res: Response) {
@@ -216,9 +218,9 @@ export async function updateProfile(req: Request<{}, {}, UpdateProfileBodyServer
     const updatedUser = await prisma.user.update({
         where: { id: userId },
         data: {
-            bio: bio ?? undefined,
-            name: name ?? undefined,
-            image: image ?? undefined
+            ...(bio !== undefined && { bio }),
+            ...(name !== undefined && { name }),
+            ...(image !== undefined && { image })
         },
         select: userProfileSelect
     });
@@ -227,3 +229,59 @@ export async function updateProfile(req: Request<{}, {}, UpdateProfileBodyServer
         user: updatedUser,
     });
 }
+
+
+export async function followUser(req: Request, res: Response) {
+
+    const userId = req.userId!;
+
+    const targetUser = req.params.userId as string;
+
+    const result = await prisma.user.update({
+        where: { id: userId },
+        data: {
+            following: {
+                connect: {
+                    id: targetUser
+                }
+            }
+        }
+    });
+
+    return res.json({ userId: targetUser });
+}
+
+export async function deleteFollowUser(req: Request, res: Response) {
+
+    const userId = req.userId!;
+    const targetUser = req.params.userId as string;
+    const result = await prisma.user.update({
+        where: { id: userId },
+        data: {
+            following: {
+                disconnect: {
+                    id: targetUser
+                }
+            }
+        }
+    });
+    return res.json({ userId: targetUser });
+}
+
+export async function getUserFollows(req: Request, res: Response) {
+    const userId = req.userId!;
+    const data = await prisma.user.findFirst({
+        where: { id: userId },
+        select: {
+            following: { select: { id: true } }
+        }
+    });
+    const following = data?.following.map(u => u.id) || [];
+    return res.json(following);
+}
+
+
+
+
+
+
