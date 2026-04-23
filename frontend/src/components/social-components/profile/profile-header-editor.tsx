@@ -1,5 +1,5 @@
 import { type ChangeEvent, type Dispatch, type RefObject, type SetStateAction } from 'react';
-import { Camera, X, Check } from 'lucide-react';
+import { Camera, X, Check, Loader } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import ProfileBanner from './Profile-banner';
@@ -12,6 +12,7 @@ type ProfileHeaderProps = {
     profileData: UserProfileData
     previewImage?: string | null
     fileInputRef: RefObject<HTMLInputElement | null>
+    isPending: boolean
     actions: {
         startEditing: () => void;
         cancelEditing: () => void;
@@ -21,13 +22,12 @@ type ProfileHeaderProps = {
     }
 }
 
-export default function ProfileHeaderEditor({ profileData, previewImage, fileInputRef, actions }: ProfileHeaderProps) {
+export default function ProfileHeaderEditor({ profileData, previewImage, fileInputRef, isPending, actions }: ProfileHeaderProps) {
 
     const { cancelEditing, onFileSelect } = actions;
 
     const form = useFormContext<UpdateProfileBodyClient>();
 
-    const isPending = false;
     return (
         <div className='relative mb-24 md:mb-28'>
             {/* Banner */}
@@ -81,7 +81,7 @@ export default function ProfileHeaderEditor({ profileData, previewImage, fileInp
                                 <Button
                                     type="button"
                                     onClick={cancelEditing}
-                                    // disabled={isSaving}
+                                    disabled={isPending}
                                     variant="profile-cancel"
                                     className="px-3 py-2 h-auto"
                                 >
@@ -90,11 +90,11 @@ export default function ProfileHeaderEditor({ profileData, previewImage, fileInp
                                 <Button
                                     type="submit"
                                     form='profile-form'
-                                    // disabled={isSaving}
+                                    disabled={isPending}
                                     variant="profile-save"
                                     className="px-4 py-2 text-sm h-auto"
                                 >
-                                    {isPending ? "..." : <><Check className="w-4 h-4" /> Save</>}
+                                    {isPending ? <Loader className='animate-spin' /> : <><Check className="w-4 h-4" /> Save</>}
                                 </Button>
                             </div>
 

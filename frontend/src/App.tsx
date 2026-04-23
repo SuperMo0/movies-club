@@ -1,8 +1,12 @@
 import { createContext, use, useState } from 'react'
-import { Routes, Route, Outlet } from 'react-router'
-import { ToastContainer } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
-
+import {
+  createBrowserRouter,
+  createRoutesFromElements,
+  RouterProvider,
+  Route,
+  Outlet,
+  ScrollRestoration
+} from "react-router-dom";
 import Home from './pages/home-page'
 import SocialMainPage from './pages/social-main-page'
 import SocialProfile from './pages/social-profile-page'
@@ -15,6 +19,18 @@ import LoadingScreen from './components/ui/LoadingScreen'
 
 import { useSession } from './hooks/use-auth-queries'
 
+const router = createBrowserRouter(
+  createRoutesFromElements(
+    <Route path='/' element={<><ScrollRestoration /> <RootLayout /></>}>
+      <Route index element={<Home />} />
+      <Route path='social' element={<SocialLayout />}>
+        <Route path='main' element={<SocialMainPage />} />
+        <Route path='users/:username' element={<SocialProfile />} />
+      </Route>
+    </Route>
+  )
+);
+
 
 type LoginContextType = {
   openLogin: () => void,
@@ -23,7 +39,7 @@ type LoginContextType = {
 
 const LoginContext = createContext<LoginContextType>(null!);
 
-function App() {
+function RootLayout() {
 
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
@@ -51,7 +67,6 @@ function App() {
 
   return (
     <div className='max-w-5xl mx-auto min-h-screen relative'>
-      <ToastContainer theme="dark" position="bottom-right" />
       <LoginContext.Provider value={{
         openLogin,
         openSignup
@@ -70,22 +85,15 @@ function App() {
           onLoginClick={openLogin}
           onSignupClick={openSignup}
         />
-
-        <Routes>
-          <Route path='/' element={<Outlet />}>
-            <Route index element={<Home />} />
-            <Route element={<SocialLayout />}>
-              <Route path='social' element={<SocialMainPage />} />
-              <Route path='social/users/:username' element={<SocialProfile />} />
-            </Route>
-          </Route>
-        </Routes>
-
+        <Outlet />
       </LoginContext.Provider>
     </div>
   )
 }
 
-export default App;
+function App() {
+  return <RouterProvider router={router} />
+}
 
+export default App;
 export const useLoginModal = () => use(LoginContext);

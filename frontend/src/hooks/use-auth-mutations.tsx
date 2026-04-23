@@ -19,7 +19,6 @@ export function useSignupMutation() {
         mutationFn: signup,
         onSuccess: (data) => {
             queryClient.setQueryData(['session'], data);
-            queryClient.setQueryData<ResponseSafeUser[]>(["users"], (s: any) => [...s, data.user]);
         },
     });
 }

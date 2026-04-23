@@ -12,9 +12,6 @@ type ProfileHeaderProps = {
 
 export default function ProfileHeader({ profileData, isOwner, startEditing }: ProfileHeaderProps) {
 
-    function handleSaveChanges() {
-        console.log('mutating profile');
-    }
     return (
         <div className='relative mb-24 md:mb-28'>
             <ProfileBanner />
@@ -34,10 +31,9 @@ export default function ProfileHeader({ profileData, isOwner, startEditing }: Pr
                             <h1 className='text-2xl md:text-3xl font-bold text-white leading-tight truncate'>{profileData.name}</h1>
                             <p className='text-slate-500 font-medium truncate'>@{profileData.username}</p>
                         </div>
-
                         {/* Actions */}
                         <div className='flex gap-2 md:gap-3 shrink-0'>
-                            {!isOwner && <button>follow</button>}
+                            {!isOwner && <Button variant='default'>Follow</Button>}
                             {isOwner && (
                                 <Button
                                     type="button"

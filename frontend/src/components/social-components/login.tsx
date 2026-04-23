@@ -9,6 +9,7 @@ import { Clapperboard } from 'lucide-react'
 import { useLoginModal } from '@/App'
 import { LoginSchema, type LoginType } from 'moviesclub-shared/auth'
 import { onMutationError, useLoginMutation } from '@/hooks/use-auth-mutations'
+import { useLocation, useNavigate } from 'react-router'
 
 type LoginProps = {
     open: boolean
@@ -18,8 +19,12 @@ type LoginProps = {
 export default function Login({ open, onOpenChange }: LoginProps) {
     const [message, setMessage] = useState<string | null>(null)
     const { mutate, isPending } = useLoginMutation();
+    const navigate = useNavigate()
+    const location = useLocation().pathname;
+
     const {
         register,
+        reset,
         handleSubmit,
         formState: { errors }
     } = useForm<LoginType>({
@@ -30,11 +35,11 @@ export default function Login({ open, onOpenChange }: LoginProps) {
 
     async function handleLoginButtonClick(formData: LoginType) {
         mutate(formData, {
-            onSuccess: () => { onOpenChange(false) },
+            onSuccess: () => { reset(); onOpenChange(false); navigate(location) }, // navigate to the same page so browser knows login was successful
             onError: (error) => { onMutationError(error, setMessage) }
         });
     }
-
+    // todo: make specific route to signin a user as guest and don't expose these credentials 
     async function handleGuestLogin() {
         mutate({
             username: 'guest11',
@@ -85,6 +90,8 @@ export default function Login({ open, onOpenChange }: LoginProps) {
                                         placeholder="Enter your username"
                                         variant="form"
                                         {...register('username')}
+                                        name='username'
+                                        autoComplete='username'
                                     />
                                     <FieldError>{errors.username?.message}</FieldError>
                                 </Field>

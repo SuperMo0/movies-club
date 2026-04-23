@@ -11,6 +11,7 @@ import type { SignupType } from 'moviesclub-shared/auth'
 import { useForm } from 'react-hook-form'
 import { useState } from "react"
 import { onMutationError, useLoginMutation, useSignupMutation } from "@/hooks/use-auth-mutations"
+import { useLocation, useNavigate } from "react-router"
 
 
 type SignupProps = { open: boolean, onOpenChange: (x: boolean) => void }
@@ -20,6 +21,9 @@ export default function Signup({ open, onOpenChange }: SignupProps) {
     const [message, setMessage] = useState<string | null>(null)
 
     const { openLogin } = useLoginModal();
+
+    const navigate = useNavigate()
+    const location = useLocation().pathname;
 
     const { mutate: mutateSignup, isPending: isPendingSignup } = useSignupMutation()
     const { mutate: mutateLogin, isPending: isPendingLogin } = useLoginMutation()
@@ -39,6 +43,7 @@ export default function Signup({ open, onOpenChange }: SignupProps) {
 
     async function handleSignupButtonClick(formData: SignupType) {
         mutateSignup(formData, {
+            onSuccess: () => { form.reset(); onOpenChange(false); navigate(location); }, // navigate to the same page so browser knows signup was successful
             onError: (error) => { onMutationError(error, setMessage) }
         });
     }
@@ -85,6 +90,7 @@ export default function Signup({ open, onOpenChange }: SignupProps) {
                                         type="text"
                                         placeholder="John Doe"
                                         variant={"form"}
+                                        autoComplete="name"
                                     />
                                     <FieldError>{form.formState.errors.name?.message}</FieldError>
                                 </Field>
@@ -99,6 +105,7 @@ export default function Signup({ open, onOpenChange }: SignupProps) {
                                         type="text"
                                         placeholder="johndoe123"
                                         variant={"form"}
+                                        autoComplete="username"
                                     />
                                     <FieldError>{form.formState.errors.username?.message}</FieldError>
                                 </Field>

@@ -17,7 +17,7 @@ export default function SocialProfile() {
     const { onCropComplete, setShowCropper } = actions;
 
 
-    const { mutate: mutateProfile } = usePUTUserProfile();
+    const { mutate: mutateProfile, isPending } = usePUTUserProfile();
 
     const form = useForm({
         resolver: zodResolver(updateProfileBodyClientSchema)
@@ -46,7 +46,10 @@ export default function SocialProfile() {
                         actions={actions}
                         fileInputRef={refs.fileInputRef}
                         profileData={state.profileData}
-                        previewImage={state.previewImage} />
+                        previewImage={state.previewImage}
+                        isPending={isPending}
+                    />
+
                     : <ProfileHeader
                         isOwner={state.isOwner}
                         startEditing={actions.startEditing}
