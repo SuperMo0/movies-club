@@ -3,7 +3,6 @@ import Footer from '@/components/movies-components/footer'
 import Hero from '@/components/movies-components/hero'
 import ShowingNow from '@/components/movies-components/showing-now'
 import MovieBookingModal from '@/components/movies-components/movie-booking-modal'
-
 import LoadingScreen from '@/components/ui/LoadingScreen'
 import { useTodayMovies } from '@/hooks/use-movies-query'
 

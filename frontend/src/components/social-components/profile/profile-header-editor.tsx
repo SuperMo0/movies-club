@@ -6,6 +6,7 @@ import ProfileBanner from './Profile-banner';
 import { Controller } from 'react-hook-form';
 import { type UpdateProfileBodyClient, type UserProfileData } from 'moviesclub-shared/social';
 import { useFormContext } from 'react-hook-form';
+import { usePOSTFollowUser } from '@/hooks/use-social-mutations';
 
 type ProfileHeaderProps = {
 

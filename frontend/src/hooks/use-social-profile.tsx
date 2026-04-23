@@ -1,7 +1,7 @@
 import { useState, useRef, type ChangeEvent } from 'react';
 import { useParams } from 'react-router';
 import { useSession } from './use-auth-queries';
-import { useProfileData } from './use-social-queries';
+import { useProfileData, useUserFollow } from './use-social-queries';
 
 export const defaultAvatar = "https://i.pinimg.com/originals/e7/ba/95/e7ba955b143cda691280e1d0fd23ada6.jpg";
 
@@ -15,7 +15,8 @@ export function useSocialProfile() {
     const [isEditing, setIsEditing] = useState(false);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const { username } = useParams();
-    const { data: profileData, isPending } = useProfileData(username!);
+    const { data: profileData } = useProfileData(username!);
+    const { data: userFollows } = useUserFollow();
 
     const isOwner = authUser?.id == profileData?.id || false
 
@@ -51,13 +52,13 @@ export function useSocialProfile() {
 
     return {
         state: {
-            isPending,
             previewImage,
             rawImageForCropper,
             showCropper,
             isEditing,
             isOwner,
-            profileData
+            profileData,
+            userFollows
         },
         refs: {
             fileInputRef
