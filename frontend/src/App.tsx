@@ -74,9 +74,9 @@ function App() {
         <Routes>
           <Route path='/' element={<Outlet />}>
             <Route index element={<Home />} />
-            <Route element={<SocialLayout />}>
-              <Route path='social' element={<SocialMainPage />} />
-              <Route path='social/users/:username' element={<SocialProfile />} />
+            <Route path='social' element={<SocialLayout />}>
+              <Route path='main' element={<SocialMainPage />} />
+              <Route path='users/:username' element={<SocialProfile />} />
             </Route>
           </Route>
         </Routes>

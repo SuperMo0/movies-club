@@ -5,11 +5,14 @@ import { NavLink } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query'
 import { useLogoutMutation } from '@/hooks/use-auth-mutations.tsx';
 import type { AuthSessionResponse } from 'moviesclub-shared/auth';
+import { cn } from '@/lib/utils';
 
 const navLinks = [
     { name: "Movies", href: "/" },
-    { name: "Community", href: "/social" },
+    { name: "Social Area", href: "/social/main" },
 ];
+
+const navStyles = "text-sm font-medium text-muted-foreground transition-colors hover:text-primary hover:drop-shadow-glow-red";
 
 type HeaderProps = {
     onLoginClick: () => void,
@@ -44,40 +47,30 @@ const Header = ({ onLoginClick, onSignupClick }: HeaderProps) => {
                         <NavLink
                             key={link.name}
                             to={link.href}
-                            className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary hover:drop-shadow-glow-red"
+                            className={({ isActive }) => (isActive ? cn(navStyles, "text-primary") : cn(navStyles))}
                         >
                             {link.name}
                         </NavLink>
                     ))}
+                    {authUser && <NavLink className={({ isActive }) => (isActive ? cn(navStyles, "text-primary") : cn(navStyles))}
+                        to={`/social/users/${authUser.username}`}>My Profile</NavLink>}
                 </nav>
 
                 <div className="hidden items-center gap-4 md:flex">
                     {authUser ? (
-
-                        <>
-                            <Button
-                                variant="ghost"
-                                className="text-muted-foreground hover:text-white hover:bg-white/5"
-                                onClick={handleLogout}
-                            >
-                                Logout
-                            </Button>
-
-                            <NavLink to={`/social/users/${authUser.username}`}>
-                                <Button variant='default'>
-                                    My Profile
-                                </Button>
-                            </NavLink>
-                        </>
+                        <Button
+                            variant="ghost"
+                            className="text-muted-foreground hover:text-white hover:bg-white/5"
+                            onClick={handleLogout}
+                        >
+                            Logout
+                        </Button>
                     ) : (
                         <>
                             <Button variant="ghost" onClick={onLoginClick}>
                                 Login
                             </Button>
-                            <Button
-                                variant='default'
-                                onClick={onSignupClick}
-                            >
+                            <Button variant='default' onClick={onSignupClick}>
                                 Signup
                             </Button>
                         </>
