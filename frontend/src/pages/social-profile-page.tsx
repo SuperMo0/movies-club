@@ -1,4 +1,4 @@
-import { useSocialProfile } from '@/hooks/use-social-profile-editor';
+import { useSocialProfile } from '@/hooks/use-social-profile';
 import ProfileImageCropper from '@/components/social-components/profile/profile-image-cropper';
 import ProfileHeader from '@/components/social-components/profile/profile-header';
 import ProfileSidebar from '@/components/social-components/profile/profile-sidebar';
@@ -29,7 +29,7 @@ export default function SocialProfile() {
         });
     }
 
-    if (!state.profileData) return <LoadingScreen message='loading user profile...'></LoadingScreen>;
+    if (!state.profileData || !state.userFollows) return <LoadingScreen message='loading user profile...'></LoadingScreen>;
 
     return (
         <FormProvider {...form} >

@@ -3,6 +3,10 @@ import { Button } from '@/components/ui/button';
 import defaultAvatar from '/default-avatar.jpg'
 import ProfileBanner from './Profile-banner';
 import type { UserProfileData } from 'moviesclub-shared/social';
+import { useDELETEFollowUser, usePOSTFollowUser } from '@/hooks/use-social-mutations';
+import { useUserFollow } from '@/hooks/use-social-queries';
+import { useSession } from '@/hooks/use-auth-queries';
+import { DELETEFollowUser } from '@/api/social';
 
 type ProfileHeaderProps = {
     profileData: UserProfileData
@@ -12,6 +16,16 @@ type ProfileHeaderProps = {
 
 export default function ProfileHeader({ profileData, isOwner, startEditing }: ProfileHeaderProps) {
 
+    const postFollowMutation = usePOSTFollowUser();
+    const deleteFollowMutation = useDELETEFollowUser();
+
+    const { data: userFollows } = useUserFollow();
+
+    const isFollowing = !!userFollows?.find(u => u == profileData?.id) || false
+
+    function handleFollowToggle() {
+        isFollowing ? deleteFollowMutation.mutate(profileData.id) : postFollowMutation.mutate(profileData.id);
+    }
     return (
         <div className='relative mb-24 md:mb-28'>
             <ProfileBanner />
@@ -33,7 +47,8 @@ export default function ProfileHeader({ profileData, isOwner, startEditing }: Pr
                         </div>
                         {/* Actions */}
                         <div className='flex gap-2 md:gap-3 shrink-0'>
-                            {!isOwner && <Button variant='default'>Follow</Button>}
+                            {(!isOwner && !isFollowing) && <Button onClick={handleFollowToggle} variant='default'>Follow</Button>}
+                            {(!isOwner && isFollowing) && <Button onClick={handleFollowToggle} variant='ghost'>Unfollow</Button>}
                             {isOwner && (
                                 <Button
                                     type="button"

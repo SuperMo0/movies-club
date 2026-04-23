@@ -1,4 +1,4 @@
-import { fetchAppPosts, fetchAppUsers, fetchUserLikedPosts, GETProfileData } from "@/api/social";
+import { fetchAppPosts, fetchAppUsers, fetchUserLikedPosts, GETProfileData, GETUserFollows } from "@/api/social";
 import { useQuery } from "@tanstack/react-query"
 import { useSession } from "./use-auth-queries";
 
@@ -43,6 +43,14 @@ export function useProfileData(username: string) {
     return useQuery({
         queryKey: ["profile", username],
         queryFn: GETProfileData
+    })
+
+}
+
+export function useUserFollow() {
+    return useQuery({
+        queryKey: ["follows"],
+        queryFn: GETUserFollows
     })
 
 }
