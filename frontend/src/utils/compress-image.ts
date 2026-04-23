@@ -6,6 +6,7 @@ export async function compressImage(image: File) {
         maxSizeMB: 0.1,
         maxWidthOrHeight: 1920,
         useWebWorker: true,
+        libURL: '/node_modules/browser-image-compression/dist/browser-image-compression.js?url'
     });
 
 }
