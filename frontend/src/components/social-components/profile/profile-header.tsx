@@ -5,8 +5,8 @@ import ProfileBanner from './Profile-banner';
 import type { UserProfileData } from 'moviesclub-shared/social';
 import { useDELETEFollowUser, usePOSTFollowUser } from '@/hooks/use-social-mutations';
 import { useUserFollow } from '@/hooks/use-social-queries';
+import { useLoginModal } from '@/App';
 import { useSession } from '@/hooks/use-auth-queries';
-import { DELETEFollowUser } from '@/api/social';
 
 type ProfileHeaderProps = {
     profileData: UserProfileData
@@ -20,10 +20,14 @@ export default function ProfileHeader({ profileData, isOwner, startEditing }: Pr
     const deleteFollowMutation = useDELETEFollowUser();
 
     const { data: userFollows } = useUserFollow();
+    const authUser = useSession().data?.user;
 
     const isFollowing = !!userFollows?.find(u => u == profileData?.id) || false
 
+    const { openLogin } = useLoginModal();
+
     function handleFollowToggle() {
+        if (!authUser) return openLogin();
         isFollowing ? deleteFollowMutation.mutate(profileData.id) : postFollowMutation.mutate(profileData.id);
     }
     return (

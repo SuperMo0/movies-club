@@ -71,8 +71,8 @@ export async function DELETELikePost(post: Omit<Post, "author">) {
 type POSTCommentResponse = {
     comment: Comment
 };
-export async function POSTComment(variables: { comment: CreateCommentBody, postId: string },) {
-    const [error, data] = await catchAsync(client.post<POSTCommentResponse>(`social/comment/${variables.postId}`, variables.comment));
+export async function POSTComment(variables: { comment: CreateCommentBody, post: Omit<Post, "author"> },) {
+    const [error, data] = await catchAsync(client.post<POSTCommentResponse>(`social/comment/${variables.post.id}`, variables.comment));
     if (error) throw error;
     return data;
 }

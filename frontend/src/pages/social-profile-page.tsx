@@ -29,7 +29,7 @@ export default function SocialProfile() {
         });
     }
 
-    if (!state.profileData || !state.userFollows) return <LoadingScreen message='loading user profile...'></LoadingScreen>;
+    if (!state.profileData) return <LoadingScreen message='loading user profile...'></LoadingScreen>;
 
     return (
         <FormProvider {...form} >

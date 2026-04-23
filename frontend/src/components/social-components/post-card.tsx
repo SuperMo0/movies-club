@@ -52,7 +52,7 @@ export default function PostCard(props: postCardProps) {
         const content = comment.trim();
         if (!content) return;
 
-        mutatePostComment({ postId: post.id, comment: { content } });
+        mutatePostComment({ post, comment: { content } });
         setComment('');
     }
 

@@ -65,7 +65,10 @@ export function usePOSTComment() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: POSTComment,
-        onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['posts'] }) }
+        onSuccess: (x, s) => {
+            queryClient.invalidateQueries({ queryKey: ['posts'] });
+            queryClient.invalidateQueries({ queryKey: ["profile", s.post.authorUsername] });
+        }
     })
 }
 

@@ -16,7 +16,6 @@ export function useSocialProfile() {
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const { username } = useParams();
     const { data: profileData } = useProfileData(username!);
-    const { data: userFollows } = useUserFollow();
 
     const isOwner = authUser?.id == profileData?.id || false
 
@@ -58,7 +57,6 @@ export function useSocialProfile() {
             isEditing,
             isOwner,
             profileData,
-            userFollows
         },
         refs: {
             fileInputRef

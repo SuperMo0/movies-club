@@ -1,6 +1,7 @@
 import { fetchAppPosts, fetchAppUsers, fetchUserLikedPosts, GETProfileData, GETUserFollows } from "@/api/social";
 import { useQuery } from "@tanstack/react-query"
 import { useSession } from "./use-auth-queries";
+import type { AxiosError } from "axios";
 
 
 
@@ -50,7 +51,8 @@ export function useProfileData(username: string) {
 export function useUserFollow() {
     return useQuery({
         queryKey: ["follows"],
-        queryFn: GETUserFollows
+        queryFn: GETUserFollows,
+        retry: (c, e: AxiosError) => e.status != 401
     })
 
 }
