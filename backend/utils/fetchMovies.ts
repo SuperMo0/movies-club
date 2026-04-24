@@ -43,6 +43,7 @@ function getPageMovies(page: string, moviesArray: Movie[]): void {
     const rawId = e.attribs.id
     if (!rawId) return
     const id = rawId.slice(1)
+    if (moviesArray.some(m => m.id === id)) return;
     const image = $(e).find('> div:eq(0)').find('img').prop('attribs')['data-src'] as string
     const title = $(e).find('> div:eq(1)').find('h3').text().trim()
     const description = $(e).find('> div:eq(2) p:eq(1)').text().trim()
