@@ -14,7 +14,7 @@
     "moduleDetection": "force",
     "skipLibCheck": true,
     "rewriteRelativeImportExtensions": true,
-    "erasableSyntaxOnly": true,
+    // "erasableSyntaxOnly": true,
     "verbatimModuleSyntax": true,
     "allowJs": false,
     "noEmit": true,

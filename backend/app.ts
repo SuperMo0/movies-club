@@ -13,6 +13,7 @@ import helmet from 'helmet'
 import { notFound } from './errors/notFound.ts'
 import { errorHandler } from './errors/errorHandler.ts'
 import { signuploadform } from './utils/signupload.ts'
+import protect from './middlewares/protect.ts'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -54,7 +55,7 @@ export function createApp(options: CreateAppOptions = {}) {
   app.use('/api/movies', moviesRouter)
   options.configureApp?.(app)
 
-  app.get('/api/signupload', function (req: Request, res: Response, next: NextFunction) {
+  app.get('/api/signupload', protect, function (req: Request, res: Response, next: NextFunction) {
     const sig = signuploadform()
     res.json({
       signature: sig.signature,
