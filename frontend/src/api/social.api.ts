@@ -46,11 +46,14 @@ export async function fetchAppPosts() {
     return data.posts;
 }
 
+type GETProfileDataResponse = {
+    userProfileData: UserProfileData
+}
 export async function GETProfileData(c: QueryFunctionContext) {
     const [_, username] = c.queryKey;
-    const [error, data] = await catchAsync(client.get<UserProfileData>(`/social/users/${username}`));
+    const [error, data] = await catchAsync(client.get<GETProfileDataResponse>(`/social/users/${username}`));
     if (error) throw error;
-    return data;
+    return data.userProfileData;
 }
 
 type POSTLikePostResponse = ServerMessage;
@@ -92,7 +95,7 @@ export async function PUTUserProfile(UpdatedProfileData: UpdateProfileBodyServer
 }
 
 export type POSTFollowResponse = {
-    userId: string
+    user: ResponseSafeUser
 }
 export async function POSTFollowUser(targetId: string) {
     const [error, data] = await catchAsync(client.post<POSTFollowResponse>(`/social/follow/${targetId}`));
@@ -106,11 +109,11 @@ export async function DELETEFollowUser(targetId: string) {
     return data;
 }
 
-export type GETFollowsResponse = string[];
-export async function GETUserFollows() {
-    const [error, data] = await catchAsync(client.get<GETFollowsResponse>('/social/follows/'));
+export type GETUserFollowsListResponse = { userFollowsList: string[] };
+export async function GETUserFollowsList() {
+    const [error, data] = await catchAsync(client.get<GETUserFollowsListResponse>('/social/follows/'));
     if (error) throw error;
-    return data;
+    return data.userFollowsList;
 }
 
 export async function GETSignUpload() {

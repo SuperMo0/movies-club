@@ -26,7 +26,7 @@ export default function ProfileSidebar({ profileData, isEditing }: ProfileSideba
                 {isEditing ? (
                     <Textarea
                         {...form.register('bio')}
-                        defaultValue={profileData.bio || ""}
+                        defaultValue={profileData.bio}
                         variant="profile-bio"
                         placeholder="Tell us about yourself..."
                     />
