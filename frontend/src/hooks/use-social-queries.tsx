@@ -1,4 +1,4 @@
-import { fetchAppPosts, fetchAppUsers, fetchUserLikedPosts, GETProfileData, GETUserFollows } from "@/api/social";
+import { fetchAppPosts, fetchAppUsers, fetchUserLikedPosts, GETProfileData, GETUserFollows } from "@/api/social.api";
 import { useQuery } from "@tanstack/react-query"
 import { useSession } from "./use-auth-queries";
 import type { AxiosError } from "axios";

@@ -1,4 +1,4 @@
-import { checkSession } from "@/api/auth"
+import { checkSession } from "@/api/auth.api"
 import { useQuery } from "@tanstack/react-query"
 
 

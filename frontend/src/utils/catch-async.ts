@@ -8,7 +8,6 @@ export const catchAsync = async <T>(promise: Promise<AxiosResponse<T>>) => {
         const response = await promise;
         return [null, response.data] as const
     } catch (error) {
-        if (error instanceof AxiosError) return [error, null] as const;
-        else return [error, null] as [Error, null];
+        return [error, null] as [AxiosError, null]
     }
 };
