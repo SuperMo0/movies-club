@@ -1,7 +1,7 @@
 import type { Prisma } from '../generated/prisma/client.ts'
 import { prisma } from '../lib/prisma.ts'
 
-export const userProfileSelect = {
+export const safeUserSelection = {
   id: true,
   name: true,
   username: true,
