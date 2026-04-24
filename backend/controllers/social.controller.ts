@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import { prisma } from '../lib/prisma.ts'
-import { userProfileSelect } from '../Models/auth.model.ts'
+import { userProfileSelect } from '../models/auth.model.ts'
 import { IdSchema, createPostBodyServerSchema, type CreatePostBodyServer, type UpdateProfileBodyServer, updateProfileBodyServerSchema, createCommentBodySchema, type Post } from 'moviesclub-shared/social'
 
 export async function getFeed(req: Request, res: Response) {
@@ -172,7 +172,7 @@ export async function commentPost(req: Request, res: Response) {
     return res.status(201).json({ comment: result })
 }
 
-export async function createPost(req: Request<{}, {}, CreatePostBodyServer>, res: Response) {
+export async function createPost(req: Request<any, any, CreatePostBodyServer>, res: Response) {
 
     const userId = req.userId!;
 
