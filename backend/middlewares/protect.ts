@@ -5,7 +5,7 @@ const protect: RequestHandler = async (req, res, next) => {
   try {
     const token = req.cookies.jwt;
     const payload = await verify(token);
-    req.userId = payload.userId;
+    res.locals.userId = payload.userId;
     return next()
   } catch {
     res.status(401).json({ message: "Unauthorized" });
