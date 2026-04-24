@@ -4,8 +4,7 @@ import type { ResponseSafeUser } from "moviesclub-shared/auth";
 import { type Comment, type Post, type CreatePostBodyServer, type CreateCommentBody, type UpdateProfileBodyServer, type CreatePostBodyClient, type UpdateProfileBodyClient, type UserProfileData } from 'moviesclub-shared/social'
 import { compressImage } from "@/utils/compress-image";
 import { type QueryFunctionContext } from "@tanstack/query-core"
-import { use } from "react";
-import type { SessionResponse } from "./auth";
+import type { SessionResponse } from "./auth.api";
 
 export type ServerMessage = {
     message: string
@@ -80,7 +79,6 @@ export async function POSTComment(variables: { comment: CreateCommentBody, post:
 export type POSTPostResponse = {
     post: Post
 };
-
 export async function POSTPost(post: CreatePostBodyServer) {
     const [error, data] = await catchAsync(client.postForm<POSTPostResponse>('/social/post', post));
     if (error) throw error;
@@ -109,28 +107,14 @@ export async function DELETEFollowUser(targetId: string) {
 }
 
 export type GETFollowsResponse = string[];
-
 export async function GETUserFollows() {
     const [error, data] = await catchAsync(client.get<GETFollowsResponse>('/social/follows/'));
     if (error) throw error;
     return data;
 }
 
-
-
 export async function GETSignUpload() {
     return await catchAsync(client.get('/signupload'));
-}
-
-export function createCloudinaryFormData(signData: any, file: File) {
-
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("api_key", signData.apikey);
-    formData.append("timestamp", signData.timestamp);
-    formData.append("signature", signData.signature);
-    formData.append("folder", "signed_upload_demo");
-    return formData;
 }
 
 export async function POSTCloudinary(signData: any, formData: FormData): Promise<string> {
@@ -144,7 +128,6 @@ export async function POSTCloudinary(signData: any, formData: FormData): Promise
     return data.secure_url as string;
 }
 
-// todo: make this function generic
 export async function orchesteratePostCreation(formData: CreatePostBodyClient) {
 
     let newFormData: CreatePostBodyServer;
@@ -171,4 +154,15 @@ export async function orchesterateProfileUpadate(formData: UpdateProfileBodyClie
     newFormData = { ...formData, image: secureURL };
 
     return await PUTUserProfile(newFormData);
+}
+
+
+export function createCloudinaryFormData(signData: any, file: File) {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("api_key", signData.apikey);
+    formData.append("timestamp", signData.timestamp);
+    formData.append("signature", signData.signature);
+    formData.append("folder", "signed_upload_demo");
+    return formData;
 }
