@@ -2,7 +2,7 @@ import { Outlet, useLocation } from 'react-router';
 import { ErrorBoundary } from 'react-error-boundary'
 import { QueryErrorResetBoundary } from '@tanstack/react-query'
 import { Button } from '../ui/button';
-import { Wrench, WrenchIcon } from 'lucide-react'
+import { Wrench } from 'lucide-react'
 
 export default function SocialLayout() {
 

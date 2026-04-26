@@ -3,5 +3,12 @@ import { useQuery } from "@tanstack/react-query"
 
 
 export function useSession() {
-    return useQuery({ queryKey: ["session"], queryFn: checkSession, staleTime: Infinity })
+    const query =
+        useQuery({
+            queryKey: ["session"],
+            queryFn: checkSession,
+            staleTime: Infinity,
+            select: (d) => d.user
+        })
+    return query;
 }

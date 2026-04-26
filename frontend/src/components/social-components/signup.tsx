@@ -6,7 +6,7 @@ import { User } from 'lucide-react'
 import { useLoginModal } from '@/App'
 import { zodResolver } from '@hookform/resolvers/zod'
 
-import { SignupSchema } from 'moviesclub-shared/auth'
+import { signupSchema } from 'moviesclub-shared/auth'
 import type { SignupType } from 'moviesclub-shared/auth'
 import { useForm } from 'react-hook-form'
 import { useState } from "react"
@@ -29,7 +29,7 @@ export default function Signup({ open, onOpenChange }: SignupProps) {
     const { mutate: mutateLogin, isPending: isPendingLogin } = useLoginMutation()
 
 
-    const form = useForm<SignupType>({ resolver: zodResolver(SignupSchema) }
+    const form = useForm<SignupType>({ resolver: zodResolver(signupSchema) }
     )
 
     async function handleGuestLogin() {

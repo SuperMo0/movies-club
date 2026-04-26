@@ -32,7 +32,7 @@ export default function ProfileContent({ profileData, isOwner }: profileContentP
 
             <div className='flex flex-col gap-6'>
                 {profileData.posts.length > 0 ? profileData.posts.map((post) => (
-                    <PostCard key={post.id} post={post} profileData={profileData} />
+                    <PostCard key={post.id} post={post} />
                 )) : (
                     <div className="text-slate-500 text-center py-10">No posts yet.</div>
                 )}

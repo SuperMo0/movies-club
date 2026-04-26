@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from '@/components/ui/button'
 import { Clapperboard } from 'lucide-react'
 import { useLoginModal } from '@/App'
-import { LoginSchema, type LoginType } from 'moviesclub-shared/auth'
+import { loginSchema, type LoginType } from 'moviesclub-shared/auth'
 import { onMutationError, useLoginMutation } from '@/hooks/use-auth-mutations'
 import { useLocation, useNavigate } from 'react-router'
 
@@ -28,7 +28,7 @@ export default function Login({ open, onOpenChange }: LoginProps) {
         handleSubmit,
         formState: { errors }
     } = useForm<LoginType>({
-        resolver: zodResolver(LoginSchema),
+        resolver: zodResolver(loginSchema),
     })
 
     const { openSignup } = useLoginModal();

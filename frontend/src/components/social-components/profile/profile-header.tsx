@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import defaultAvatar from '/default-avatar.jpg'
 import ProfileBanner from './Profile-banner';
 import type { UserProfileData } from 'moviesclub-shared/social';
-import { useDELETEFollowUser, usePOSTFollowUser } from '@/hooks/use-social-mutations';
+import { useFollowUser, useUnfollowUser } from '@/hooks/use-social-mutations';
 import { useUserFollow } from '@/hooks/use-social-queries';
 import { useLoginModal } from '@/App';
 import { useSession } from '@/hooks/use-auth-queries';
@@ -16,11 +16,11 @@ type ProfileHeaderProps = {
 
 export default function ProfileHeader({ profileData, isOwner, startEditing }: ProfileHeaderProps) {
 
-    const postFollowMutation = usePOSTFollowUser();
-    const deleteFollowMutation = useDELETEFollowUser();
+    const postFollowMutation = useFollowUser();
+    const deleteFollowMutation = useUnfollowUser();
 
     const { data: userFollows } = useUserFollow();
-    const authUser = useSession().data?.user;
+    const authUser = useSession().data;
 
     const isFollowing = !!userFollows?.find(u => u == profileData?.id) || false
 

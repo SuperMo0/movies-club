@@ -1,14 +1,14 @@
 import NewPostEditor from '@/components/social-components/new-post-editor'
 import PostCard from './post-card'
 import { useSession } from '@/hooks/use-auth-queries';
-import { usePosts, useUsers } from '@/hooks/use-social-queries';
+import { usePosts } from '@/hooks/use-social-queries';
 import PostSkeleton from '../skeletons/post-skeleton';
 
 export default function SocialFeed() {
 
-    const { data: posts, isError: isPostsError } = usePosts();
+    const { data: posts } = usePosts();
 
-    const authUser = useSession().data?.user;
+    const authUser = useSession().data;
 
     return (
         <div className='flex flex-col gap-6 max-w-2xl mx-auto lg:mx-0'>

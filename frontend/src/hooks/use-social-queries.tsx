@@ -1,60 +1,56 @@
-import { fetchAppPosts, fetchAppUsers, fetchUserLikedPosts, GETProfileData, GETUserFollowsList } from "@/api/social.api";
 import { useQuery } from "@tanstack/react-query"
 import { useSession } from "./use-auth-queries";
-import type { AxiosError } from "axios";
+import {
+    GETPosts,
+    GETProfileData,
+    GETUserFollowsList,
+    GETUserLikedPosts
+} from "@/api/social.api";
 
 
 
 export function usePosts() {
-
-    return useQuery({
+    const query = useQuery({
         queryKey: ["posts"],
-        queryFn: fetchAppPosts,
+        queryFn: GETPosts,
         staleTime: 60 * 15,
         throwOnError: true,
+        select: (d) => d.posts
     });
-}
-
-export function useUsers() {
-    return useQuery({
-        queryKey: ["users"],
-        queryFn: fetchAppUsers,
-        staleTime: 60 * 15,
-        throwOnError: true,
-    });
-
+    return query
 }
 
 export function useUserLikedPosts() {
-
-    const { data: session } = useSession();
-    const authUser = session?.user;
-
-    return useQuery({
+    const authUser = useSession().data;
+    const query = useQuery({
         queryKey: ["userLikedPosts"],
-        queryFn: fetchUserLikedPosts,
+        queryFn: GETUserLikedPosts,
         staleTime: 60 * 15,
-        enabled: authUser != null,
+        select: (d) => d.likedPosts,
+        enabled: !!authUser,
         throwOnError: true
     });
-
+    return query;
 }
 
 export function useProfileData(username: string) {
-    return useQuery({
+    const query = useQuery({
         queryKey: ["profile", username],
-        queryFn: GETProfileData
+        queryFn: GETProfileData,
+        select: (d) => d.userProfileData
     })
-
+    return query;
 }
 
 export function useUserFollow() {
-    return useQuery({
+    const authUser = useSession().data;
+    const query = useQuery({
         queryKey: ["follows"],
         queryFn: GETUserFollowsList,
-        retry: (c, e: AxiosError) => e.status != 401
+        enabled: !!authUser,
+        select: (d) => d.userFollowsList
     })
-
+    return query;
 }
 
 
