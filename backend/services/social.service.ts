@@ -109,9 +109,7 @@ export async function likePost(postId: string, userId: string) {
             },
             author: { select: safeUserSelection }
         }
-
     })
-
     return result;
 }
 
@@ -198,10 +196,13 @@ export async function followUser(userId: string, targetUserId: string) {
                 }
             }
         },
-        select: safeUserSelection
+        include: {
+            following: true
+        }
     });
 
-    return result;
+    const finalResult = result.following.map(u => u.id);
+    return finalResult;
 }
 
 export async function unfollowUser(userId: string, targetUserId: string) {
@@ -214,10 +215,12 @@ export async function unfollowUser(userId: string, targetUserId: string) {
                 }
             }
         },
-        select: safeUserSelection
+        include: {
+            following: true
+        }
     });
-
-    return result;
+    const finalResult = result.following.map(u => u.id);
+    return finalResult;
 }
 
 

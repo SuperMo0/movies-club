@@ -14,6 +14,7 @@ import { notFound } from './errors/notFound.ts'
 import { errorHandler } from './errors/errorHandler.ts'
 import { signuploadform } from './utils/signupload.ts'
 import protect from './middlewares/protect.ts'
+import type { GetSignUploadSignutureResponse } from 'moviesclub-shared/api'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -55,19 +56,17 @@ export function createApp(options: CreateAppOptions = {}) {
   app.use('/api/movies', moviesRouter)
   options.configureApp?.(app)
 
-  app.get('/api/signupload', protect, function (req: Request, res: Response, next: NextFunction) {
+  app.get('/api/signupload', protect, function (req: Request, res: Response<GetSignUploadSignutureResponse>) {
     const sig = signuploadform()
     res.json({
       signature: sig.signature,
       timestamp: sig.timestamp,
-      cloudname: process.env.CLOUDINARY_CLOUD_NAME,
-      apikey: process.env.CLOUDINARY_API_KEY
+      cloudname: process.env.CLOUDINARY_CLOUD_NAME!,
+      apikey: process.env.CLOUDINARY_API_KEY!
     })
   })
 
   app.use('/api', notFound)
-
-
 
   if (enableNonDevelopmentMiddleware) {
     // todo: read some docs and articles about this so we understand it better.
