@@ -1,14 +1,11 @@
 import { catchAsync } from "@/utils/catch-async";
 import client from "@/lib/axios"
-import type { SafeUserResponse } from "moviesclub-shared/auth";
 import { type Post, type CreatePostBodyServer, type CreateCommentBody, type UpdateProfileBodyServer, type CreatePostBodyClient, type UpdateProfileBodyClient, type UserProfileData } from 'moviesclub-shared/social'
 import { compressImage } from "@/utils/compress-image";
 import { type QueryFunctionContext } from "@tanstack/query-core"
 import type { DeleteUnfollowUserResponse, DeletLikePostResponse, GetPostsResponse, GetSignUploadSignutureResponse, GetUserFollowsListResponse, GetUserLikedPostsResponse, GetUserProfileDataResponse, PostCreateCommentOnPostResponse, PostCreatePostResponse, PostFollowUserResponse, PostLikePostResponse, PutUpdateProfileResponse } from 'moviesclub-shared/api'
 
-export type ServerMessage = {
-    message: string
-}
+
 
 export async function SignAndUploadCloudinary(data: File) {
     const signData = await GETSignUpload();
@@ -26,7 +23,7 @@ export async function GETUserLikedPosts() {
 
 
 export async function GETPosts() {
-    const [error, data] = await catchAsync(client.get<GetPostsResponse>('/social/feed'));
+    const [error, data] = await catchAsync(client.get<GetPostsResponse>('/social/posts'));
     if (error) throw error;
     return data;
 }
