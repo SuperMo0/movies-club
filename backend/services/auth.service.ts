@@ -38,6 +38,9 @@ export async function getUserByUsername(username: string) {
         where: {
             username,
         },
+        include: {
+            _count: { select: { followedBy: true, following: true } }
+        }
     })
     return result;
 }

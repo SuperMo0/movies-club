@@ -12,7 +12,6 @@ export async function login(req: LoginRequest, res: Response<SessionResponse>) {
 
     const { username, password } = req.body
     const unsafeUser = await authService.getUserByUsername(username);
-    console.log(username);
 
     if (!unsafeUser) {
         throw new appError(401, "invalid credentials");
