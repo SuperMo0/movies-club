@@ -1,7 +1,7 @@
 import type { CreateCommentBody, CreatePostBodyServer, UpdateProfileBodyServer } from 'moviesclub-shared/social'
 import { appError } from '../errors/appError.ts'
 import { prisma } from '../lib/prisma.ts'
-import { safeUserSelection } from '../models/auth.model.ts'
+import { safeUserSelection } from './auth.service.ts'
 
 
 export async function getPosts() {
