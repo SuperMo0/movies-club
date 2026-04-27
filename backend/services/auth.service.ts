@@ -1,3 +1,4 @@
+import type { SignupBody } from 'moviesclub-shared/auth';
 import type { Prisma } from '../generated/prisma/client.ts'
 import { prisma } from '../lib/prisma.ts'
 
@@ -19,34 +20,34 @@ export const safeUserSelection = {
 } satisfies Prisma.userSelect
 
 
-export async function insertUser(name: string, username: string, password: string) {
+export async function insertUser(newUser: SignupBody) {
     const result = prisma.user.create({
         data: {
-            name,
-            username,
-            password,
+            name: newUser.name,
+            username: newUser.username,
+            password: newUser.password,
         },
         select: safeUserSelection,
     })
+    return result;
 }
 
-// we don't want to let prisma throws here because we don't want to return 404 when someone tries to login with some username
-// because if we return 404 when username is wrong and 401 when password is wrong this will expose users usernames
-// however we are currently sending the username in the payloads anyway and we need to change this in the feture for security
 
 export async function getUserByUsername(username: string) {
-    return prisma.user.findUnique({
+    const result = prisma.user.findUnique({
         where: {
             username,
         },
     })
+    return result;
 }
 
 export async function getUserById(id: string) {
-    return prisma.user.findUnique({
+    const result = prisma.user.findUnique({
         where: {
             id,
         },
         select: safeUserSelection,
     })
+    return result;
 }

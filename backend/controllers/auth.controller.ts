@@ -1,88 +1,60 @@
 import type { Request, Response } from "express";
 import { sign, verify } from "../lib/jwt.ts";
-import * as model from "../models/auth.model.ts"
+import * as authService from "./../services/auth.service.ts"
 import { compare, hash } from "../lib/bcrypt.ts";
-import type { AuthUserResponse, SafeUserResponse } from "moviesclub-shared/auth";
-import { LoginSchema, SignupSchema } from "moviesclub-shared/auth";
+import type { LoginBody, SessionResponse, SignupBody } from "moviesclub-shared/auth";
+import { safeUserResponseSchema } from "moviesclub-shared/auth";
+import { appError } from "../errors/appError.ts";
 
-function sanitizeUser(user: any) {
-    const { password: _password, ...userWithoutPassword } = user;
-    return userWithoutPassword as SafeUserResponse;
+
+type LoginRequest = Request<unknown, unknown, LoginBody>
+export async function login(req: LoginRequest, res: Response<SessionResponse>) {
+
+    const { username, password } = req.body
+    const unsafeUser = await authService.getUserByUsername(username);
+    console.log(username);
+
+    if (!unsafeUser) {
+        throw new appError(401, "invalid credentials");
+    }
+
+
+    const isPassMatches = await compare(password, unsafeUser.password);
+
+    if (!isPassMatches) {
+        throw new appError(401, "invalid credentials");
+    }
+
+    await sign(unsafeUser, res);
+    const safeUser = safeUserResponseSchema.parse(unsafeUser);
+    res.json({ user: safeUser });
 }
 
-function unauthenticatedSession() {
-    return { user: null };
-}
+type SignupReqeust = Request<unknown, unknown, SignupBody>
+export async function signup(req: SignupReqeust, res: Response<SessionResponse>) {
 
-export async function login(req: Request, res: Response) {
-    const parseResult = LoginSchema.safeParse(req.body);
-
-    if (!parseResult.success) {
-        return res.status(401).json({ message: "Invalid input" });
-    }
-
-    const { username, password } = parseResult.data;
-
-    const user = await model.getUserByUsername(username);
-
-    if (!user) {
-        return res.status(401).json({ message: "Wrong credentials" })
-    }
-
-    const isPasswordValid = await compare(password, user.password);
-
-    if (!isPasswordValid) {
-        return res.status(401).json({ message: "Wrong credentials" })
-    }
-
-    await sign(user, res);
-
-    const payload: AuthUserResponse = { user: sanitizeUser(user)! };
-    return res.json(payload);
-}
-
-export async function signup(req: Request, res: Response) {
-    const parseResult = SignupSchema.safeParse(req.body);
-
-    if (!parseResult.success) {
-        return res.status(401).json({ message: "Invalid input" });
-    }
-
-    const { name, username, password } = parseResult.data;
-
+    const { password } = req.body;
     const hashedPassword = await hash(password);
+    let userHashed = { ...req.body, password: hashedPassword };
+    const safeUser = await authService.insertUser(userHashed);
+    await sign(safeUser, res);
 
-    let user;
-    try {
-        user = await model.insertUser(name, username, hashedPassword);
-    } catch (error) {
-        if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'P2002') {
-            return res.status(409).json({ message: "Username already exists" });
-        }
-        throw error
-    }
-
-    await sign(user, res);
-
-    const payload: AuthUserResponse = { user: sanitizeUser(user)! };
-    return res.status(201).json(payload);
+    res.status(201).json({ user: safeUser });
 }
 
-export async function check(req: Request, res: Response) {
-
+export async function check(req: Request, res: Response<SessionResponse>) {
     try {
         const { jwt } = req.cookies;
-        const payload = await verify(jwt);
-        const { userId } = payload;
-        const user = await model.getUserById(userId);
-        return res.status(200).json({ user });
+        const { userId } = await verify(jwt);
+        const safeUser = await authService.getUserById(userId);
+        return res.status(200).json({ user: safeUser });
     } catch (error) {
         res.clearCookie("jwt");
-        return res.status(200).json(unauthenticatedSession());
+        return res.status(401).json({ user: null });
     }
 }
 
-export async function logout(req: Request, res: Response) {
+export async function logout(req: Request, res: Response<SessionResponse>) {
     res.clearCookie("jwt");
     return res.json({ user: null });
 }
