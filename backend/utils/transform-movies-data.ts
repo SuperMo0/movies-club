@@ -1,5 +1,4 @@
 import type { Movie } from "moviesclub-shared/movies";
-import fs from 'fs'
 
 export function transformMoviesDataByCienma(data: Movie[]) {
     const transformedData: Record<string, Record<string, any>> = {};
@@ -15,7 +14,5 @@ export function transformMoviesDataByCienma(data: Movie[]) {
             })
         })
     }))
-
-    fs.writeFileSync('./data.json', JSON.stringify(transformedData, null, 2));
     return transformedData;
 }
