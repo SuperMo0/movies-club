@@ -6,8 +6,8 @@ import { User } from 'lucide-react'
 import { useLoginModal } from '@/App'
 import { zodResolver } from '@hookform/resolvers/zod'
 
-import { signupSchema } from 'moviesclub-shared/auth'
-import type { SignupType } from 'moviesclub-shared/auth'
+import { signupBodySchema } from 'moviesclub-shared/auth'
+import type { SignupBody } from 'moviesclub-shared/auth'
 import { useForm } from 'react-hook-form'
 import { useState } from "react"
 import { onMutationError, useLoginMutation, useSignupMutation } from "@/hooks/use-auth-mutations"
@@ -28,9 +28,7 @@ export default function Signup({ open, onOpenChange }: SignupProps) {
     const { mutate: mutateSignup, isPending: isPendingSignup } = useSignupMutation()
     const { mutate: mutateLogin, isPending: isPendingLogin } = useLoginMutation()
 
-
-    const form = useForm<SignupType>({ resolver: zodResolver(signupSchema) }
-    )
+    const form = useForm<SignupBody>({ resolver: zodResolver(signupBodySchema) })
 
     async function handleGuestLogin() {
         mutateLogin({
@@ -41,9 +39,9 @@ export default function Signup({ open, onOpenChange }: SignupProps) {
         })
     }
 
-    async function handleSignupButtonClick(formData: SignupType) {
+    async function handleSignupButtonClick(formData: SignupBody) {
         mutateSignup(formData, {
-            onSuccess: () => { form.reset(); onOpenChange(false); navigate(location); }, // navigate to the same page so browser knows signup was successful
+            onSuccess: () => { form.reset(); onOpenChange(false); navigate(location); },
             onError: (error) => { onMutationError(error, setMessage) }
         });
     }
@@ -51,9 +49,11 @@ export default function Signup({ open, onOpenChange }: SignupProps) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent
-                className="w-full max-w-sm bg-slate-950 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden p-0 gap-0"
+                className="w-[calc(100vw-2rem)] max-w-sm max-h-[85dvh] bg-slate-950 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden p-0 gap-0"
             >
-                <div className="relative p-8 pt-10">
+
+                <div className="relative p-6 sm:p-8 pt-10 overflow-y-auto max-h-[85dvh] custom-scrollbar">
+
                     <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-red-600 via-red-500 to-red-600"></div>
                     <div className='text-center mb-6'>
                         <div className='inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-600/10 mb-4'>
@@ -141,7 +141,7 @@ export default function Signup({ open, onOpenChange }: SignupProps) {
                                 disabled={isPendingLogin}
                                 type="button"
                             >
-                                {isPendingLogin ? "Loggin In..." : "Login as Guest"}
+                                {isPendingLogin ? "Logging In..." : "Login as Guest"}
                             </Button>
 
                         </FieldSet>
@@ -150,6 +150,7 @@ export default function Signup({ open, onOpenChange }: SignupProps) {
                     <div className='mt-6 text-center text-sm text-slate-500'>
                         Already have an account?{' '}
                         <button
+                            type="button"
                             onClick={openLogin}
                             className='text-white hover:text-red-500 font-medium transition-colors cursor-pointer outline-none'
                         >
