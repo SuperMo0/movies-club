@@ -46,11 +46,7 @@ function RootLayout() {
 
   const { data: sessionData, isLoading } = useSession();
 
-  if (isLoading) {
-    return <LoadingScreen message="Loading MovieClub..." />;
-  }
-
-  const authUser = sessionData?.user
+  const authUser = sessionData
 
   const openLogin = () => {
     setIsSignupModalOpen(false);

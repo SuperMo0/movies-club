@@ -1,5 +1,5 @@
-import type { SessionResponse } from "@/api/auth.api";
-import { queryClient } from "@/main";
+import type { SessionResponse } from "moviesclub-shared/auth";
+import { queryClient } from "./query-client";
 import type { CreateCommentBody, CreatePostBodyClient, Post, UpdateProfileBodyClient } from "moviesclub-shared/social";
 
 export function createComment(comment: CreateCommentBody, post: Post) {

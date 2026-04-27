@@ -1,5 +1,5 @@
-import type { SessionResponse } from '@/api/auth.api';
-import { queryClient } from '@/main'
+import type { SessionResponse } from 'moviesclub-shared/auth';
+import { queryClient } from './query-client';
 import type { GetPostsResponse, GetUserFollowsListResponse, GetUserLikedPostsResponse, GetUserProfileDataResponse } from 'moviesclub-shared/api'
 
 
