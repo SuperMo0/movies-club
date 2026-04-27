@@ -1,6 +1,8 @@
 import { z } from 'zod';
-import * as socialSchemas from './social.schema'
-import { safeUserResponseSchema } from './auth.schema';
+import * as socialSchemas from './social.schema.ts'
+import { safeUserResponseSchema } from './auth.schema.ts';
+import type { Movie, todayCinemasRecord } from './movies.schema.ts';
+
 
 export const getPostsResponseSchema = z.object({
   posts: z.array(socialSchemas.postSchema)
@@ -78,7 +80,8 @@ export const getSignUploadSignutureResponseSchema = z.object({
 })
 export type GetSignUploadSignutureResponse = z.infer<typeof getSignUploadSignutureResponseSchema>
 
-
-
+export type CinemaMovies = Record<string, { movieId: string, times: string[] }[]>
+export type TodayCinemasResponse = { cinemas: todayCinemasRecord };
+export type TodayMoviesResponse = { movies: Movie[] };
 
 

@@ -1,8 +1,7 @@
 import { z } from 'zod';
 
 
-
-export const signupSchema = z.object({
+export const signupBodySchema = z.object({
     name: z.string()
         .min(2, "Name must be at least 2 characters long"),
     username: z.string()
@@ -13,7 +12,7 @@ export const signupSchema = z.object({
 });
 
 
-export const loginSchema = z.object({
+export const loginBodySchema = z.object({
     username: z.string()
         .min(2, "Username is required"),
     password: z.string()
@@ -36,16 +35,13 @@ export const safeUserResponseSchema = z.object({
     })
 })
 
+export const sessionResponseSchema = z.object({
+    user: safeUserResponseSchema.nullable(),
+})
+
 export type SafeUserResponse = z.infer<typeof safeUserResponseSchema>
-export type SignupType = z.infer<typeof signupSchema>;
-export type LoginType = z.infer<typeof loginSchema>;
-
-export type AuthUserResponse = {
-    user: SafeUserResponse;
-};
-
-export type AuthSessionResponse = {
-    user: SafeUserResponse | null;
-};
+export type SignupBody = z.infer<typeof signupBodySchema>;
+export type LoginBody = z.infer<typeof loginBodySchema>;
+export type SessionResponse = z.infer<typeof sessionResponseSchema>
 
 
