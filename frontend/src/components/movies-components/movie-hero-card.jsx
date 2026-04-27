@@ -1,6 +1,5 @@
 import { Button } from '@/components/ui/button'
 import { PlayCircle, CalendarClock } from 'lucide-react'
-import React from 'react'
 
 export default function MovieHeroCard({ movie, handleMovieClick, imdbData = null }) {
 
