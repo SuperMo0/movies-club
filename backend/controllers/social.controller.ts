@@ -1,287 +1,105 @@
+import * as socialService from '../services/social.service.ts';
+import type {
+    DeleteUnfollowUserResponse,
+    GetPostsResponse,
+    GetUserFollowsListResponse,
+    GetUserLikedPostsResponse,
+    GetUserProfileDataResponse,
+    PostCreateCommentOnPostResponse,
+    PostCreatePostResponse,
+    PostFollowUserResponse,
+    PostLikePostResponse,
+    PutUpdateProfileResponse
+} from 'moviesclub-shared/api'
+import type {
+    UpdateProfileBodyServer,
+    CreateCommentBody,
+    CreatePostBodyServer
+} from 'moviesclub-shared/social'
 import type { Request, Response } from 'express';
-import { prisma } from '../lib/prisma.ts'
-import { userProfileSelect } from '../models/auth.model.ts'
-import { IdSchema, createPostBodyServerSchema, type CreatePostBodyServer, type UpdateProfileBodyServer, updateProfileBodyServerSchema, createCommentBodySchema, type Post } from 'moviesclub-shared/social'
 
-export async function getFeed(req: Request, res: Response) {
-    const posts = await prisma.post.findMany({
-        orderBy: { createdAt: 'desc' },
-        include: {
-            comments: {
-                include: { author: { select: userProfileSelect } },
-            },
-            _count: { select: { likedBy: true }, },
-            author: { select: userProfileSelect }
-        }
-    })
 
-    const postsWithUsername = posts.map(p => { return { ...p, authorUsername: p.author.username } })
-    return res.json({ posts: postsWithUsername });
-}
 
-export async function getUserLikedPosts(req: Request, res: Response) {
-
-    const userId = req.userId!;
-    let parseResult = IdSchema.safeParse(userId);
-    if (parseResult.error) {
-        return res.status(403).json({ message: parseResult.error.message });
-    }
-
-    const user = await prisma.user.findUnique({
-        where: {
-            id: userId
-        },
-        select: {
-            likedPosts: {
-                select: { id: true }
-            }
-        }
-    });
-
-    if (!user) {
-        return res.status(403).json({ message: "User not found" });
-    }
-
-    const likedPostIds = user.likedPosts.map(post => post.id);
-
-    return res.json({ likedPosts: likedPostIds });
+export async function getPosts(req: Request, res: Response<GetPostsResponse>) {
+    const posts = await socialService.getPosts();
+    return res.json({ posts });
 }
 
 
-export async function getUsers(req: Request, res: Response) {
-    const users = await prisma.user.findMany({
-        select: userProfileSelect
-    })
-    return res.json({ users });
+export async function getUserLikedPosts(req: Request, res: Response<GetUserLikedPostsResponse>) {
+    const userId = res.locals.userId;
+    const likedPosts = await socialService.getUserLikedPosts(userId);
+    return res.json({ likedPosts });
 }
 
-export async function getUserPosts(req: Request<{ username: string }>, res: Response) {
 
+export async function getUserProfileData(req: Request<{ username: string }>, res: Response<GetUserProfileDataResponse>) {
     const username = req.params.username;
-    const userData = await prisma.user.findFirst({
-        where: {
-            username: username
-        },
-        include: {
-            posts: {
-                orderBy: { createdAt: 'desc' },
-                include: {
-                    comments: { include: { author: { select: userProfileSelect } } },
-                    _count: {
-                        select: { likedBy: true }
-                    }
-                },
-            }
-        },
-        omit: {
-            password: true
-        },
-    })
-    if (!userData) return res.status(404).json({ message: "not found" });
-    const userDataAltred = { ...userData, posts: userData.posts.map(p => { return { ...p, authorUsername: userData.username } }) };
-
-    return res.json(userDataAltred);
+    const userProfileData = await socialService.getUserProfileData(username);
+    res.json({ userProfileData });
 }
 
-export async function likePost(req: Request, res: Response) {
 
+export async function likePost(req: Request<{ postId: string }>, res: Response<PostLikePostResponse>) {
+    const postId = req.params.postId;
+    const userId = res.locals.userId;
+    const post = await socialService.likePost(postId, userId);
+    res.status(201).json({ post });
+}
+
+
+export async function unlikePost(req: Request<{ postId: string }>, res: Response) {
     let postId = req.params.postId;
-
-    const userId = req.userId!
-
-    const parseResult = IdSchema.safeParse(postId);
-    if (!parseResult.success) {
-        return res.status(403).json({ message: parseResult.error.message });
-    }
-    postId = parseResult.data;
-
-    await prisma.post.update({
-        where: {
-            id: postId
-        },
-        data: {
-            likedBy: {
-                connect: {
-                    id: userId
-                }
-            }
-        }
-
-    })
-    return res.status(201).json({ message: "success" });
+    const userId = res.locals.userId;
+    const post = await socialService.unlikePost(postId, userId);
+    return res.status(200).json({ post });
 }
 
 
-export async function deleteLikePost(req: Request, res: Response) {
+type CommentPostRequest = Request<{ postId: string }, unknown, CreateCommentBody>;
+export async function createCommentOnPost(req: CommentPostRequest, res: Response<PostCreateCommentOnPostResponse>) {
     let postId = req.params.postId;
-
-    const userId = req.userId!;
-
-    const parseResult = IdSchema.safeParse(postId);
-    if (!parseResult.success) {
-        return res.status(403).json({ message: parseResult.error.message });
-    }
-    postId = parseResult.data;
-
-    const result = await prisma.post.update({
-        data: {
-            likedBy: {
-                disconnect: {
-                    id: userId
-                }
-            }
-        },
-        select: {
-            _count: { select: { likedBy: true } }
-        },
-        where: {
-            id: postId
-        }
-    })
-
-    return res.status(200).json({ message: "success", result });
+    const userId = res.locals.userId;
+    const comment = await socialService.commentOnPost(userId, postId, req.body);
+    return res.status(201).json({ comment });
 }
 
 
-
-
-export async function commentPost(req: Request, res: Response) {
-    let postId = req.params.postId;
-    const userId = req.userId!;
-
-    const validatedParam = IdSchema.safeParse(postId);
-    if (!validatedParam.success) {
-        return res.status(403).json({ message: validatedParam.error.message });
-    }
-    postId = validatedParam.data;
-
-    const validatedBody = createCommentBodySchema.safeParse(req.body);
-    if (!validatedBody.success) {
-        return res.status(403).json({ message: validatedBody.error.message });
-    }
-    const { content } = validatedBody.data;
-
-    const result = await prisma.comment.create({
-        data: {
-            authorId: userId,
-            content: content,
-            postId: postId,
-        }
-    })
-
-    return res.status(201).json({ comment: result })
-}
-
-export async function createPost(req: Request<any, any, CreatePostBodyServer>, res: Response) {
-
-    const userId = req.userId!;
-
-    const validatedBody = createPostBodyServerSchema.safeParse(req.body);
-    if (!validatedBody.success) {
-        console.log(validatedBody.error.message);
-        return res.status(403).json({ message: validatedBody.error.message });
-    }
-
-    let { content, movieTitle, rating, image } = validatedBody.data;
-
-    const post = await prisma.post.create({
-        data: {
-            authorId: userId,
-            content: content,
-            image: image || null,
-            movieTitle: movieTitle || null,
-            rating: rating || null
-        },
-        include: {
-            author: {
-                select: userProfileSelect
-            },
-            _count: { select: { likedBy: true, comments: true } }
-        }
-    });
-
-    return res.json({ post });
+type CreatePostRequest = Request<unknown, unknown, CreatePostBodyServer>
+export async function createPost(req: CreatePostRequest, res: Response<PostCreatePostResponse>) {
+    const userId = res.locals.userId;
+    const post = await socialService.createPost(userId, req.body);
+    return res.status(201).json({ post });
 }
 
 
-export async function updateProfile(req: Request<{}, {}, UpdateProfileBodyServer>, res: Response) {
-
-    const userId = req.userId!;
-
-    const validatedBody = updateProfileBodyServerSchema.safeParse(req.body);
-    if (!validatedBody.success) {
-        return res.status(403).json({ message: validatedBody.error.message });
-    }
-
-    const { name, bio, image } = validatedBody.data;
-
-    const updatedUser = await prisma.user.update({
-        where: { id: userId },
-        data: {
-            ...(bio !== undefined && { bio }),
-            ...(name !== undefined && { name }),
-            ...(image !== undefined && { image })
-        },
-        select: userProfileSelect
-    });
-
-    return res.json({
-        user: updatedUser,
-    });
+type updateProfileRequest = Request<{}, {}, UpdateProfileBodyServer>
+export async function updateProfile(req: updateProfileRequest, res: Response<PutUpdateProfileResponse>) {
+    const userId = res.locals.userId;
+    const user = await socialService.updateUserProfile(userId, req.body);
+    return res.json({ user });
 }
 
 
-export async function followUser(req: Request, res: Response) {
-
-    const userId = req.userId!;
-
-    const targetUser = req.params.userId as string;
-
-    const result = await prisma.user.update({
-        where: { id: userId },
-        data: {
-            following: {
-                connect: {
-                    id: targetUser
-                }
-            }
-        }
-    });
-
-    return res.json({ userId: targetUser });
-}
-
-export async function deleteFollowUser(req: Request, res: Response) {
-
-    const userId = req.userId!;
-    const targetUser = req.params.userId as string;
-    const result = await prisma.user.update({
-        where: { id: userId },
-        data: {
-            following: {
-                disconnect: {
-                    id: targetUser
-                }
-            }
-        }
-    });
-    return res.json({ userId: targetUser });
-}
-
-export async function getUserFollows(req: Request, res: Response) {
-    const userId = req.userId!;
-    const data = await prisma.user.findFirst({
-        where: { id: userId },
-        select: {
-            following: { select: { id: true } }
-        }
-    });
-    const following = data?.following.map(u => u.id) || [];
-    return res.json(following);
+type FollowUserRequest = Request<{ userId: string }>
+export async function followUser(req: FollowUserRequest, res: Response<PostFollowUserResponse>) {
+    const userId = res.locals.userId;
+    const targetUserId = req.params.userId;
+    const userFollowsList = await socialService.followUser(userId, targetUserId);
+    return res.json({ userFollowsList });
 }
 
 
+type UnfollowUserRequest = Request<{ userId: string }>
+export async function unfollowUser(req: UnfollowUserRequest, res: Response<DeleteUnfollowUserResponse>) {
+    const userId = res.locals.userId;
+    const targetUserId = req.params.userId;
+    const userFollowsList = await socialService.unfollowUser(userId, targetUserId);
+    return res.json({ userFollowsList });
+}
 
-
-
-
+export async function getUserFollowsList(req: Request, res: Response<GetUserFollowsListResponse>) {
+    const userId = res.locals.userId;
+    const userFollowsList = await socialService.getUserFollowsList(userId);
+    return res.json({ userFollowsList });
+}

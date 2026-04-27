@@ -1,5 +1,4 @@
 import type { Comment } from 'moviesclub-shared/social'
-import { useUsers } from '@/hooks/use-social-queries'
 import defaultAvatar from '/default-avatar.jpg';
 import { Button } from '../ui/button';
 export default function PostComment({ comment }: { comment: Comment }) {

@@ -10,29 +10,22 @@ import { useSession } from '@/hooks/use-auth-queries';
 import { useUserLikedPosts } from '@/hooks/use-social-queries';
 import defaultAvatar from '/default-avatar.jpg';
 import PostComment from './comment';
-import type { Post, UserProfileData } from 'moviesclub-shared/social';
-import { useDELETELikePost, usePOSTComment, usePOSTLikePost } from '@/hooks/use-social-mutations';
+import type { Post } from 'moviesclub-shared/social';
+import { useCommentOnPost, useLikePost, useUnlikePost } from '@/hooks/use-social-mutations';
 import PostImage from './post-image';
-import type { ResponseSafeUser } from 'moviesclub-shared/auth';
 
 type postCardProps = {
     post: Post,
-    profileData?: never
-} | {
-    post: Omit<Post, 'author'>,
-    profileData: UserProfileData
 }
 
-export default function PostCard(props: postCardProps) {
+export default function PostCard({ post }: postCardProps) {
 
-    const post = props.post;
-
-    const { mutate: mutatePostComment } = usePOSTComment();
-    const { mutate: mutatePostLike } = usePOSTLikePost();
-    const { mutate: mutatePostUnlike } = useDELETELikePost();
+    const { mutate: mutatePostComment } = useCommentOnPost();
+    const { mutate: mutatePostLike } = useLikePost();
+    const { mutate: mutatePostUnlike } = useUnlikePost();
 
     const userLikedPosts = useUserLikedPosts().data;
-    const authUser = useSession().data?.user;
+    const authUser = useSession().data;
     const [comment, setComment] = useState('');
 
     const commentRef = useRef<HTMLInputElement | null>(null);
@@ -56,26 +49,22 @@ export default function PostCard(props: postCardProps) {
         setComment('');
     }
 
-    let author: ResponseSafeUser;
-    if (props.profileData) author = props.profileData;
-    else author = props.post.author
-
 
     return (
         <div className='bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition-colors shadow-sm'>
 
             <div className='flex justify-between items-start mb-3'>
                 <div className='flex gap-3'>
-                    <NavLink to={`/social/users/${author.username}`}>
+                    <NavLink to={`/social/users/${post.author.username}`}>
                         <img
-                            src={author.image || defaultAvatar}
+                            src={post.author.image || defaultAvatar}
                             className='w-10 h-10 rounded-full bg-slate-800 object-cover'
-                            alt={author.name}
+                            alt={post.author.name}
                         />
                     </NavLink>
                     <div>
                         <div className='flex items-center gap-2'>
-                            <NavLink to={`/social/users/${author.username}`}><span className='font-bold text-white'>{author.name}</span></NavLink>
+                            <NavLink to={`/social/users/${post.author.username}`}><span className='font-bold text-white'>{post.author.name}</span></NavLink>
                             &#32;
                             <span className='text-xs text-slate-500'>{new Date(post.createdAt).toLocaleDateString()}</span>
                         </div>

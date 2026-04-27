@@ -1,16 +1,31 @@
 import MovieCard from './movie-card.jsx'
 import { Flame } from 'lucide-react'
-import { useTodayMovies } from '@/hooks/use-movies-query.js';
+import { useTodayCinemas, useTodayMovies } from '@/hooks/use-movies-query.js';
+import type { Movie } from 'moviesclub-shared/movies';
+import { useMemo } from 'react';
 
-export default function ShowingNow({ handleMovieClick }) {
+type ShowingNowProps = {
+    handleMovieClick: (m: Movie) => void
+    cinema: string | null
+}
+export default function ShowingNow({ handleMovieClick, cinema }: ShowingNowProps) {
 
 
     const { data: todayMovies } = useTodayMovies();
 
-    async function handleCardClick(movie) {
+    const { data: cinemas } = useTodayCinemas();
+
+    async function handleCardClick(movie: Movie) {
         handleMovieClick(movie);
     }
 
+    const movies = useMemo(() => {
+        if (!cinema) return todayMovies;
+        const cinemaMovies = Object.keys(cinemas[cinema]).map(x => {
+            return todayMovies.find(m => m.title == x)!;
+        })
+        return cinemaMovies
+    }, [cinema])
 
     return (
         <section className="container mx-auto px-4 py-16">
@@ -20,12 +35,12 @@ export default function ShowingNow({ handleMovieClick }) {
                     <Flame className="w-6 h-6 text-primary drop-shadow-glow-red" />
                 </div>
                 <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-linear-to-r from-foreground to-muted-foreground">
-                    Now in <span className="text-primary drop-shadow-glow-red">Cinemas</span>
+                    Now in <span className="text-primary drop-shadow-glow-red">{cinema || "Egypt"}</span>
                 </h1>
             </div>
 
             <div className="group/grid grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
-                {todayMovies.map((movie, index) => (
+                {movies.map((movie, index) => (
                     <div key={index} className="transition-opacity duration-300 group-hover/grid:hover:opacity-100 group-hover/grid:opacity-50"
                         onClick={() => { handleCardClick(movie) }}>
                         <MovieCard movie={movie} />

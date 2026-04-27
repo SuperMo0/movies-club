@@ -1,13 +1,12 @@
 import { z } from 'zod';
-import { ResponseSafeUserSchema } from './auth.schema.ts'
+import { safeUserResponseSchema } from './auth.schema.ts'
 
-// general schemas 
-export const IdSchema = z.uuidv4("Invalid id");
 
 // comment schemas
 export const createCommentBodySchema = z.object({
     content: z.string().min(1, "Comment cannot be empty")
 })
+
 
 export const commentSchema = z.object({
     id: z.uuidv4(),
@@ -15,7 +14,7 @@ export const commentSchema = z.object({
     authorId: z.uuidv4(),
     createdAt: z.string(),
     postId: z.uuidv4(),
-    author: ResponseSafeUserSchema
+    author: safeUserResponseSchema
 });
 
 // post schemas
@@ -26,13 +25,12 @@ export const postSchema = z.object({
     rating: z.coerce.number().nullish().optional(),
     image: z.url().nullish().nullable(),
     authorId: z.uuidv4(),
-    authorUsername: z.string(),
     createdAt: z.string(),
     _count: z.object({
         likedBy: z.number()
     }),
     comments: z.array(commentSchema),
-    author: ResponseSafeUserSchema
+    author: safeUserResponseSchema
 });
 
 export const createPostBodyClientSchema = z.object({
@@ -54,7 +52,7 @@ export const createPostBodyServerSchema = z.object({
 
 // user Profile Data schema 
 
-export const userProfileData = ResponseSafeUserSchema.extend({ posts: z.array(postSchema.omit({ author: true })) })
+export const userProfileData = safeUserResponseSchema.extend({ posts: z.array(postSchema) })
 
 // update profile schemas
 export const updateProfileBodyBaseSchema = z.object({

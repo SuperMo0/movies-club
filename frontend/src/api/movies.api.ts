@@ -1,13 +1,16 @@
 import client from '@/lib/axios'
 import { catchAsync } from '@/utils/catch-async';
-import type { Movie } from "moviesclub-shared/movies"
+import type { TodayMoviesResponse, TodayCinemasResponse } from 'moviesclub-shared/api';
 
-type TodayMoviesResponse = {
-    movies: Movie[];
+
+export async function GETTodayMovies() {
+    const [error, data] = await catchAsync(client.get<TodayMoviesResponse>('/movies'));
+    if (error) throw error;
+    return data;
 }
 
-export async function fetchTodayMovies() {
-    let [error, data] = await catchAsync(client.get<TodayMoviesResponse>('/movies/today'));
+export async function GETTodayCinemas() {
+    const [error, data] = await catchAsync(client.get<TodayCinemasResponse>('/movies/cinemas'));
     if (error) throw error;
-    return data?.movies
+    return data;
 }

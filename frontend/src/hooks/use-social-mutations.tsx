@@ -1,190 +1,182 @@
-import type { SessionResponse } from '@/api/auth.api';
-import { DELETEFollowUser, DELETELikePost, orchesteratePostCreation, orchesterateProfileUpadate, POSTComment, POSTFollowUser, POSTLikePost, PUTUserProfile, SignAndUploadCloudinary, type GETFollowsResponse, type POSTPostResponse } from '@/api/social.api'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import type { AxiosError } from 'axios';
-import type { Post, UpdateProfileBodyClient, UserProfileData } from 'moviesclub-shared/social';
+import * as cache from '@/utils/cache';
+import { produce } from 'immer';
+import * as optimisticFactory from '@/utils/optimistic-factory'
+import {
+    DELETEFollowUser,
+    DELETELikePost,
+    orchesteratePostCreation,
+    orchesterateProfileUpadate,
+    POSTCreateCommentOnPost,
+    POSTFollowUser,
+    POSTLikePost,
+} from '@/api/social.api'
+import {
+    useMutation,
+    useQueryClient
+} from '@tanstack/react-query'
 
 
-export function usePOSTLikePost() {
+
+export function useLikePost() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: POSTLikePost,
         onMutate: async (post) => {
             await queryClient.cancelQueries({ queryKey: ["userLikedPosts"] });
-            await queryClient.cancelQueries({ queryKey: ["profile", post.authorUsername] });
+            await queryClient.cancelQueries({ queryKey: ["profile", post.author.username] });
             await queryClient.cancelQueries({ queryKey: ["posts"] });
 
-            const prevUserLikedPosts = queryClient.getQueryData<string[]>(["userLikedPosts"]);
-            const prevPosts = queryClient.getQueryData<Post[]>(["posts"]);
-            const prevUserProfile = queryClient.getQueryData<UserProfileData>(["profile", post.authorUsername]);
+            const prevUserLikedPosts = cache.getUserLikedPostsCache();
+            const prevPosts = cache.getPostsCache();
+            const prevUserProfileData = cache.getUserProfileDataCache(post.author.username);
 
-            queryClient.setQueryData<string[]>(["userLikedPosts"], (s) => [...s!, post.id])
-            queryClient.setQueryData<Post[]>(["posts"], (s) => {
-                if (s) return s?.map(p => p.id == post.id ? { ...p, _count: { likedBy: p._count.likedBy + 1 } } : p);
-            })
-            queryClient.setQueryData<UserProfileData>(["profile", post.authorUsername], ((d) => {
-                if (d) {
-                    return {
-                        ...d, posts: d.posts.map(p => {
-                            return { ...p, _count: { likedBy: p._count.likedBy + 1 } }
-                        })
-                    }
-                };
+            cache.setUserLikedPostsCache((data) => produce(data, (data) => {
+                data?.likedPosts.push(post.id);
+                return data;
+            }));
+            cache.setPostsCache((data) => produce(data, (draft) => {
+                draft?.posts.forEach(p => { if (p.id === post.id) p._count.likedBy += 1 });
+            }));
+            cache.setUserProfileDataCache((data) => produce(data, (draft) => {
+                draft?.userProfileData.posts.forEach((p) => { if (p.id === post.id) p._count.likedBy += 1 });
 
-            }))
-            return { prevPosts, prevUserLikedPosts, prevUserProfile };
+            }), post.author.username)
+
+            return { prevPosts, prevUserLikedPosts, prevUserProfileData };
         },
-        onError: (e, post, prev) => {
-            console.error(e);
-            queryClient.setQueryData<string[]>(["userLikedPosts"], prev?.prevUserLikedPosts);
-            queryClient.setQueryData<Post[]>(["posts"], prev?.prevPosts);
-            queryClient.setQueryData<UserProfileData>(["profile", post.authorUsername], prev?.prevUserProfile);
+        onError: (error, post, context) => {
+            console.error(error);
+            cache.setPostsCache(() => context?.prevPosts);
+            cache.setUserLikedPostsCache(() => context?.prevUserLikedPosts);
+            cache.setUserProfileDataCache(() => context?.prevUserProfileData, post.author.username);
         },
-        onSettled: (d, e, post) => {
+        onSettled: (data, error, vars, context) => {
             queryClient.invalidateQueries({ queryKey: ["userLikedPosts"] });
             queryClient.invalidateQueries({ queryKey: ["posts"] });
-            queryClient.invalidateQueries({ queryKey: ["profile", post.authorUsername] });
+            queryClient.invalidateQueries({ queryKey: ["profile", vars.author.username] });
         }
     })
 }
 
-export function useDELETELikePost() {
+export function useUnlikePost() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: DELETELikePost,
         onMutate: async (post) => {
             await queryClient.cancelQueries({ queryKey: ["userLikedPosts"] });
-            await queryClient.cancelQueries({ queryKey: ["profile", post.authorUsername] });
+            await queryClient.cancelQueries({ queryKey: ["profile", post.author.username] });
             await queryClient.cancelQueries({ queryKey: ["posts"] });
 
-            const prevUserLikedPosts = queryClient.getQueryData<string[]>(["userLikedPosts"]);
-            const prevPosts = queryClient.getQueryData<Post[]>(["posts"]);
-            const prevProfileData = queryClient.getQueryData<UserProfileData>(["profile", post.authorUsername]);
+            const prevUserLikedPosts = cache.getUserLikedPostsCache();
+            const prevPosts = cache.getPostsCache();
+            const prevUserProfileData = cache.getUserProfileDataCache(post.author.username);
 
-            queryClient.setQueryData<string[]>(["userLikedPosts"], (s) => s?.filter(d => d != post.id))
-            queryClient.setQueryData<Post[]>(["posts"], (s) => {
-                if (s) return s?.map(p => p.id == post.id ? { ...p, _count: { likedBy: p!._count.likedBy - 1 } } : p);
-            });
-            queryClient.setQueryData<UserProfileData>(["profile", post.authorUsername], ((d) => {
-                if (d) {
-                    return {
-                        ...d, posts: d.posts.map(p => {
-                            return { ...p, _count: { likedBy: p._count.likedBy - 1 } }
-                        })
-                    }
-                };
-            }))
-            return { prevPosts, prevUserLikedPosts, prevProfileData };
+            cache.setUserLikedPostsCache((data) => produce(data, (draft) => {
+                const index = draft?.likedPosts.findIndex((e) => e === post.id)
+                if (index && index !== -1) draft?.likedPosts.splice(index, 1);
+            }));
+
+            cache.setPostsCache((data) => produce(data, (draft) => {
+                draft?.posts.forEach(p => { if (p.id === post.id) p._count.likedBy -= 1 });
+            }));
+
+            cache.setUserProfileDataCache((data) => produce(data, (draft) => {
+                draft?.userProfileData.posts.forEach((p) => { if (p.id === post.id) p._count.likedBy -= 1 });
+            }), post.author.username)
+
+            return { prevPosts, prevUserLikedPosts, prevUserProfileData };
         },
-        onError: (e, post, prev) => {
-            console.error(e);
-            queryClient.setQueryData<string[]>(["userLikedPosts"], prev?.prevUserLikedPosts);
-            queryClient.setQueryData<Post[]>(["posts"], prev?.prevPosts);
-            queryClient.setQueryData<UserProfileData>(["profile", post.authorUsername], prev?.prevProfileData);
+        onError: (error, post, context) => {
+            console.error(error);
+            cache.setPostsCache(() => context?.prevPosts);
+            cache.setUserLikedPostsCache(() => context?.prevUserLikedPosts);
+            cache.setUserProfileDataCache(() => context?.prevUserProfileData, post.author.username);
         },
-        onSettled: (d, e, post) => {
+        onSettled: (data, error, vars, context) => {
             queryClient.invalidateQueries({ queryKey: ["userLikedPosts"] });
             queryClient.invalidateQueries({ queryKey: ["posts"] });
-            queryClient.invalidateQueries({ queryKey: ["profile", post.authorUsername] });
+            queryClient.invalidateQueries({ queryKey: ["profile", vars.author.username] });
         }
     })
 }
 
-export function usePOSTComment() {
+export function useCommentOnPost() {
 
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: POSTComment,
+        mutationFn: POSTCreateCommentOnPost,
         onMutate: async (vars) => {
-            const authUser = queryClient.getQueryData<SessionResponse>(["session"])!;
-            if (!authUser || !authUser.user) return;
+            const { comment, post } = vars
+            const optimsticComment = optimisticFactory.createComment(comment, post);
 
             await queryClient.cancelQueries({ queryKey: ["posts"] });
-            await queryClient.cancelQueries({ queryKey: ["profile", vars.post.authorUsername] });
+            await queryClient.cancelQueries({ queryKey: ["profile", post.author.username] });
 
-            const prevPosts = queryClient.getQueryData<Post[]>(["posts"]);
-            const prevProfileData = queryClient.getQueryData<Post[]>(["profile", vars.post.authorUsername]);
+            const prevPosts = cache.getPostsCache();
+            const prevUserProfileData = cache.getUserProfileDataCache(post.author.username);
 
-            const optimsticComment = {
-                ...vars.comment,
-                id: crypto.randomUUID(),
-                author: authUser.user!,
-                authorId: authUser.user!.id,
-                createdAt: new Date().toLocaleDateString(),
-                postId: vars.post.id,
-            }
-            queryClient.setQueryData<Post[]>(["posts"],
-                (s => s?.map(p => p.id == vars.post.id ? {
-                    ...p,
-                    comments: [...p.comments, optimsticComment]
-                } : p)))
+            cache.setPostsCache((data) => produce(data, (draft) => {
+                draft?.posts.forEach(p => {
+                    if (p.id === post.id) p.comments.push(optimsticComment)
+                });
+            }))
+
+            cache.setUserProfileDataCache((data) => produce(data, (draft) => {
+                draft?.userProfileData.posts.forEach(p => {
+                    if (p.id === post.id) p.comments.push(optimsticComment)
+                });
+                return data;
+
+            }), post.author.username);
 
 
-            queryClient.setQueryData<UserProfileData>(["profile", vars.post.authorUsername], (profileData) => {
-                if (profileData) {
-                    return {
-                        ...profileData, posts: profileData.posts.map(p => p.id == vars.post.id
-                            ? { ...p, comments: [...p.comments, optimsticComment] } :
-                            p)
-                    }
-                }
-            })
-
-            return { prevPosts, prevProfileData };
+            return { prevPosts, prevUserProfileData };
         },
-        onError: (err, vars, prev) => {
-            console.error(err);
-            queryClient.setQueryData<Post[]>(["posts"], prev?.prevPosts);
-            queryClient.setQueryData<Post[]>(["profile", vars.post.authorUsername], prev?.prevProfileData);
+        onError: (error, vars, context) => {
+            console.error(error);
+            cache.setPostsCache(() => context?.prevPosts);
+            cache.setUserProfileDataCache(() => context?.prevUserProfileData, vars.post.author.username);
         },
-        onSuccess: (res, vars) => {
+        onSettled: (data, error, vars, context) => {
             queryClient.invalidateQueries({ queryKey: ['posts'] });
-            queryClient.invalidateQueries({ queryKey: ["profile", vars.post.authorUsername] });
+            queryClient.invalidateQueries({ queryKey: ["profile", vars.post.author.username] });
         },
     })
 }
 
-export function usePOSTPost() {
+export function useCreatePost() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: orchesteratePostCreation,
-        onMutate: async (newPost) => {
-            const authUser = queryClient.getQueryData<SessionResponse>(["session"])?.user;
-            if (!authUser) return;
+        onMutate: async (post) => {
+            const authUser = cache.getSessionCache()?.user;
+            if (!authUser) throw Error("no session was found while performing a mutation");
 
             await queryClient.cancelQueries({ queryKey: ["posts"] });
 
-            const prevPosts = queryClient.getQueryData<Post[]>(["posts"]);
-            const prevProfileData = queryClient.getQueryData<UserProfileData>(["profile", authUser.username]);
+            const prevPosts = cache.getPostsCache();
+            const prevUserProfileData = cache.getUserProfileDataCache(authUser.username);
 
+            const optimisticPost = optimisticFactory.createPost(post);
 
-            let secureURL: string | undefined
-            if (newPost.image) {
-                secureURL = URL.createObjectURL(newPost.image);
-            }
-            const optimisticPost = {
-                ...newPost,
-                image: secureURL,
-                author: authUser,
-                createdAt: new Date().toString(),
-                authorId: authUser.id,
-                authorUsername: authUser.username,
-                id: crypto.randomUUID(),
-                comments: [],
-                _count: { likedBy: 0 }
-            };
-            queryClient.setQueryData(["posts"], (currentPosts: Post[]) => [optimisticPost, ...currentPosts]);
+            cache.setPostsCache((data) => produce(data, (draft) => {
+                draft?.posts.push(optimisticPost);
+            }))
+            cache.setUserProfileDataCache((data) => produce(data, (draft) => {
+                draft?.userProfileData.posts.push(optimisticPost);
+            }), authUser.username);
 
-            return { prevPosts, prevProfileData };
+            return { prevPosts, prevUserProfileData, authUser };
         },
-        onError: (err, vars, prev) => {
-            console.error(err);
-            queryClient.setQueryData<Post[]>(["posts"], prev?.prevPosts);
-            queryClient.setQueryData<UserProfileData>(["profile", prev?.prevProfileData?.username], prev?.prevProfileData);
+        onError: (error, vars, context) => {
+            console.error(error);
+            cache.setPostsCache(() => context?.prevPosts);
+            if (context?.authUser)
+                cache.setUserProfileDataCache(() => context?.prevUserProfileData, context.authUser.username);
         },
-        onSettled: (res, err, vars, prev) => {
+        onSettled: (data, error, vars, context) => {
             queryClient.invalidateQueries({ queryKey: ['posts'] });
-            queryClient.invalidateQueries({ queryKey: ["profile", prev?.prevProfileData?.username] });
+            queryClient.invalidateQueries({ queryKey: ["profile", context?.authUser.username] });
         },
 
     })
@@ -195,70 +187,72 @@ export function usePUTUserProfile() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: orchesterateProfileUpadate,
-        onMutate: async (vars) => {
-            const session = queryClient.getQueryData<SessionResponse>(["session"]);
-            if (!session || !session.user) return;
-            const currentUsername = session.user.username;
+        onMutate: async (updateData) => {
+
+            const authUser = cache.getSessionCache()?.user;
+            if (!authUser) return;
 
             await queryClient.cancelQueries({ queryKey: ["session"] });
-            await queryClient.cancelQueries({ queryKey: ["profile", currentUsername] });
+            await queryClient.cancelQueries({ queryKey: ["profile", authUser.username] });
 
-            const prevSession = queryClient.getQueryData<SessionResponse>(["session"]);
-            const prevProfile = queryClient.getQueryData<UserProfileData>(["profile", currentUsername]);
+            const prevSession = cache.getSessionCache();
+            const prevProfile = cache.getUserProfileDataCache(authUser.username);
 
             let secureURL: string | undefined;
-            if (vars.image) {
-                secureURL = URL.createObjectURL(vars.image);
+            if (updateData.image) {
+                secureURL = URL.createObjectURL(updateData.image);
             }
 
-            const optimisticUpdates = { ...vars, ...(secureURL ? { image: secureURL } : {}) };
-
-            queryClient.setQueryData<SessionResponse>(["session"], (d) => {
-                if (d && d.user) return { ...d, user: { ...d.user, ...optimisticUpdates } as any };
-                return d;
+            cache.setSessionCache((data) => {
+                if (!data?.user) return { user: null };
+                return { ...data, user: { ...data.user, ...updateData, image: secureURL } }
             });
 
-            queryClient.setQueryData<UserProfileData>(["profile", currentUsername], (d) => {
-                if (d) return { ...d, ...optimisticUpdates } as any;
-                return d;
-            });
+            cache.setUserProfileDataCache((data) => {
+                if (data) {
+                    return { ...data, userProfileData: { ...data.userProfileData, ...updateData, image: secureURL } }
+                }
 
-            return { prevSession, prevProfile, currentUsername };
+            }, authUser.username);
+
+            return { prevSession, prevProfile, authUser };
         },
-        onError: (err, vars, prev) => {
-            console.error(err);
-            if (prev) {
-                queryClient.setQueryData<SessionResponse>(["session"], prev.prevSession);
-                queryClient.setQueryData<UserProfileData>(["profile", prev.currentUsername], prev.prevProfile);
+        onError: (error, vars, context) => {
+            console.error(error);
+            if (context) {
+                cache.setSessionCache(() => context.prevSession);
+                cache.setUserProfileDataCache(() => context.prevProfile, context.authUser.username);
             }
         },
-        onSettled: (data, err, vars, prev) => {
+        onSettled: (data, error, vars, context) => {
             queryClient.invalidateQueries({ queryKey: ["session"] });
-            queryClient.invalidateQueries({ queryKey: ["profile", prev?.currentUsername] });
+            queryClient.invalidateQueries({ queryKey: ["profile", context?.authUser.username] });
         }
     })
 }
 
 
-export function usePOSTFollowUser() {
+export function useFollowUser() {
 
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: POSTFollowUser,
         onMutate: async (targetId) => {
+
             await queryClient.cancelQueries({ queryKey: ["follows"] });
-            const prevFollows = queryClient.getQueryData<GETFollowsResponse>(["follows"]);
 
-            queryClient.setQueryData<GETFollowsResponse>(["follows"], (d) => {
-                if (d) return [...d, targetId];
-            });
+            const prevUserFollowsList = cache.getUserFollowsListCache();
 
-            return { prevFollows };
+            cache.setUserFollowsListCache((data) => produce(data, (draft) => {
+                draft?.userFollowsList.push(targetId);
+            }))
+
+            return { prevUserFollowsList };
         },
-        onError: (err, targetId, prev) => {
-            console.error(err);
-            if (prev?.prevFollows) {
-                queryClient.setQueryData<GETFollowsResponse>(["follows"], prev.prevFollows);
+        onError: (error, targetId, context) => {
+            console.error(error);
+            if (context?.prevUserFollowsList) {
+                cache.setUserFollowsListCache(() => context.prevUserFollowsList);
             }
         },
         onSettled: () => {
@@ -267,25 +261,28 @@ export function usePOSTFollowUser() {
     })
 }
 
-export function useDELETEFollowUser() {
+export function useUnfollowUser() {
 
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: DELETEFollowUser,
         onMutate: async (targetId) => {
+
             await queryClient.cancelQueries({ queryKey: ["follows"] });
-            const prevFollows = queryClient.getQueryData<GETFollowsResponse>(["follows"]);
 
-            queryClient.setQueryData<GETFollowsResponse>(["follows"], (d) => {
-                if (d) return d.filter(id => id != targetId);
-            });
+            const prevUserFollowsList = cache.getUserFollowsListCache();
 
-            return { prevFollows };
+            cache.setUserFollowsListCache((data) => produce(data, (draft) => {
+                const index = draft?.userFollowsList.findIndex(id => id === targetId);
+                if (index && index != -1) draft?.userFollowsList.splice(index, 1);
+            }))
+
+            return { prevUserFollowsList };
         },
-        onError: (err, targetId, prev) => {
-            console.error(err);
-            if (prev?.prevFollows) {
-                queryClient.setQueryData<GETFollowsResponse>(["follows"], prev.prevFollows);
+        onError: (error, targetId, context) => {
+            console.error(error);
+            if (context?.prevUserFollowsList) {
+                cache.setUserFollowsListCache(() => context.prevUserFollowsList);
             }
         },
         onSettled: () => {

@@ -1,36 +1,49 @@
 import type { Request, Response } from 'express'
 import { prisma } from '../lib/prisma.ts'
 import { getSecondsUntil3AM } from '../utils/cache.ts';
+import type { Movie, todayCinemasRecord } from 'moviesclub-shared/movies';
+import { appError } from '../errors/appError.ts';
+import type { TodayCinemasResponse, TodayMoviesResponse } from 'moviesclub-shared/api';
 
-let cachedMovies: any[] = []
-let lastUpdate: string | null = null
+let cachedMoviesData: Movie[]
+let lastUpdateMoviesData: string | null = null
 
-
-export async function getTodayMovies(req: Request, res: Response) {
+export async function getTodayMovies(req: Request, res: Response<TodayMoviesResponse>) {
   const today = new Date().toLocaleDateString('en-CA');
-  if (cachedMovies && lastUpdate === today) {
-    return res.json({ movies: cachedMovies });
-  }
 
+  if (cachedMoviesData && lastUpdateMoviesData === today) {
+    return res.json({ movies: cachedMoviesData });
+  }
   const record = await prisma.app_state.findUnique({ where: { key: 'moviesData' } });
-
   if (!record) {
-    return res.status(503).json({ message: "Movies are being fetched, please try again later." });
+    throw new appError(503, "Movies are being fetched, please try again later.");
   }
+  const data = JSON.parse(record.value);
 
-  let parsedData = JSON.parse(record.value) as any[];
-
-  //temporary fix we have to check why movies are being duplicated
-  cachedMovies = []
-  const mp = new Map();
-  for (const m of parsedData) {
-    if (mp.has(m.id)) continue;
-    mp.set(m.id, true);
-    cachedMovies.push(m);
-  }
-
-  lastUpdate = today;
+  cachedMoviesData = data;
+  lastUpdateMoviesData = today;
 
   res.set('Cache-Control', `public, max-age=${Math.min(getSecondsUntil3AM(), 60 * 60)}`);
-  res.json({ movies: cachedMovies });
+  res.json({ movies: cachedMoviesData });
+}
+
+
+let cachedCinemasData: todayCinemasRecord
+let lastUpdateCinemasData: string | null = null
+export async function getCinemas(req: Request, res: Response<TodayCinemasResponse>) {
+  const today = new Date().toLocaleDateString("en-CA");
+
+  if (cachedCinemasData && lastUpdateCinemasData === today) {
+    return res.json({ cinemas: cachedCinemasData });
+  }
+  const record = await prisma.app_state.findUnique({ where: { key: 'cinemasData' } });
+  if (!record) {
+    throw new appError(503, "Movies are being fetched, please try again later.");
+  }
+  cachedCinemasData = JSON.parse(record.value);
+  lastUpdateCinemasData = today;
+
+  res.set('Cache-Control', `public, max-age=${Math.min(getSecondsUntil3AM(), 60 * 60)}`);
+  res.json({ cinemas: cachedCinemasData });
+
 }

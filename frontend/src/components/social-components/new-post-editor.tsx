@@ -5,7 +5,7 @@ import { SelectedMovieCard, MovieSelectorDropdown } from '@/components/social-co
 import { ImagePreview } from '@/components/social-components/image-preview';
 import { useImagePreview } from '@/hooks/use-image-preview';
 import defaultAvatar from '/default-avatar.jpg';
-import { usePOSTPost } from '@/hooks/use-social-mutations';
+import { useCreatePost } from '@/hooks/use-social-mutations';
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createPostBodyClientSchema, type CreatePostBodyClient } from 'moviesclub-shared/social';
@@ -16,7 +16,7 @@ export default function NewPostEditor() {
 
     const { fileInputRef, handleImageUpload, image, removeImage } = useImagePreview();
 
-    const authUser = useSession().data?.user;
+    const authUser = useSession().data;
 
     const form = useForm<CreatePostBodyClient>({
         resolver: zodResolver(createPostBodyClientSchema),
@@ -26,7 +26,7 @@ export default function NewPostEditor() {
 
     const selectedMovie = form.watch('movieTitle');
 
-    const { mutate: mutatePosts, isPending } = usePOSTPost();
+    const { mutate: mutatePosts, isPending } = useCreatePost();
 
     async function handlePostSubmit(formData: CreatePostBodyClient) {
         //todo: we need to take a snapshot so in case of failure we can return the post form status

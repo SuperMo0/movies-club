@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from '@/components/ui/button'
 import { Clapperboard } from 'lucide-react'
 import { useLoginModal } from '@/App'
-import { LoginSchema, type LoginType } from 'moviesclub-shared/auth'
+import { loginBodySchema, type LoginBody } from 'moviesclub-shared/auth'
 import { onMutationError, useLoginMutation } from '@/hooks/use-auth-mutations'
 import { useLocation, useNavigate } from 'react-router'
 
@@ -27,13 +27,13 @@ export default function Login({ open, onOpenChange }: LoginProps) {
         reset,
         handleSubmit,
         formState: { errors }
-    } = useForm<LoginType>({
-        resolver: zodResolver(LoginSchema),
+    } = useForm<LoginBody>({
+        resolver: zodResolver(loginBodySchema),
     })
 
     const { openSignup } = useLoginModal();
 
-    async function handleLoginButtonClick(formData: LoginType) {
+    async function handleLoginButtonClick(formData: LoginBody) {
         mutate(formData, {
             onSuccess: () => { reset(); onOpenChange(false); navigate(location) }, // navigate to the same page so browser knows login was successful
             onError: (error) => { onMutationError(error, setMessage) }

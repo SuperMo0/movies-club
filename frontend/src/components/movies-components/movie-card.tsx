@@ -1,8 +1,12 @@
 import { Star, Ticket } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import type { Movie } from 'moviesclub-shared/movies'
 
-export default function MovieCard({ movie, imdbData = null }) {
-    const imdbRating = typeof imdbData?.rating === 'number' ? imdbData.rating.toFixed(1) : '--'
+
+type MovieCardProps = {
+    movie: Movie
+}
+export default function MovieCard({ movie }: MovieCardProps) {
 
     return (
         <div className="group relative w-full h-full rounded-xl overflow-hidden bg-card border border-white/5 transition-all duration-500 hover:scale-105 hover:shadow-neon-red hover:z-10 cursor-pointer">
@@ -30,9 +34,9 @@ export default function MovieCard({ movie, imdbData = null }) {
                     <div className="flex items-center gap-2 mb-3">
                         <div className="flex items-center text-yellow-500" title="IMDb aggregate rating">
                             <Star className="w-3.5 h-3.5 fill-current" />
-                            <span className="text-xs font-bold ml-1">{imdbRating}</span>
+                            {/* <span className="text-xs font-bold ml-1">{imdbRating}</span> */}
                         </div>
-                        {imdbData?.imdbUrl && (
+                        {/* {imdbData?.imdbUrl && (
                             <a
                                 href={imdbData.imdbUrl}
                                 target="_blank"
@@ -43,14 +47,14 @@ export default function MovieCard({ movie, imdbData = null }) {
                             >
                                 IMDb
                             </a>
-                        )}
+                        )} */}
                         <span className="text-xs text-muted-foreground">•</span>
                         <span className="text-xs text-muted-foreground truncate max-w-25">
                             {movie.genre?.[0] || 'Action'}
                         </span>
                     </div>
 
-                    <Button size="sm" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-neon-red h-8 text-xs">
+                    <Button variant='default' size="sm" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-neon-red h-8 text-xs">
                         <Ticket className="w-3 h-3 mr-2" />
                         Show Times
                     </Button>
