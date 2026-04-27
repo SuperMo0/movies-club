@@ -1,7 +1,8 @@
 import * as cheerio from 'cheerio'
 import axios from 'axios'
 import { prisma } from '../lib/prisma.ts'
-import type { CinemaEntry, DayEntry, Movie } from 'moviesclub-shared/movies'
+import type { DayEntry, Movie } from 'moviesclub-shared/movies'
+import { transformMoviesDataByCienma } from './transform-movies-data.ts'
 
 const HEADERS = {
   Accept: 'application/json, text/javascript, */*; q=0.01',
@@ -107,9 +108,17 @@ export async function start(): Promise<void> {
 
     await scrapeShowtimes(movies)
 
+    const cinemasData = transformMoviesDataByCienma(movies);
+
+    await prisma.app_state.upsert({
+      where: { key: 'cinemasData' },
+      update: { value: JSON.stringify(cinemasData) },
+      create: { key: 'cinemasData', value: JSON.stringify(cinemasData) },
+    })
+
     await prisma.app_state.upsert({
       where: { key: 'moviesData' },
-      update: { value: JSON.stringify(movies) },
+      update: { value: JSON.stringify(movies.map(m => { delete m.schedule; return m })) },
       create: { key: 'moviesData', value: JSON.stringify(movies) },
     })
 
