@@ -12,7 +12,7 @@ export const commentSchema = z.object({
     id: z.uuidv4(),
     content: z.string(),
     authorId: z.uuidv4(),
-    createdAt: z.string(),
+    createdAt: z.date(),
     postId: z.uuidv4(),
     author: safeUserResponseSchema
 });
@@ -20,12 +20,12 @@ export const commentSchema = z.object({
 // post schemas
 export const postSchema = z.object({
     id: z.uuidv4(),
-    content: z.string(),
+    content: z.string().nullish(),
     movieTitle: z.string().nullish().optional(),
     rating: z.coerce.number().nullish().optional(),
     image: z.url().nullish().nullable(),
     authorId: z.uuidv4(),
-    createdAt: z.string(),
+    createdAt: z.date(),
     _count: z.object({
         likedBy: z.number()
     }),

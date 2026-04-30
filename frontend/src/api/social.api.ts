@@ -57,13 +57,13 @@ export async function POSTCreateCommentOnPost(variables: { comment: CreateCommen
 
 
 export async function POSTCreatePost(post: CreatePostBodyServer) {
-    const [error, data] = await catchAsync(client.postForm<PostCreatePostResponse>('/social/post', post));
+    const [error, data] = await catchAsync(client.post<PostCreatePostResponse>('/social/post', post));
     if (error) throw error;
     return data;
 }
 
 export async function PUTUserProfile(UpdatedProfileData: UpdateProfileBodyServer) {
-    const [error, data] = await catchAsync(client.putForm<PutUpdateProfileResponse>('/social/profile', UpdatedProfileData));
+    const [error, data] = await catchAsync(client.put<PutUpdateProfileResponse>('/social/profile', UpdatedProfileData));
     if (error) throw error;
     return data;
 }

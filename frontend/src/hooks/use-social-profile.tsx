@@ -8,7 +8,7 @@ export const defaultAvatar = "https://i.pinimg.com/originals/e7/ba/95/e7ba955b14
 // todo: refactor this to seperate cropping states from user profile state
 export function useSocialProfile() {
 
-    const authUser = useSession().data?.user;
+    const authUser = useSession().data;
     const [previewImage, setPreviewImage] = useState(authUser?.image);
     const [rawImageForCropper, setRawImageForCropper] = useState<string | null>(null);
     const [showCropper, setShowCropper] = useState(false);

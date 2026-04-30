@@ -10,7 +10,7 @@ export function createComment(comment: CreateCommentBody, post: Post) {
         id: crypto.randomUUID(),
         author: authUser,
         authorId: authUser.id,
-        createdAt: new Date().toLocaleDateString(),
+        createdAt: new Date(),
         postId: post.id,
     }
     return optimisticComment;
@@ -29,7 +29,7 @@ export function createPost(post: CreatePostBodyClient) {
         ...post,
         image: secureURL,
         author: authUser,
-        createdAt: new Date().toString(),
+        createdAt: new Date(),
         authorId: authUser.id,
         id: crypto.randomUUID(),
         comments: [],
