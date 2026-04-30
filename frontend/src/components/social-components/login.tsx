@@ -71,8 +71,8 @@ export default function Login({ open, onOpenChange }: LoginProps) {
                         </DialogDescription>
 
                         {message && (
-                            <p className='text-slate-400 text-sm mt-2'>
-                                <span className='text-red-500 font-semibold animate-in'>{message}</span>
+                            <p className='text-slate-400 text-sm mt-2 animate-shake'>
+                                <span className='text-red-500 font-semibold'>{message}</span>
                             </p>
                         )}
                     </div>
