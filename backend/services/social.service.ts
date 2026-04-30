@@ -17,9 +17,7 @@ export async function getPosts() {
         }
     })
 
-    const finalResult = result.map(p => { return { ...p, authorUsername: p.author.username } })
-
-    return finalResult;
+    return result;
 }
 
 
@@ -41,7 +39,6 @@ export async function getUserLikedPosts(userId: string) {
     }
 
     const finalResult = result.likedPosts.map(post => post.id);
-
     return finalResult;
 }
 
@@ -52,21 +49,17 @@ export async function getUserProfileData(username: string) {
         where: {
             username: username
         },
-        include: {
+        select: {
+            ...safeUserSelection,
             posts: {
-                orderBy: { createdAt: 'desc' },
                 include: {
                     comments: { include: { author: { select: safeUserSelection } } },
-                    _count: {
-                        select: { likedBy: true }
-                    },
-                    author: { select: safeUserSelection }
-                },
+                    author: { select: safeUserSelection },
+                    _count: { select: { likedBy: true } }
+                }
             }
-        },
-        omit: {
-            password: true
-        },
+
+        }
     })
 
     if (!result) {
@@ -107,7 +100,8 @@ export async function likePost(postId: string, userId: string) {
             _count: {
                 select: { likedBy: true }
             },
-            author: { select: safeUserSelection }
+            author: { select: safeUserSelection },
+            comments: { include: { author: { select: safeUserSelection } } }
         }
     })
     return result;
@@ -145,6 +139,9 @@ export async function commentOnPost(userId: string, postId: string, body: Create
             authorId: userId,
             content: body.content,
             postId: postId,
+        },
+        include: {
+            author: { select: safeUserSelection },
         }
     })
     return result;
@@ -164,7 +161,8 @@ export async function createPost(userId: string, body: CreatePostBodyServer) {
             author: {
                 select: safeUserSelection
             },
-            _count: { select: { likedBy: true, comments: true } }
+            _count: { select: { likedBy: true, comments: true } },
+            comments: { include: { author: { select: safeUserSelection } } }
         }
     });
 
