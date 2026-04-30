@@ -52,7 +52,7 @@ model comment {
   id        String   @id @default(uuid())
   content   String
   authorId  String
-  postId    String?
+  postId    String
   createdAt DateTime @default(now())
   author    user     @relation(fields: [authorId], references: [id], onDelete: Cascade)
   post      post?    @relation(fields: [postId], references: [id])

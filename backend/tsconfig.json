@@ -18,6 +18,7 @@
     "verbatimModuleSyntax": true,
     "allowJs": false,
     "noEmit": true,
+    "noErrorTruncation": true
   },
   "exclude": [
     "node_modules",
