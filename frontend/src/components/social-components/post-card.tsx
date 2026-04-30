@@ -13,6 +13,7 @@ import PostComment from './comment';
 import type { Post } from 'moviesclub-shared/social';
 import { useCommentOnPost, useLikePost, useUnlikePost } from '@/hooks/use-social-mutations';
 import PostImage from './post-image';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 type postCardProps = {
     post: Post,
@@ -56,11 +57,11 @@ export default function PostCard({ post }: postCardProps) {
             <div className='flex justify-between items-start mb-3'>
                 <div className='flex gap-3'>
                     <NavLink to={`/social/users/${post.author.username}`}>
-                        <img
-                            src={post.author.image || defaultAvatar}
-                            className='w-10 h-10 rounded-full bg-slate-800 object-cover'
-                            alt={post.author.name}
-                        />
+                        <Avatar>
+                            <AvatarImage className='w-10 h-10 rounded-full bg-slate-800 object-cover'
+                                src={post.author.image ?? undefined} />
+                            <AvatarFallback>{post.author.name.at(0)}</AvatarFallback>
+                        </Avatar>
                     </NavLink>
                     <div>
                         <div className='flex items-center gap-2'>

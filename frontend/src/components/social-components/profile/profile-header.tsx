@@ -8,6 +8,8 @@ import { useUserFollow } from '@/hooks/use-social-queries';
 import { useLoginModal } from '@/App';
 import { useSession } from '@/hooks/use-auth-queries';
 
+import { AvatarFallback, AvatarImage, Avatar } from '@/components/ui/avatar';
+
 type ProfileHeaderProps = {
     profileData: UserProfileData
     isOwner: boolean
@@ -39,7 +41,11 @@ export default function ProfileHeader({ profileData, isOwner, startEditing }: Pr
                     {/* Avatar */}
                     <div className='relative group shrink-0'>
                         <div className='w-32 h-32 md:w-40 md:h-40 rounded-full border-[6px] border-slate-950 overflow-hidden bg-slate-800 shadow-xl relative'>
-                            <img src={profileData.image || defaultAvatar} alt={profileData.name} className='w-full h-full object-cover' />
+                            <Avatar className='w-full h-full'>
+                                <AvatarImage className='w-full h-full object-cover'
+                                    src={profileData.image ?? undefined} />
+                                <AvatarFallback className='text-7xl'>{profileData.name.at(0)}</AvatarFallback>
+                            </Avatar>
                         </div>
                     </div>
 
