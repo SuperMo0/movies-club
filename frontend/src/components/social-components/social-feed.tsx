@@ -1,6 +1,5 @@
 import NewPostEditor from '@/components/social-components/new-post-editor'
 import PostCard from './post-card'
-import { useSession } from '@/hooks/use-auth-queries';
 import { usePosts } from '@/hooks/use-social-queries';
 import PostSkeleton from '../skeletons/post-skeleton';
 
@@ -13,7 +12,7 @@ export default function SocialFeed() {
             <NewPostEditor />
             <div className='flex flex-col gap-6'>
                 {
-                    (!posts) ? [1, 2, 3].map((x, y) => (<PostSkeleton key={y} />))
+                    (!posts) ? [1, 2, 3].map((x) => (<PostSkeleton key={x} />))
                         :
                         posts.map((post) => {
                             return <PostCard key={post.id} post={post} />
