@@ -55,7 +55,7 @@ export default function Login({ open, onOpenChange }: LoginProps) {
             onOpenChange={onOpenChange}
         >
             <DialogContent
-                className="w-full max-w-sm bg-slate-950 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden p-0 gap-0"
+                className="w-full max-w-sm bg-slate-950 border overflow-y-scroll md:overflow-auto border-slate-800 rounded-2xl shadow-2xl overflow-hidden p-0 gap-0"
             >
                 <div className="relative p-8 pt-10">
                     <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-red-600 via-red-500 to-red-600"></div>

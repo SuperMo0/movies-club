@@ -37,11 +37,11 @@ export default function MovieBookingModal({ open, onOpenChange, movie, cinema }:
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="w-[calc(100vw-1rem)] max-h-[85dvh] overflow-hidden rounded-xl border border-slate-800 bg-slate-950 p-0 shadow-2xl sm:w-full sm:rounded-2xl md:w-[min(96vw,72rem)] md:max-w-6xl">
+            <DialogContent className="w-[calc(100vw-1rem)] max-h-[80dvh] overflow-y-scroll md:overflow-auto rounded-xl border border-slate-800 bg-slate-950 p-0 shadow-2xl sm:w-full sm:rounded-2xl md:w-[min(96vw,72rem)] md:max-w-6xl">
                 <div className="flex flex-col md:flex-row w-full h-full overflow-y-auto hidden-scrollbar">
 
                     {/* Image Section */}
-                    <div className="relative h-52 w-full shrink-0 md:h-auto md:w-[38%]">
+                    <div className="relative h-60 shrink-0 md:h-auto w-full md:w-[38%]">
                         <img
                             src={movie.image}
                             className="w-full h-full object-cover"

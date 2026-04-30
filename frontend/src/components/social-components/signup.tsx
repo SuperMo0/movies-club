@@ -19,6 +19,7 @@ type SignupProps = { open: boolean, onOpenChange: (x: boolean) => void }
 export default function Signup({ open, onOpenChange }: SignupProps) {
 
     const [message, setMessage] = useState<string | null>(null)
+    const [errorKey, setErrorKey] = useState(0)
 
     const { openLogin } = useLoginModal();
 
@@ -35,21 +36,27 @@ export default function Signup({ open, onOpenChange }: SignupProps) {
             username: 'guest11',
             password: '123456'
         }, {
-            onError: (error) => { onMutationError(error, setMessage) }
+            onError: (error) => {
+                onMutationError(error, setMessage);
+                setErrorKey(prev => prev + 1);
+            }
         })
     }
 
     async function handleSignupButtonClick(formData: SignupBody) {
         mutateSignup(formData, {
             onSuccess: () => { form.reset(); onOpenChange(false); navigate(location); },
-            onError: (error) => { onMutationError(error, setMessage) }
+            onError: (error) => {
+                onMutationError(error, setMessage);
+                setErrorKey(prev => prev + 1);
+            }
         });
     }
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent
-                className="w-[calc(100vw-2rem)] max-w-sm max-h-[85dvh] bg-slate-950 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden p-0 gap-0"
+                className="w-[calc(100vw-2rem)] max-w-sm max-h-[80dvh] overflow-y-scroll md:overflow-auto bg-slate-950 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden p-0 gap-0"
             >
 
                 <div className="relative p-6 sm:p-8 pt-10 overflow-y-auto max-h-[85dvh] custom-scrollbar">
@@ -66,13 +73,13 @@ export default function Signup({ open, onOpenChange }: SignupProps) {
                             Join the community at <span className='text-red-500 font-semibold'>MovieClub</span>
                         </DialogDescription>
                         {message && (
-                            <p className='text-slate-400 text-sm mt-2'>
-                                <span className='text-red-500 font-semibold animate-in'>{message}</span>
+                            <p key={`${message}-${errorKey}`} className='text-slate-400 text-sm mt-2 animate-shake'>
+                                <span className='text-red-500 font-semibold'>{message}</span>
                             </p>
                         )}
 
                         {form.formState.errors.root && (
-                            <p className='text-red-500 text-sm mt-3 font-medium bg-red-500/10 py-1 px-3 rounded-md animate-in fade-in slide-in-from-top-1'>
+                            <p key={`${form.formState.errors.root.message}-${form.formState.submitCount}`} className='text-red-500 text-sm mt-3 font-medium bg-red-500/10 py-1 px-3 rounded-md fade-in slide-in-from-top-1 animate-shake'>
                                 {form.formState.errors.root.message}
                             </p>
                         )}
