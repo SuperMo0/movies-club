@@ -8,8 +8,6 @@ export default function SocialFeed() {
 
     const { data: posts } = usePosts();
 
-    const authUser = useSession().data;
-
     return (
         <div className='flex flex-col gap-6 max-w-2xl mx-auto lg:mx-0'>
             <NewPostEditor />

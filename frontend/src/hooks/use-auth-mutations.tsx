@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { login, logout, signup } from '@/api/auth.api';
 import { AxiosError } from 'axios';
-import type { SafeUserResponse } from 'moviesclub-shared/auth';
 
 export function useLoginMutation() {
     const queryClient = useQueryClient();
