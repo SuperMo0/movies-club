@@ -2,9 +2,10 @@ import type { Request, Response } from "express";
 import { sign, verify } from "../lib/jwt.ts";
 import * as authService from "./../services/auth.service.ts"
 import { compare, hash } from "../lib/bcrypt.ts";
-import type { LoginBody, SessionResponse, SignupBody } from "moviesclub-shared/auth";
+import type { LoginBody, SafeUserResponse, SessionResponse, SignupBody } from "moviesclub-shared/auth";
 import { safeUserResponseSchema } from "moviesclub-shared/auth";
 import { appError } from "../errors/appError.ts";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
 
 
 type LoginRequest = Request<unknown, unknown, LoginBody>
@@ -35,9 +36,14 @@ export async function signup(req: SignupReqeust, res: Response<SessionResponse>)
     const { password } = req.body;
     const hashedPassword = await hash(password);
     let userHashed = { ...req.body, password: hashedPassword };
-    const safeUser = await authService.insertUser(userHashed);
-    await sign(safeUser, res);
+    let safeUser: SafeUserResponse;
+    try {
+        safeUser = await authService.insertUser(userHashed);
 
+    } catch (error) {
+        throw new appError(409, 'username already exists');  // we should check for prisma code p2002 unique constraint becasue the problem might be different
+    }
+    await sign(safeUser, res);
     res.status(201).json({ user: safeUser });
 }
 
