@@ -6,7 +6,8 @@ import { catchAsync } from '@/utils/catch-async.js';
 
 export const checkSession = async () => {
     const [error, data] = await catchAsync(client.get<SessionResponse>('/auth/check'));
-    if (error) throw error
+    if (error?.status == 401) return { user: null };
+    else if (error) throw error;
     return data;
 }
 
