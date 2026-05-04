@@ -1,7 +1,24 @@
 import type { CreateCommentBody, CreatePostBodyServer, UpdateProfileBodyServer } from 'moviesclub-shared/social'
 import { appError } from '../errors/appError.ts'
 import { prisma } from '../lib/prisma.ts'
-import { safeUserSelection } from './auth.service.ts'
+import { Prisma } from '../generated/prisma/client.ts'
+
+
+
+export const safeUserSelection = {
+    id: true,
+    name: true,
+    username: true,
+    image: true,
+    bio: true,
+    joinedAt: true,
+    _count: {
+        select: {
+            followedBy: true,
+            following: true,
+        },
+    },
+} satisfies Prisma.userSelect
 
 
 export async function getPosts() {
@@ -56,7 +73,8 @@ export async function getUserProfileData(username: string) {
                     comments: { include: { author: { select: safeUserSelection } } },
                     author: { select: safeUserSelection },
                     _count: { select: { likedBy: true } }
-                }
+                },
+                orderBy: { createdAt: 'desc' },
             }
 
         }

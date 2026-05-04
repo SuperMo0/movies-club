@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express'
 import { prisma } from '../lib/prisma.ts'
-import { getSecondsUntil3AM } from '../utils/cache.ts';
+import { getSecondsUntil3AM } from '../utils/timeTillCron.util.ts';
 import type { Movie, todayCinemasRecord } from 'moviesclub-shared/movies';
 import { appError } from '../errors/appError.ts';
 import type { TodayCinemasResponse, TodayMoviesResponse } from 'moviesclub-shared/api';
