@@ -1,65 +1,42 @@
 import type { Request, Response } from "express";
-import { sign, verify } from "../lib/jwt.ts";
-import * as authService from "./../services/auth.service.ts"
-import { compare, hash } from "../lib/bcrypt.ts";
-import type { LoginBody, SafeUserResponse, SessionResponse, SignupBody } from "moviesclub-shared/auth";
-import { safeUserResponseSchema } from "moviesclub-shared/auth";
-import { appError } from "../errors/appError.ts";
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
+import { authService } from "./../services/auth.service.ts";
+import { setAuthCookie } from "../utils/http.util.ts";
+import type { LoginBody, SessionResponse, SignupBody } from "moviesclub-shared/auth";
 
 
-type LoginRequest = Request<unknown, unknown, LoginBody>
+type LoginRequest = Request<unknown, unknown, LoginBody>;
+type SignupRequest = Request<unknown, unknown, SignupBody>;
+
 export async function login(req: LoginRequest, res: Response<SessionResponse>) {
+    const { safeUser, token } = await authService.login(req.body);
 
-    const { username, password } = req.body
-    const unsafeUser = await authService.getUserByUsername(username);
+    setAuthCookie(res, token);
 
-    if (!unsafeUser) {
-        throw new appError(401, "invalid credentials");
-    }
-
-
-    const isPassMatches = await compare(password, unsafeUser.password);
-
-    if (!isPassMatches) {
-        throw new appError(401, "invalid credentials");
-    }
-
-    await sign(unsafeUser, res);
-    const safeUser = safeUserResponseSchema.parse(unsafeUser);
-    res.json({ user: safeUser });
+    res.status(200).json({ user: safeUser });
 }
 
-type SignupReqeust = Request<unknown, unknown, SignupBody>
-export async function signup(req: SignupReqeust, res: Response<SessionResponse>) {
+export async function signup(req: SignupRequest, res: Response<SessionResponse>) {
+    const { safeUser, token } = await authService.signup(req.body);
 
-    const { password } = req.body;
-    const hashedPassword = await hash(password);
-    let userHashed = { ...req.body, password: hashedPassword };
-    let safeUser: SafeUserResponse;
-    try {
-        safeUser = await authService.insertUser(userHashed);
+    setAuthCookie(res, token);
 
-    } catch (error) {
-        throw new appError(409, 'username already exists');  // we should check for prisma code p2002 unique constraint becasue the problem might be different
-    }
-    await sign(safeUser, res);
     res.status(201).json({ user: safeUser });
 }
 
 export async function check(req: Request, res: Response<SessionResponse>) {
-    try {
-        const { jwt } = req.cookies;
-        const { userId } = await verify(jwt);
-        const safeUser = await authService.getUserById(userId);
-        return res.status(200).json({ user: safeUser });
-    } catch (error) {
+
+    const userId = res.locals.userId;
+    const safeUser = await authService.checkAuth(userId);
+
+    if (!safeUser) {
         res.clearCookie("jwt");
-        return res.status(401).json({ user: null });
+        return res.status(200).json({ user: null });
     }
+
+    return res.status(200).json({ user: safeUser });
 }
 
 export async function logout(req: Request, res: Response<SessionResponse>) {
     res.clearCookie("jwt");
-    return res.json({ user: null });
+    return res.status(200).json({ user: null });
 }

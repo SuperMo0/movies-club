@@ -1,10 +1,10 @@
 import type { RequestHandler } from 'express'
-import { verify } from '../lib/jwt.ts'
+import { verifyToken } from '../lib/jwt.ts'
 
 export const protect: RequestHandler = async (req, res, next) => {
   try {
     const token = req.cookies.jwt;
-    const payload = await verify(token);
+    const payload = await verifyToken(token);
     res.locals.userId = payload.userId;
     return next()
   } catch {

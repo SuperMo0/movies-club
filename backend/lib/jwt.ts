@@ -8,13 +8,13 @@ const Uint8Array_Secret = new TextEncoder().encode(SECRET);
 type PayloadBody = { userId: string }
 
 
-export async function sign(user: { id: string }, res: Response) {
+export async function generateToken(user: { id: string }) {
   const token = await new SignJWT({ userId: user.id }).setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt().setExpirationTime('2 days').sign(Uint8Array_Secret);
-  res.cookie("jwt", token, { maxAge: 2 * 24 * 60 * 60 * 1000, httpOnly: true, secure: true, sameSite: "lax" })
+  return token;
 }
 
-export async function verify(token: string) {
+export async function verifyToken(token: string) {
   const result = await jwtVerify<PayloadBody>(token, Uint8Array_Secret);
   return result.payload;
 }
