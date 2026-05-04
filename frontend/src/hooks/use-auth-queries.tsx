@@ -8,7 +8,6 @@ export function useSession() {
             queryFn: checkSession,
             staleTime: Infinity,
             select: (d) => d.user,
-            retry: (_, __) => false,
         })
     return query;
 }

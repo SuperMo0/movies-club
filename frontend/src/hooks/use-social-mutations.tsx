@@ -125,8 +125,6 @@ export function useCommentOnPost() {
                 draft?.userProfileData.posts.forEach(p => {
                     if (p.id === post.id) p.comments.push(optimsticComment)
                 });
-                return data;
-
             }), post.author.username);
 
 
@@ -159,11 +157,14 @@ export function useCreatePost() {
 
             const optimisticPost = optimisticFactory.createPost(post);
 
-            cache.setPostsCache((data) => produce(data, (draft) => {
-                draft?.posts.push(optimisticPost);
-            }))
+            cache.setPostsCache((data) => {
+                if (data) {
+                    return { ...data, posts: [optimisticPost, ...data.posts] }
+                }
+            })
+
             cache.setUserProfileDataCache((data) => produce(data, (draft) => {
-                draft?.userProfileData.posts.push(optimisticPost);
+                draft?.userProfileData.posts.unshift(optimisticPost);
             }), authUser.username);
 
             return { prevPosts, prevUserProfileData, authUser };
