@@ -1,6 +1,6 @@
 import 'dotenv/config'
 import { createApp } from './app.ts'
-import { start } from './utils/fetchMovies.ts'
+import { start } from './utils/fetchMovies.util.ts'
 import cron from 'node-cron'
 import debug from 'debug'
 import { validateBackendEnv } from './lib/env.ts'

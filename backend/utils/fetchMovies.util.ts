@@ -2,7 +2,7 @@ import * as cheerio from 'cheerio'
 import axios from 'axios'
 import { prisma } from '../lib/prisma.ts'
 import type { DayEntry, Movie } from 'moviesclub-shared/movies'
-import { transformMoviesDataByCienma } from './transform-movies-data.ts'
+import { transformMoviesDataByCienma } from './transform-movies-data.util.ts'
 
 const HEADERS = {
   Accept: 'application/json, text/javascript, */*; q=0.01',

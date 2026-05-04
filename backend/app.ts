@@ -12,7 +12,7 @@ import compression from 'compression'
 import helmet from 'helmet'
 import { notFound } from './errors/notFound.ts'
 import { errorHandler } from './errors/errorHandler.ts'
-import { signuploadform } from './utils/signupload.ts'
+import { signuploadform } from './utils/signupload.util.ts'
 import protect from './middlewares/protect.ts'
 import type { GetSignUploadSignutureResponse } from 'moviesclub-shared/api'
 
