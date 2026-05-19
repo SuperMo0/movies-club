@@ -2,6 +2,7 @@ import { Search } from 'lucide-react'
 import { Button } from '../ui/button'
 import { useTodayCinemas } from '@/hooks/use-movies-query'
 import CinemaSelector from './cinema-selector'
+import { useState, useEffect } from 'react'
 
 type QsearchProps = {
     onChange: (cinema: string | null) => void
@@ -10,6 +11,11 @@ type QsearchProps = {
 export default function Qsearch({ onChange, cinema }: QsearchProps) {
 
     const { data: cinemas } = useTodayCinemas();
+    const [selectedCinema, setSelectedCinema] = useState<string | null>(cinema);
+
+    useEffect(() => {
+        setSelectedCinema(cinema);
+    }, [cinema]);
 
     return (
         <div className="container mx-auto px-4 relative z-20">
@@ -24,16 +30,29 @@ export default function Qsearch({ onChange, cinema }: QsearchProps) {
                         <p className="text-lg font-bold whitespace-nowrap hidden lg:block">Choose Your Cinema</p>
                     </div>
 
-                    <CinemaSelector onChange={onChange} value={cinema} placeholder='Select Cinema' values={Object.keys(cinemas)} />
+                    <CinemaSelector onChange={setSelectedCinema} value={selectedCinema} placeholder='Select Cinema' values={Object.keys(cinemas)} />
+
+                    <Button
+                        variant='default'
+                        disabled={!selectedCinema}
+                        size="lg"
+                        className=""
+                        onClick={() => { onChange(selectedCinema) }}
+                    >
+                        Search
+                    </Button>
 
                     <Button
                         variant='default'
                         size="lg"
                         className=""
-                        onClick={() => { onChange(null) }}
-                        disabled={!cinema}
+                        onClick={() => {
+                            setSelectedCinema(null);
+                            onChange(null);
+                        }}
+                        disabled={!selectedCinema}
                     >
-                        Reset Search
+                        Show All in Egypt
                     </Button>
 
                 </div>
