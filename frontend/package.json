@@ -29,7 +29,7 @@
     "immer": "^11.1.4",
     "lucide-react": "^0.562.0",
     "moviesclub-shared": "*",
-    "radix-ui": "^1.4.3",
+    "radix-ui": "^1.6.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-error-boundary": "^6.1.1",
