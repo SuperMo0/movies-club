@@ -73,7 +73,7 @@ export async function createPost(req: CreatePostRequest, res: Response<PostCreat
 }
 
 
-type updateProfileRequest = Request<{}, {}, UpdateProfileBodyServer>
+type updateProfileRequest = Request<unknown, unknown, UpdateProfileBodyServer>
 export async function updateProfile(req: updateProfileRequest, res: Response<PutUpdateProfileResponse>) {
     const userId = res.locals.userId;
     const user = await socialService.updateUserProfile(userId, req.body);
