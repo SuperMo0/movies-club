@@ -1,4 +1,4 @@
-import type { Request, Response } from "express";
+import type { Response } from "express";
 
 export const setAuthCookie = (res: Response, token: string) => {
     res.cookie('jwt', token, {
