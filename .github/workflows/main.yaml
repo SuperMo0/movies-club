@@ -25,6 +25,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Generate Prisma client
+        run: npm run prisma:generate -w backend
+
       - name: Run Lint
         run: npm run lint -w backend 
 
