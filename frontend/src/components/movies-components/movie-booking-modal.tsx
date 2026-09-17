@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Clock } from 'lucide-react';
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
+import { Clock, X } from 'lucide-react';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import type { Movie } from 'moviesclub-shared/movies';
 import CinemaSelector from './cinema-selector';
 import { useTodayCinemas } from '@/hooks/use-movies-query';
@@ -37,11 +37,19 @@ export default function MovieBookingModal({ open, onOpenChange, movie, cinema }:
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="w-[calc(100vw-1rem)] max-h-[80dvh] overflow-y-scroll md:overflow-auto rounded-xl border border-slate-800 bg-slate-950 p-0 shadow-2xl sm:w-full sm:rounded-2xl md:w-[min(96vw,72rem)] md:max-w-6xl">
-                <div className="flex flex-col md:flex-row w-full h-full overflow-y-auto hidden-scrollbar">
+            <DialogContent
+                showCloseButton={false}
+                className="flex h-[90dvh] w-[calc(100vw-1rem)] flex-col gap-0 overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 p-0 shadow-2xl sm:h-auto sm:max-h-[88dvh] sm:w-full md:max-h-[85dvh] md:w-[min(96vw,72rem)] md:max-w-6xl"
+            >
+                <DialogClose className="absolute top-3 right-3 z-50 flex size-9 items-center justify-center rounded-full border border-white/15 bg-slate-950/70 text-white shadow-lg backdrop-blur-md transition-colors hover:bg-slate-800 focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none">
+                    <X className="size-4" />
+                    <span className="sr-only">Close</span>
+                </DialogClose>
+
+                <div className="flex min-h-0 grow flex-col overflow-y-auto md:flex-row md:overflow-hidden hidden-scrollbar">
 
                     {/* Image Section */}
-                    <div className="relative h-60 shrink-0 md:h-auto w-full md:w-[38%]">
+                    <div className="relative h-56 shrink-0 sm:h-64 md:h-auto w-full md:w-[38%]">
                         <img
                             src={movie.image}
                             className="w-full h-full object-cover"
@@ -51,10 +59,10 @@ export default function MovieBookingModal({ open, onOpenChange, movie, cinema }:
                     </div>
 
                     {/* Content Section */}
-                    <div className="flex min-w-0 flex-1 flex-col gap-6 p-4 sm:p-6 md:p-8">
+                    <div className="flex min-w-0 flex-1 flex-col gap-6 p-4 pb-0 sm:p-6 sm:pb-0 md:min-h-0 md:overflow-y-auto md:p-8 md:pb-0 hidden-scrollbar">
 
                         {/* Header */}
-                        <div>
+                        <div className="pr-10">
                             <div className="flex items-center gap-2 mb-2">
                                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-600 text-white uppercase tracking-wider">
                                     Now Showing
@@ -120,7 +128,7 @@ export default function MovieBookingModal({ open, onOpenChange, movie, cinema }:
                             </div>
                         )}
 
-                        <div className="mt-auto pt-4 flex justify-end border-t border-slate-800/50">
+                        <div className="sticky bottom-0 -mx-4 mt-auto flex justify-end border-t border-slate-800/50 bg-slate-950/95 px-4 py-4 backdrop-blur-sm sm:-mx-6 sm:px-6 md:-mx-8 md:px-8">
                             <button
                                 disabled={!selectedTime}
                                 className="w-full sm:w-auto bg-white text-slate-950 hover:bg-slate-200 px-8 py-3 rounded-xl font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
