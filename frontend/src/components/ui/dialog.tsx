@@ -58,7 +58,7 @@ function DialogContent({
   return (
     <DialogPortal data-slot="dialog-portal">
       <DialogOverlay />
-      <div className="fixed inset-0 z-50 flex items-center-safe justify-center-safe overflow-y-auto p-4">
+      <div className="fixed inset-0 z-50 flex transform-gpu items-center-safe justify-center-safe overflow-y-auto p-4">
         <DialogPrimitive.Content
           data-slot="dialog-content"
           className={cn(
