@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { NavLink } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query'
 import { useLogoutMutation } from '@/hooks/use-auth-mutations.tsx';
-import type { AuthSessionResponse } from 'moviesclub-shared/auth';
+import type { SessionResponse } from 'moviesclub-shared/auth';
 import { cn } from '@/lib/utils';
 
 const navLinks = [
@@ -31,7 +31,7 @@ const Header = ({ onLoginClick, onSignupClick }: HeaderProps) => {
         logoutMutate.mutate();
     };
 
-    const authUser = queryClient.getQueryData<AuthSessionResponse>(["session"])?.user;
+    const authUser = queryClient.getQueryData<SessionResponse>(["session"])?.user;
 
     return (
         <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
