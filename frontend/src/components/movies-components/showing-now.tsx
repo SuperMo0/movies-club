@@ -21,11 +21,9 @@ export default function ShowingNow({ handleMovieClick, cinema }: ShowingNowProps
 
     const movies = useMemo(() => {
         if (!cinema) return todayMovies;
-        const cinemaMovies = Object.keys(cinemas[cinema]).map(x => {
-            return todayMovies.find(m => m.title == x)!;
-        })
-        return cinemaMovies
-    }, [cinema])
+        const titles = new Set(Object.keys(cinemas[cinema] ?? {}));
+        return todayMovies.filter(m => titles.has(m.title));
+    }, [cinema, cinemas, todayMovies])
 
     return (
         <section className="container mx-auto px-4 py-16">
