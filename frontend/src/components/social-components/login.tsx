@@ -55,11 +55,11 @@ export default function Login({ open, onOpenChange }: LoginProps) {
             onOpenChange={onOpenChange}
         >
             <DialogContent
-                className="w-[calc(100vw-2rem)] max-w-sm max-h-[calc(var(--stable-vh)*85)] overflow-y-auto hidden-scrollbar bg-slate-950 border border-slate-800 rounded-2xl shadow-2xl p-0 gap-0"
+                className="w-[calc(100vw-2rem)] max-w-sm overflow-hidden bg-slate-950 border border-slate-800 rounded-2xl shadow-2xl p-0 gap-0"
             >
-                <div className="relative p-8 pt-10">
+                <div className="relative p-6 pt-8 sm:p-8 sm:pt-10">
                     <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-red-600 via-red-500 to-red-600"></div>
-                    <div className='text-center mb-8'>
+                    <div className='text-center mb-6 sm:mb-8'>
                         <div className='inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-600/10 mb-4'>
                             <Clapperboard className='w-6 h-6 text-red-600' />
                         </div>

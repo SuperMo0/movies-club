@@ -167,3 +167,14 @@
     display: none;
   }
 }
+
+/* iPhones zoom into any text field whose text is smaller than 16px when it's focused.
+   Keep fields at 16px on touch screens instead (pinch-zoom still works). Unlayered on purpose,
+   so it wins over text-sm utilities; fields that are already larger (.text-lg) keep their size. */
+@media (pointer: coarse) {
+  input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"], .text-lg),
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
