@@ -56,7 +56,7 @@ export default function Signup({ open, onOpenChange }: SignupProps) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent
-                className="w-[calc(100vw-2rem)] max-w-sm overflow-hidden bg-slate-950 border border-slate-800 rounded-2xl shadow-2xl p-0 gap-0"
+                className="w-[calc(100vw-2rem)] max-w-sm overflow-clip bg-slate-950 border border-slate-800 rounded-2xl shadow-2xl p-0 gap-0"
             >
 
                 <div className="relative p-6 sm:p-8 pt-10">

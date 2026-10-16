@@ -76,13 +76,17 @@ function DialogContent({
         >
           {children}
           {showCloseButton && (
-            <DialogPrimitive.Close
-              data-slot="dialog-close"
-              className="absolute top-4 right-4 rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
-            >
-              <XIcon />
-              <span className="sr-only">Close</span>
-            </DialogPrimitive.Close>
+            // Zero-height bar pinned to the top while a tall dialog scrolls, so the close button stays
+            // reachable. Last in the DOM (so the first field gets focus on open), moved to the top with -order-1.
+            <div className="pointer-events-none sticky top-0 z-20 -order-1 h-0">
+              <DialogPrimitive.Close
+                data-slot="dialog-close"
+                className="pointer-events-auto absolute top-3 right-3 flex size-9 items-center justify-center rounded-full border border-white/15 bg-slate-950/70 text-white/80 shadow-lg backdrop-blur-md transition-colors hover:bg-slate-800 hover:text-white focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
+              >
+                <XIcon className="size-4" />
+                <span className="sr-only">Close</span>
+              </DialogPrimitive.Close>
+            </div>
           )}
         </DialogPrimitive.Content>
       </div>
