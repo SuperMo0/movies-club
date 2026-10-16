@@ -107,7 +107,7 @@ export default function SeatSelection({ movie, cinema, date, time, onBack }: Sea
                 <div ref={scrollerRef} className="@container overflow-x-auto px-4 pt-6 pb-4 hidden-scrollbar sm:px-6 md:px-8 md:pt-8">
                     <div
                         className="mx-auto flex w-max flex-col items-center"
-                        style={{ '--seat': 'clamp(1.375rem, min(calc((100cqi - 3rem) / 28), calc((85dvh - 23rem) / 16)), 2rem)', '--gap': 'calc(var(--seat) * 0.18)' } as CSSProperties}
+                        style={{ '--seat': 'clamp(1.375rem, min(calc((100cqi - 3rem) / 28), calc((var(--stable-vh, 1dvh) * 85 - 23rem) / 16)), 2rem)', '--gap': 'calc(var(--seat) * 0.18)' } as CSSProperties}
                     >
 
                         {/* Screen */}

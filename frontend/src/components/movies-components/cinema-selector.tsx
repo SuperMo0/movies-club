@@ -45,7 +45,12 @@ export default function CinemaSelector({ onChange, value, placeholder, values }:
                 </Button>
             </PopoverTrigger>
 
-            <PopoverContent className="w-full p-0" align="start">
+            <PopoverContent
+                className="w-(--radix-popover-trigger-width) p-0"
+                align="start"
+                // On touch screens, focusing the search box opens the keyboard over the list; let people tap it if they want to type.
+                onOpenAutoFocus={(e) => { if (window.matchMedia('(pointer: coarse)').matches) e.preventDefault() }}
+            >
                 <Command>
                     <CommandInput placeholder={`Search ${placeholder.toLowerCase()}...`} />
                     <CommandList>
