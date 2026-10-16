@@ -2,6 +2,7 @@ import * as socialService from '../services/social.service.ts';
 import type {
     DeleteUnfollowUserResponse,
     GetPostsResponse,
+    GetTrendingResponse,
     GetUserFollowsListResponse,
     GetUserLikedPostsResponse,
     GetUserProfileDataResponse,
@@ -24,6 +25,12 @@ import type { Request, Response } from 'express';
 export async function getPosts(req: Request, res: Response<GetPostsResponse, { query: GetPostsQuery }>) {
     const { posts, nextCursor } = await socialService.getPosts(res.locals.query);
     return res.json({ posts, nextCursor });
+}
+
+
+export async function getTrending(req: Request, res: Response<GetTrendingResponse>) {
+    const trending = await socialService.getTrending();
+    return res.json(trending);
 }
 
 

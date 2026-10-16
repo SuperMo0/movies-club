@@ -3,6 +3,7 @@ import { useSession } from "./use-auth-queries";
 import {
     GETPosts,
     GETProfileData,
+    GETTrending,
     GETUserFollowsList,
     GETUserLikedPosts
 } from "@/api/social.api";
@@ -21,6 +22,14 @@ export function usePosts() {
         select: (d) => d.pages.flatMap(page => page.posts)
     });
     return query
+}
+
+export function useTrending() {
+    return useQuery({
+        queryKey: ["trending"],
+        queryFn: GETTrending,
+        staleTime: 5 * 60 * 1000,
+    });
 }
 
 export function useUserLikedPosts() {

@@ -137,6 +137,7 @@ export function useCommentOnPost() {
         },
         onSettled: (data, error, vars, context) => {
             queryClient.invalidateQueries({ queryKey: ['posts'] });
+            queryClient.invalidateQueries({ queryKey: ['trending'] });
             queryClient.invalidateQueries({ queryKey: ["profile", vars.post.author.username] });
         },
     })
@@ -175,6 +176,7 @@ export function useCreatePost() {
         },
         onSettled: (data, error, vars, context) => {
             queryClient.invalidateQueries({ queryKey: ['posts'] });
+            queryClient.invalidateQueries({ queryKey: ['trending'] });
             queryClient.invalidateQueries({ queryKey: ["profile", context?.authUser.username] });
         },
 

@@ -45,6 +45,49 @@ export async function getPosts({ cursor, limit }: GetPostsQuery) {
 }
 
 
+const TRENDING_WINDOW_DAYS = 30;
+
+// Movies with the most rating posts lately, and the recent posts with the most comments.
+export async function getTrending() {
+    const since = new Date(Date.now() - TRENDING_WINDOW_DAYS * 24 * 60 * 60 * 1000);
+
+    const movieGroups = await prisma.post.groupBy({
+        by: ['movieTitle'],
+        where: { movieTitle: { not: null }, createdAt: { gte: since } },
+        _count: { _all: true },
+        _avg: { rating: true },
+        orderBy: [{ _count: { movieTitle: 'desc' } }, { _avg: { rating: 'desc' } }],
+        take: 5,
+    });
+
+    const hotPosts = await prisma.post.findMany({
+        where: { createdAt: { gte: since }, comments: { some: {} } },
+        orderBy: [{ comments: { _count: 'desc' } }, { likedBy: { _count: 'desc' } }, { createdAt: 'desc' }],
+        take: 3,
+        select: {
+            id: true,
+            content: true,
+            movieTitle: true,
+            author: { select: { username: true, name: true } },
+            _count: { select: { comments: true, likedBy: true } },
+        },
+    });
+
+    return {
+        trendingMovies: movieGroups.map(group => ({
+            title: group.movieTitle!,
+            posts: group._count._all,
+            averageRating: group._avg.rating === null ? null : Math.round(group._avg.rating * 10) / 10,
+        })),
+        hotDiscussions: hotPosts.map(({ _count, ...post }) => ({
+            ...post,
+            comments: _count.comments,
+            likes: _count.likedBy,
+        })),
+    };
+}
+
+
 export async function getUserLikedPosts(userId: string) {
 
     const result = await prisma.user.findUnique({

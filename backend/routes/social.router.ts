@@ -26,6 +26,10 @@ router.get('/posts',
     controller.getPosts)
 
 
+router.get('/trending',
+    controller.getTrending)
+
+
 router.get('/users/:username',
     validateParams(paramsWithUsernameSchema),
     controller.getUserProfileData)

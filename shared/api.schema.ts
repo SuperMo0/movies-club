@@ -82,6 +82,23 @@ export const getSignUploadSignutureResponseSchema = z.object({
 })
 export type GetSignUploadSignutureResponse = z.infer<typeof getSignUploadSignutureResponseSchema>
 
+export const getTrendingResponseSchema = z.object({
+  trendingMovies: z.array(z.object({
+    title: z.string(),
+    posts: z.number(),
+    averageRating: z.number().nullable(),
+  })),
+  hotDiscussions: z.array(z.object({
+    id: z.string(),
+    content: z.string().nullable(),
+    movieTitle: z.string().nullable(),
+    comments: z.number(),
+    likes: z.number(),
+    author: z.object({ username: z.string(), name: z.string() }),
+  })),
+})
+export type GetTrendingResponse = z.infer<typeof getTrendingResponseSchema>
+
 export type CinemaMovies = Record<string, { movieId: string, times: string[] }[]>
 export type TodayCinemasResponse = { cinemas: todayCinemasRecord };
 export type TodayMoviesResponse = { movies: Movie[] };
