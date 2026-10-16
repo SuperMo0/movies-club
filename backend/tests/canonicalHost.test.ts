@@ -21,6 +21,17 @@ describe('canonicalHost', () => {
     }
   })
 
+  it('redirects plain http on the canonical domain to https', async () => {
+    const res = await request(app).get('/social/main?x=1').set('Host', 'movie-club.net').set('X-Forwarded-Proto', 'http')
+    expect(res.status).toBe(301)
+    expect(res.headers.location).toBe('https://movie-club.net/social/main?x=1')
+  })
+
+  it('lets https requests on the canonical domain through', async () => {
+    const res = await request(app).get('/').set('Host', 'movie-club.net').set('X-Forwarded-Proto', 'https')
+    expect(res.status).toBe(200)
+  })
+
   it('ignores host case', async () => {
     const res = await request(app).get('/').set('Host', 'Movie-Club.NET')
     expect(res.status).toBe(200)
