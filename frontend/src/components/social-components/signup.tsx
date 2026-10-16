@@ -56,10 +56,10 @@ export default function Signup({ open, onOpenChange }: SignupProps) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent
-                className="w-[calc(100vw-2rem)] max-w-sm max-h-[80dvh] overflow-y-scroll md:overflow-auto bg-slate-950 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden p-0 gap-0"
+                className="w-[calc(100vw-2rem)] max-w-sm max-h-[calc(var(--stable-vh)*80)] overflow-y-auto hidden-scrollbar bg-slate-950 border border-slate-800 rounded-2xl shadow-2xl p-0 gap-0"
             >
 
-                <div className="relative p-6 sm:p-8 pt-10 overflow-y-auto max-h-[85dvh] custom-scrollbar">
+                <div className="relative p-6 sm:p-8 pt-10">
 
                     <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-red-600 via-red-500 to-red-600"></div>
                     <div className='text-center mb-6'>

@@ -5,6 +5,7 @@ import { XIcon } from "lucide-react"
 import { Dialog as DialogPrimitive } from "radix-ui"
 
 import { cn } from "@/lib/utils"
+import { useStableViewportHeight } from "@/hooks/use-stable-viewport-height"
 import { Button } from "@/components/ui/button"
 
 function Dialog({
@@ -55,10 +56,16 @@ function DialogContent({
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
 }) {
+  // Size dialogs with calc(var(--stable-vh) * N) instead of dvh: it ignores the on-screen keyboard,
+  // so a dialog doesn't shrink when an input inside it is focused on a phone.
+  const viewportHeight = useStableViewportHeight()
   return (
     <DialogPortal data-slot="dialog-portal">
       <DialogOverlay />
-      <div className="fixed inset-0 z-50 flex transform-gpu items-center-safe justify-center-safe overflow-y-auto p-4">
+      <div
+        style={{ "--stable-vh": `${viewportHeight / 100}px` } as React.CSSProperties}
+        className="fixed inset-0 z-50 flex transform-gpu items-center-safe justify-center-safe overflow-y-auto p-4"
+      >
         <DialogPrimitive.Content
           data-slot="dialog-content"
           className={cn(

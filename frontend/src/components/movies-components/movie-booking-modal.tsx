@@ -1,11 +1,10 @@
-import { useState, type CSSProperties } from 'react';
+import { useState } from 'react';
 import { ArrowRight, Clock, X } from 'lucide-react';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import type { Movie } from 'moviesclub-shared/movies';
 import CinemaSelector from './cinema-selector';
 import SeatSelection from './seat-selection';
 import { useTodayCinemas } from '@/hooks/use-movies-query';
-import { useStableViewportHeight } from '@/hooks/use-stable-viewport-height';
 
 type MovieBookingModalProps = {
     open: boolean,
@@ -23,7 +22,6 @@ export default function MovieBookingModal({ open, onOpenChange, movie, cinema }:
     const [step, setStep] = useState<'showtime' | 'seats'>('showtime');
 
     const { data: cinemas } = useTodayCinemas();
-    const viewportHeight = useStableViewportHeight();
 
     function handleDateChange(newDate: string) {
         setSelectedDate(newDate);
@@ -44,7 +42,6 @@ export default function MovieBookingModal({ open, onOpenChange, movie, cinema }:
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent
                 showCloseButton={false}
-                style={{ '--stable-vh': `${viewportHeight / 100}px` } as CSSProperties}
                 className="flex h-[calc(var(--stable-vh)*90)] w-[calc(100vw-1rem)] flex-col gap-0 overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 p-0 shadow-2xl sm:h-auto sm:max-h-[calc(var(--stable-vh)*88)] sm:w-full md:max-h-[calc(var(--stable-vh)*85)] md:w-[min(96vw,72rem)] md:max-w-6xl"
             >
                 <DialogClose className="absolute top-3 right-3 z-50 flex size-9 items-center justify-center rounded-full border border-white/15 bg-slate-950/70 text-white shadow-lg backdrop-blur-md transition-colors hover:bg-slate-800 focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none">
