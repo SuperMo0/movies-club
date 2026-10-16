@@ -95,9 +95,9 @@ export default function SeatSelection({ movie, cinema, date, time, onBack }: Sea
                         {movie.title}
                     </DialogTitle>
                     <DialogDescription className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-400">
-                        <span className="inline-flex items-center gap-1.5"><MapPin className="size-3.5 text-slate-500" />{cinema}</span>
-                        <span className="inline-flex items-center gap-1.5"><CalendarDays className="size-3.5 text-slate-500" />{formatShowDate(date)}</span>
-                        <span className="inline-flex items-center gap-1.5"><Clock className="size-3.5 text-slate-500" />{time}</span>
+                        <span className="inline-flex items-center gap-1.5"><MapPin className="size-3.5 shrink-0 text-slate-500" />{cinema}</span>
+                        <span className="inline-flex items-center gap-1.5"><CalendarDays className="size-3.5 shrink-0 text-slate-500" />{formatShowDate(date)}</span>
+                        <span className="inline-flex items-center gap-1.5"><Clock className="size-3.5 shrink-0 text-slate-500" />{time}</span>
                     </DialogDescription>
                 </div>
             </div>
@@ -245,7 +245,7 @@ export default function SeatSelection({ movie, cinema, date, time, onBack }: Sea
                         )}
                     </div>
 
-                    <div className="flex shrink-0 items-center justify-between gap-4 sm:justify-end sm:gap-5">
+                    <div className="flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-3 sm:flex-nowrap sm:justify-end sm:gap-5">
                         <div className="whitespace-nowrap sm:text-right">
                             <p className="text-[10px] font-medium tracking-wider text-slate-500 uppercase">Total</p>
                             <p className="text-xl font-bold text-white tabular-nums">{formatPrice(total)}</p>

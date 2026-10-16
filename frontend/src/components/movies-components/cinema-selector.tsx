@@ -35,9 +35,9 @@ export default function CinemaSelector({ onChange, value, placeholder, values }:
                     aria-expanded={open}
                     className="w-full h-12 bg-transparent border-white/10 hover:bg-transparent focus:ring-primary/50 text-base justify-between font-normal"
                 >
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                        <MapPin className="w-4 h-4" />
-                        <span className={value ? "text-foreground" : "text-muted-foreground"}>
+                    <div className="flex min-w-0 items-center gap-2 text-muted-foreground">
+                        <MapPin className="w-4 h-4 shrink-0" />
+                        <span className={cn("truncate", value ? "text-foreground" : "text-muted-foreground")}>
                             {value ? value : placeholder}
                         </span>
                     </div>

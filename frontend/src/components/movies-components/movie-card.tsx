@@ -27,7 +27,7 @@ export default function MovieCard({ movie }: MovieCardProps) {
                 <div className="transform translate-y-4 hover:translate-y-0 transition-transform duration-300">
 
 
-                    <h3 className="text-lg font-bold text-foreground leading-tight mb-1 drop-shadow-md">
+                    <h3 className="text-sm sm:text-base lg:text-sm xl:text-base font-bold text-foreground leading-tight mb-1 drop-shadow-md line-clamp-2 wrap-break-word">
                         {movie.title}
                     </h3>
 
