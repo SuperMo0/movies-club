@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { Menu, X } from 'lucide-react';
+import { CircleUserRound, LogIn, LogOut, UserPlus, UserRound } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { NavLink, useLocation } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query'
 import { useLogoutMutation } from '@/hooks/use-auth-mutations.tsx';
 import type { SessionResponse } from 'moviesclub-shared/auth';
 import { cn } from '@/lib/utils';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import defaultAvatar from '/default-avatar.jpg';
 
 const navLinks = [
     { name: "Movies", href: "/" },
@@ -13,6 +15,8 @@ const navLinks = [
 ];
 
 const mobileTabStyles = "rounded-full px-3 py-1.5 text-xs font-semibold transition-colors";
+
+const accountItemStyles = "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors";
 
 const navStyles = "text-sm font-medium text-muted-foreground transition-colors hover:text-primary hover:drop-shadow-glow-red";
 
@@ -23,7 +27,7 @@ type HeaderProps = {
 
 const Header = ({ onLoginClick, onSignupClick }: HeaderProps) => {
 
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isAccountOpen, setIsAccountOpen] = useState(false);
     const isSocial = useLocation().pathname.startsWith('/social');
 
     const queryClient = useQueryClient();
@@ -31,6 +35,7 @@ const Header = ({ onLoginClick, onSignupClick }: HeaderProps) => {
     const logoutMutate = useLogoutMutation();
 
     const handleLogout = async () => {
+        setIsAccountOpen(false);
         logoutMutate.mutate();
     };
 
@@ -84,73 +89,83 @@ const Header = ({ onLoginClick, onSignupClick }: HeaderProps) => {
                     <NavLink
                         to="/"
                         className={cn(mobileTabStyles, isSocial ? "text-muted-foreground hover:text-foreground" : "bg-primary text-primary-foreground")}
-                        onClick={() => setIsMobileMenuOpen(false)}
                     >
                         Movies
                     </NavLink>
                     <NavLink
                         to="/social/main"
                         className={cn(mobileTabStyles, isSocial ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
-                        onClick={() => setIsMobileMenuOpen(false)}
                     >
                         Social
                     </NavLink>
                 </nav>
 
-                <button
-                    aria-label="Menu"
-                    className="flex items-center p-2 md:hidden text-foreground hover:text-primary transition-colors"
-                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                >
-                    {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-                </button>
-            </div>
+                <Popover open={isAccountOpen} onOpenChange={setIsAccountOpen}>
+                    <PopoverTrigger asChild>
+                        <button
+                            aria-label="Account"
+                            className={cn(
+                                "flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full border transition-colors md:hidden",
+                                authUser
+                                    ? "border-primary/60 ring-2 ring-primary/20 hover:border-primary"
+                                    : "border-white/10 bg-white/5 text-foreground hover:border-primary/60 hover:text-primary",
+                            )}
+                        >
+                            {authUser
+                                ? <img src={authUser.image || defaultAvatar} alt="" className="size-full object-cover" />
+                                : <CircleUserRound className="size-5" strokeWidth={1.75} />}
+                        </button>
+                    </PopoverTrigger>
 
-            {isMobileMenuOpen && (
-                <div className="absolute top-16 left-0 w-full border-b border-border/40 bg-background/95 backdrop-blur-xl p-4 md:hidden flex flex-col gap-4 shadow-2xl animate-in slide-in-from-top-5">
-                    <div className="flex flex-col gap-3">
+                    <PopoverContent align="end" sideOffset={10} className="w-64 rounded-xl border-white/10 bg-popover/95 p-2 shadow-2xl backdrop-blur-xl md:hidden">
                         {authUser ? (
                             <>
-                                <NavLink to={`/social/users/${authUser.username}`} onClick={() => setIsMobileMenuOpen(false)}>
-                                    <Button className="w-full shadow-neon-red" variant='default'>
-                                        My Profile
-                                    </Button>
-                                </NavLink>
-
-                                <Button
-                                    variant="ghost"
-                                    className="justify-start text-red-500 hover:text-red-400 hover:bg-red-500/10"
-                                    onClick={handleLogout}
+                                <div className="flex items-center gap-3 px-3 pt-2 pb-3">
+                                    <img src={authUser.image || defaultAvatar} alt="" className="size-10 shrink-0 rounded-full object-cover ring-1 ring-white/10" />
+                                    <div className="min-w-0">
+                                        <p className="truncate text-sm font-semibold text-foreground">{authUser.name}</p>
+                                        <p className="truncate text-xs text-muted-foreground">@{authUser.username}</p>
+                                    </div>
+                                </div>
+                                <div className="mb-1 h-px bg-white/10" />
+                                <NavLink
+                                    to={`/social/users/${authUser.username}`}
+                                    onClick={() => setIsAccountOpen(false)}
+                                    className={cn(accountItemStyles, "text-foreground/90 hover:bg-white/5")}
                                 >
-                                    Logout
-                                </Button>
+                                    <UserRound className="size-4 text-muted-foreground" />
+                                    My profile
+                                </NavLink>
+                                <button onClick={handleLogout} className={cn(accountItemStyles, "text-red-400 hover:bg-red-500/10")}>
+                                    <LogOut className="size-4" />
+                                    Log out
+                                </button>
                             </>
                         ) : (
                             <>
-                                <Button
-                                    variant="ghost"
-                                    className="justify-start hover:text-primary hover:bg-primary/10"
-                                    onClick={() => {
-                                        onLoginClick();
-                                        setIsMobileMenuOpen(false);
-                                    }}
+                                <div className="px-3 pt-2 pb-3">
+                                    <p className="text-sm font-semibold text-foreground">Welcome to MovieClub</p>
+                                    <p className="text-xs text-muted-foreground">Rate movies and join the discussion.</p>
+                                </div>
+                                <button
+                                    onClick={() => { setIsAccountOpen(false); onLoginClick(); }}
+                                    className={cn(accountItemStyles, "text-foreground/90 hover:bg-white/5")}
                                 >
-                                    Login
-                                </Button>
-                                <Button
-                                    variant='default'
-                                    onClick={() => {
-                                        onSignupClick();
-                                        setIsMobileMenuOpen(false);
-                                    }}
+                                    <LogIn className="size-4 text-muted-foreground" />
+                                    Log in
+                                </button>
+                                <button
+                                    onClick={() => { setIsAccountOpen(false); onSignupClick(); }}
+                                    className={cn(accountItemStyles, "mt-1 justify-center bg-primary text-primary-foreground hover:bg-primary/90")}
                                 >
-                                    Signup
-                                </Button>
+                                    <UserPlus className="size-4" />
+                                    Sign up
+                                </button>
                             </>
                         )}
-                    </div>
-                </div>
-            )}
+                    </PopoverContent>
+                </Popover>
+            </div>
         </header>
     );
 };
