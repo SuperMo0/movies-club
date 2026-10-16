@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Clock, X } from 'lucide-react';
+import { ArrowRight, Clock, X } from 'lucide-react';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import type { Movie } from 'moviesclub-shared/movies';
 import CinemaSelector from './cinema-selector';
+import SeatSelection from './seat-selection';
 import { useTodayCinemas } from '@/hooks/use-movies-query';
 
 type MovieBookingModalProps = {
@@ -18,6 +19,7 @@ export default function MovieBookingModal({ open, onOpenChange, movie, cinema }:
     const [selectedDate, setSelectedDate] = useState(todayDate);
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
     const [selectedCinema, setSelectedCinema] = useState<string | null>(cinema);
+    const [step, setStep] = useState<'showtime' | 'seats'>('showtime');
 
     const { data: cinemas } = useTodayCinemas();
 
@@ -28,6 +30,7 @@ export default function MovieBookingModal({ open, onOpenChange, movie, cinema }:
 
     function handleCinemaChange(cinema: string) {
         setSelectedCinema(cinema);
+        setSelectedTime(null);
     }
 
     if (!movie) return null;
@@ -46,99 +49,111 @@ export default function MovieBookingModal({ open, onOpenChange, movie, cinema }:
                     <span className="sr-only">Close</span>
                 </DialogClose>
 
-                <div className="flex min-h-0 grow flex-col overflow-y-auto md:flex-row md:overflow-hidden hidden-scrollbar">
+                {step === 'seats' && selectedCinema && selectedTime ? (
+                    <SeatSelection
+                        movie={movie}
+                        cinema={selectedCinema}
+                        date={selectedDate}
+                        time={selectedTime}
+                        onBack={() => setStep('showtime')}
+                    />
+                ) : (
+                    <div className="flex min-h-0 grow flex-col overflow-y-auto md:flex-row md:overflow-hidden hidden-scrollbar">
 
-                    {/* Image Section */}
-                    <div className="relative h-56 shrink-0 sm:h-64 md:h-auto w-full md:w-[38%]">
-                        <img
-                            src={movie.image}
-                            className="w-full h-full object-cover"
-                            alt={movie.title}
-                        />
-                        <div className="absolute inset-0 bg-linear-to-t from-slate-950 via-transparent to-transparent md:bg-linear-to-r" />
-                    </div>
-
-                    {/* Content Section */}
-                    <div className="flex min-w-0 flex-1 flex-col gap-6 p-4 pb-0 sm:p-6 sm:pb-0 md:min-h-0 md:overflow-y-auto md:p-8 md:pb-0 hidden-scrollbar">
-
-                        {/* Header */}
-                        <div className="pr-10">
-                            <div className="flex items-center gap-2 mb-2">
-                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-600 text-white uppercase tracking-wider">
-                                    Now Showing
-                                </span>
-                                <span className="text-slate-400 text-xs">
-                                    {Array.isArray(movie.genre) ? movie.genre.join(' • ') : (movie.genre || "Cinema")}
-                                </span>
-                            </div>
-                            <DialogTitle className="text-3xl md:text-4xl font-bold text-white tracking-tight leading-none mb-2">
-                                {movie.title}
-                            </DialogTitle>
-                            <DialogDescription className="text-slate-400 text-sm line-clamp-2">
-                                {movie.description || "Experience the thrill on the big screen."}
-                            </DialogDescription>
-                            <div className="mt-3 flex items-center gap-2">
-                                <span className="text-xs font-semibold uppercase tracking-wide text-yellow-500">
-                                    IMDb
-                                </span>
-                            </div>
+                        {/* Image Section */}
+                        <div className="relative h-56 shrink-0 sm:h-64 md:h-auto w-full md:w-[38%]">
+                            <img
+                                src={movie.image}
+                                className="w-full h-full object-cover"
+                                alt={movie.title}
+                            />
+                            <div className="absolute inset-0 bg-linear-to-t from-slate-950 via-transparent to-transparent md:bg-linear-to-r" />
                         </div>
 
-                        {/* Inputs Section */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <label className="text-xs font-medium text-slate-500 uppercase">Cinema</label>
-                                <CinemaSelector onChange={handleCinemaChange} value={selectedCinema} placeholder='Select Cinema' values={cinemasShowing} />
-                            </div>
+                        {/* Content Section */}
+                        <div className="flex min-w-0 flex-1 flex-col gap-6 p-4 pb-0 sm:p-6 sm:pb-0 md:min-h-0 md:overflow-y-auto md:p-8 md:pb-0 hidden-scrollbar">
 
-                            <div className="space-y-2">
-                                <label className="text-xs font-medium text-slate-500 uppercase">Date</label>
-                                <CinemaSelector onChange={handleDateChange} value={selectedDate} placeholder='Select Date' values={days} />
-                            </div>
-                        </div>
-
-                        {/* Time Selection */}
-                        {schedule && (
-                            <div className="space-y-3">
-                                <label className="text-xs font-medium text-slate-500 uppercase flex items-center gap-2">
-                                    <Clock className="w-3 h-3" /> Available Times
-                                </label>
-
-                                <div className="flex flex-wrap gap-3">
-                                    {schedule.length > 0 ? (
-                                        schedule.map((time, i) => (
-                                            <button
-                                                key={i}
-                                                onClick={() => setSelectedTime(time)}
-                                                className={`
-                                                    px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200
-                                                    ${selectedTime === time
-                                                        ? 'bg-red-600 border-red-600 text-white shadow-lg shadow-red-900/20'
-                                                        : 'bg-slate-900/50 border-slate-700 text-slate-300 hover:border-red-500 hover:text-red-400'
-                                                    }
-                                                `}
-                                            >
-                                                {time}
-                                            </button>
-                                        ))
-                                    ) : (
-                                        <span className="text-sm text-slate-500 italic">No times scheduled for this cinema.</span>
-                                    )}
+                            {/* Header */}
+                            <div className="pr-10">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-600 text-white uppercase tracking-wider">
+                                        Now Showing
+                                    </span>
+                                    <span className="text-slate-400 text-xs">
+                                        {Array.isArray(movie.genre) ? movie.genre.join(' • ') : (movie.genre || "Cinema")}
+                                    </span>
+                                </div>
+                                <DialogTitle className="text-3xl md:text-4xl font-bold text-white tracking-tight leading-none mb-2">
+                                    {movie.title}
+                                </DialogTitle>
+                                <DialogDescription className="text-slate-400 text-sm line-clamp-2">
+                                    {movie.description || "Experience the thrill on the big screen."}
+                                </DialogDescription>
+                                <div className="mt-3 flex items-center gap-2">
+                                    <span className="text-xs font-semibold uppercase tracking-wide text-yellow-500">
+                                        IMDb
+                                    </span>
                                 </div>
                             </div>
-                        )}
 
-                        <div className="sticky bottom-0 -mx-4 mt-auto flex justify-end border-t border-slate-800/50 bg-slate-950/95 px-4 py-4 backdrop-blur-sm sm:-mx-6 sm:px-6 md:-mx-8 md:px-8">
-                            <button
-                                disabled={!selectedTime}
-                                className="w-full sm:w-auto bg-white text-slate-950 hover:bg-slate-200 px-8 py-3 rounded-xl font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {selectedTime ? `Book for ${selectedTime}` : 'Select a Time'}
-                            </button>
+                            {/* Inputs Section */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-medium text-slate-500 uppercase">Cinema</label>
+                                    <CinemaSelector onChange={handleCinemaChange} value={selectedCinema} placeholder='Select Cinema' values={cinemasShowing} />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-xs font-medium text-slate-500 uppercase">Date</label>
+                                    <CinemaSelector onChange={handleDateChange} value={selectedDate} placeholder='Select Date' values={days} />
+                                </div>
+                            </div>
+
+                            {/* Time Selection */}
+                            {schedule && (
+                                <div className="space-y-3">
+                                    <label className="text-xs font-medium text-slate-500 uppercase flex items-center gap-2">
+                                        <Clock className="w-3 h-3" /> Available Times
+                                    </label>
+
+                                    <div className="flex flex-wrap gap-3">
+                                        {schedule.length > 0 ? (
+                                            schedule.map((time, i) => (
+                                                <button
+                                                    key={i}
+                                                    onClick={() => setSelectedTime(time)}
+                                                    className={`
+                                                        px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200
+                                                        ${selectedTime === time
+                                                            ? 'bg-red-600 border-red-600 text-white shadow-lg shadow-red-900/20'
+                                                            : 'bg-slate-900/50 border-slate-700 text-slate-300 hover:border-red-500 hover:text-red-400'
+                                                        }
+                                                    `}
+                                                >
+                                                    {time}
+                                                </button>
+                                            ))
+                                        ) : (
+                                            <span className="text-sm text-slate-500 italic">No times scheduled for this cinema.</span>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="sticky bottom-0 -mx-4 mt-auto flex justify-end border-t border-slate-800/50 bg-slate-950/95 px-4 py-4 backdrop-blur-sm sm:-mx-6 sm:px-6 md:-mx-8 md:px-8">
+                                <button
+                                    disabled={!selectedTime}
+                                    onClick={() => setStep('seats')}
+                                    className="inline-flex w-full items-center justify-center gap-2 sm:w-auto bg-white text-slate-950 hover:bg-slate-200 px-8 py-3 rounded-xl font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {selectedTime ? `Book for ${selectedTime}` : 'Select a Time'}
+                                    {selectedTime && <ArrowRight className="size-4" />}
+                                </button>
+                            </div>
+
                         </div>
-
                     </div>
-                </div>
+                )}
             </DialogContent>
         </Dialog>
     );

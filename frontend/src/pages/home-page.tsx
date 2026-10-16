@@ -37,7 +37,7 @@ export default function Home() {
                     onOpenChange={handleModalOpenChange}
                     movie={activeMovie}
                     cinema={activeCinema}
-                    key={activeCinema}
+                    key={`${activeCinema}|${activeMovie?.id}`}
                 />
                 <Qsearch onChange={handleCinemaSelect} cinema={activeCinema} />
                 {/* <Hero handleMovieClick={handleMovieClick} /> */}
