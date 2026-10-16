@@ -13,6 +13,7 @@ import { notFound } from './errors/notFound.ts'
 import { errorHandler } from './errors/errorHandler.ts'
 import { signuploadform } from './utils/signupload.util.ts'
 import protect from './middlewares/protect.ts'
+import { canonicalHost } from './middlewares/canonicalHost.ts'
 import type { GetSignUploadSignutureResponse } from 'moviesclub-shared/api'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -42,6 +43,10 @@ export function createApp(options: CreateAppOptions = {}) {
     legacyHeaders: false,
     ipv6Subnet: 56,
   })
+
+  if (enableNonDevelopmentMiddleware && process.env.CANONICAL_HOST) {
+    app.use(canonicalHost(process.env.CANONICAL_HOST))
+  }
 
   app.use(corsOptions)
   // app.use(helmet())

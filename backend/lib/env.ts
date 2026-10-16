@@ -14,6 +14,7 @@ export type ValidatedBackendEnv = {
   PORT?: string
   NODE_ENV?: string
   FRONTEND_URL?: string
+  CANONICAL_HOST?: string
 }
 
 export function validateBackendEnv(env: NodeJS.ProcessEnv = process.env): ValidatedBackendEnv {
@@ -35,5 +36,6 @@ export function validateBackendEnv(env: NodeJS.ProcessEnv = process.env): Valida
     ...(env.PORT ? { PORT: env.PORT } : {}),
     ...(env.NODE_ENV ? { NODE_ENV: env.NODE_ENV } : {}),
     ...(env.FRONTEND_URL ? { FRONTEND_URL: env.FRONTEND_URL } : {}),
+    ...(env.CANONICAL_HOST ? { CANONICAL_HOST: env.CANONICAL_HOST } : {}),
   }
 }
