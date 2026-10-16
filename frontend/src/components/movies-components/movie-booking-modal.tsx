@@ -64,7 +64,7 @@ export default function MovieBookingModal({ open, onOpenChange, movie, cinema }:
                     <div className="flex min-h-0 grow flex-col overflow-y-auto md:flex-row md:overflow-hidden hidden-scrollbar">
 
                         {/* Image Section */}
-                        <div className="relative h-56 shrink-0 sm:h-64 md:h-auto w-full md:w-[38%]">
+                        <div className="relative aspect-2/3 w-full shrink-0 md:aspect-auto md:h-auto md:w-[38%]">
                             <img
                                 src={movie.image}
                                 className="w-full h-full object-cover"

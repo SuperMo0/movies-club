@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { NavLink } from 'react-router';
+import { NavLink, useLocation } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query'
 import { useLogoutMutation } from '@/hooks/use-auth-mutations.tsx';
 import type { SessionResponse } from 'moviesclub-shared/auth';
@@ -11,6 +11,8 @@ const navLinks = [
     { name: "Movies", href: "/" },
     { name: "Social Area", href: "/social/main" },
 ];
+
+const mobileTabStyles = "rounded-full px-3 py-1.5 text-xs font-semibold transition-colors";
 
 const navStyles = "text-sm font-medium text-muted-foreground transition-colors hover:text-primary hover:drop-shadow-glow-red";
 
@@ -22,6 +24,7 @@ type HeaderProps = {
 const Header = ({ onLoginClick, onSignupClick }: HeaderProps) => {
 
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const isSocial = useLocation().pathname.startsWith('/social');
 
     const queryClient = useQueryClient();
 
@@ -37,7 +40,7 @@ const Header = ({ onLoginClick, onSignupClick }: HeaderProps) => {
         <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
             <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
 
-                <NavLink to={"/"}><h1 className="text-2xl font-extrabold tracking-tight transition-all hover:opacity-90">
+                <NavLink to={"/"}><h1 className="text-xl min-[400px]:text-2xl font-extrabold tracking-tight transition-all hover:opacity-90">
                     Movie
                     <span className="text-primary drop-shadow-glow-red">Club</span>
                 </h1></NavLink>
@@ -77,7 +80,25 @@ const Header = ({ onLoginClick, onSignupClick }: HeaderProps) => {
                     )}
                 </div>
 
+                <nav className="flex items-center gap-1 rounded-full border border-white/10 bg-white/5 p-1 md:hidden">
+                    <NavLink
+                        to="/"
+                        className={cn(mobileTabStyles, isSocial ? "text-muted-foreground hover:text-foreground" : "bg-primary text-primary-foreground")}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                        Movies
+                    </NavLink>
+                    <NavLink
+                        to="/social/main"
+                        className={cn(mobileTabStyles, isSocial ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                        Social
+                    </NavLink>
+                </nav>
+
                 <button
+                    aria-label="Menu"
                     className="flex items-center p-2 md:hidden text-foreground hover:text-primary transition-colors"
                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 >
@@ -87,20 +108,7 @@ const Header = ({ onLoginClick, onSignupClick }: HeaderProps) => {
 
             {isMobileMenuOpen && (
                 <div className="absolute top-16 left-0 w-full border-b border-border/40 bg-background/95 backdrop-blur-xl p-4 md:hidden flex flex-col gap-4 shadow-2xl animate-in slide-in-from-top-5">
-                    <nav className="flex flex-col gap-4">
-                        {navLinks.map((link) => (
-                            <NavLink
-                                key={link.name}
-                                to={link.href}
-                                className="text-lg font-medium text-foreground/80 hover:text-primary hover:pl-2 transition-all duration-200"
-                                onClick={() => setIsMobileMenuOpen(false)}
-                            >
-                                {link.name}
-                            </NavLink>
-                        ))}
-                    </nav>
-
-                    <div className="flex flex-col gap-3 mt-4 pt-4 border-t border-border/40">
+                    <div className="flex flex-col gap-3">
                         {authUser ? (
                             <>
                                 <NavLink to={`/social/users/${authUser.username}`} onClick={() => setIsMobileMenuOpen(false)}>
