@@ -1,6 +1,6 @@
 // Seeds the social feed with a handful of movie-rating posts from a few starter accounts.
 //
-//   npm run seed:posts -w backend            add the starter accounts and posts (skips if already there)
+//   npm run seed:posts -w backend            add the starter accounts and posts (re-running only refreshes the accounts)
 //   npm run seed:posts -w backend -- --remove   delete the starter accounts and everything they posted
 //
 // The starter accounts get a random password nobody knows, so they can't be logged into.
@@ -9,13 +9,15 @@ import { prisma } from '../lib/prisma.ts'
 import { hash } from '../lib/bcrypt.ts'
 
 const POSTER = (file: string) => `https://media0106.elcinema.com/uploads/_315x420_${file}.jpg`
+// Illustrated avatars (DiceBear "Notionists"), not photos: the starter accounts aren't real people.
+const AVATAR = (seed: string, background: string) => `https://api.dicebear.com/9.x/notionists/png?seed=${seed}&size=256&backgroundColor=${background}`
 
 const SEED_USERS = [
-    { username: 'nour.hassan', name: 'Nour Hassan', bio: 'Horror at midnight, comedies on the weekend.' },
-    { username: 'omar_k', name: 'Omar Khaled', bio: 'IMAX or nothing.' },
-    { username: 'mariam.adel', name: 'Mariam Adel', bio: 'Book first, movie second.' },
-    { username: 'youssef.films', name: 'Youssef Samir', bio: 'Rating every movie I watch in Cairo.' },
-    { username: 'salma_t', name: 'Salma Tarek', bio: 'Animation and soundtracks.' },
+    { username: 'nour.hassan', name: 'Nour Hassan', bio: 'Horror at midnight, comedies on the weekend.', image: AVATAR('nour8', 'ffdfbf') },
+    { username: 'omar_k', name: 'Omar Khaled', bio: 'IMAX or nothing.', image: AVATAR('omar2', 'd1d4f9') },
+    { username: 'mariam.adel', name: 'Mariam Adel', bio: 'Book first, movie second.', image: AVATAR('mariam3', 'ffd5dc') },
+    { username: 'youssef.films', name: 'Youssef Samir', bio: 'Rating every movie I watch in Cairo.', image: AVATAR('youssef8', 'b6e3f4') },
+    { username: 'salma_t', name: 'Salma Tarek', bio: 'Animation and soundtracks.', image: AVATAR('salma4', 'c0aede') },
 ] as const
 
 type SeedUsername = (typeof SEED_USERS)[number]['username']
@@ -135,20 +137,21 @@ const SEED_POSTS: SeedPost[] = [
 const seedUsernames = SEED_USERS.map(u => u.username)
 
 async function seed() {
-    const existing = await prisma.post.count({ where: { author: { username: { in: seedUsernames } } } })
-    if (existing > 0) {
-        console.log(`Starter posts are already there (${existing} posts). Nothing to do.`)
-        return
-    }
-
+    // Accounts are always upserted so re-running refreshes their name, bio and avatar.
     const ids = {} as Record<SeedUsername, string>
     for (const user of SEED_USERS) {
         const saved = await prisma.user.upsert({
             where: { username: user.username },
-            update: {},
+            update: { name: user.name, bio: user.bio, image: user.image },
             create: { ...user, password: await hash(randomUUID()) },
         })
         ids[user.username] = saved.id
+    }
+
+    const existing = await prisma.post.count({ where: { authorId: { in: Object.values(ids) } } })
+    if (existing > 0) {
+        console.log(`Updated the ${SEED_USERS.length} starter accounts. Their posts are already there (${existing} posts).`)
+        return
     }
 
     const now = Date.now()
