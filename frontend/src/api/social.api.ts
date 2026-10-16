@@ -22,8 +22,9 @@ export async function GETUserLikedPosts() {
 }
 
 
-export async function GETPosts() {
-    const [error, data] = await catchAsync(client.get<GetPostsResponse>('/social/posts'));
+export async function GETPosts({ pageParam }: { pageParam: string | null }) {
+    const params = pageParam ? { cursor: pageParam } : {};
+    const [error, data] = await catchAsync(client.get<GetPostsResponse>('/social/posts', { params }));
     if (error) throw error;
     return data;
 }

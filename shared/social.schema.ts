@@ -33,6 +33,13 @@ export const postSchema = z.object({
     author: safeUserResponseSchema
 });
 
+export const POSTS_PAGE_SIZE = 6;
+
+export const getPostsQuerySchema = z.object({
+    cursor: z.uuid("Invalid cursor").optional(),
+    limit: z.coerce.number().int().min(1).max(50).default(POSTS_PAGE_SIZE),
+});
+
 export const createPostBodyClientSchema = z.object({
     content: z.string().min(1, "Content is required"),
     movieTitle: z.string().nullish().optional(),
@@ -72,6 +79,7 @@ export const updateProfileBodyServerSchema = updateProfileBodyBaseSchema.extend(
 
 
 export type Post = z.infer<typeof postSchema>
+export type GetPostsQuery = z.infer<typeof getPostsQuerySchema>
 export type Comment = z.infer<typeof commentSchema>
 export type CreateCommentBody = z.infer<typeof createCommentBodySchema>
 export type CreatePostBodyClient = z.infer<typeof createPostBodyClientSchema>

@@ -14,15 +14,16 @@ import type {
 import type {
     UpdateProfileBodyServer,
     CreateCommentBody,
-    CreatePostBodyServer
+    CreatePostBodyServer,
+    GetPostsQuery
 } from 'moviesclub-shared/social'
 import type { Request, Response } from 'express';
 
 
 
-export async function getPosts(req: Request, res: Response<GetPostsResponse>) {
-    const posts = await socialService.getPosts();
-    return res.json({ posts });
+export async function getPosts(req: Request, res: Response<GetPostsResponse, { query: GetPostsQuery }>) {
+    const { posts, nextCursor } = await socialService.getPosts(res.locals.query);
+    return res.json({ posts, nextCursor });
 }
 
 

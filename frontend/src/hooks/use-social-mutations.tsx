@@ -35,7 +35,7 @@ export function useLikePost() {
                 return data;
             }));
             cache.setPostsCache((data) => produce(data, (draft) => {
-                draft?.posts.forEach(p => { if (p.id === post.id) p._count.likedBy += 1 });
+                draft?.pages.forEach(page => page.posts.forEach(p => { if (p.id === post.id) p._count.likedBy += 1 }));
             }));
             cache.setUserProfileDataCache((data) => produce(data, (draft) => {
                 draft?.userProfileData.posts.forEach((p) => { if (p.id === post.id) p._count.likedBy += 1 });
@@ -77,7 +77,7 @@ export function useUnlikePost() {
             }));
 
             cache.setPostsCache((data) => produce(data, (draft) => {
-                draft?.posts.forEach(p => { if (p.id === post.id) p._count.likedBy -= 1 });
+                draft?.pages.forEach(page => page.posts.forEach(p => { if (p.id === post.id) p._count.likedBy -= 1 }));
             }));
 
             cache.setUserProfileDataCache((data) => produce(data, (draft) => {
@@ -116,9 +116,9 @@ export function useCommentOnPost() {
             const prevUserProfileData = cache.getUserProfileDataCache(post.author.username);
 
             cache.setPostsCache((data) => produce(data, (draft) => {
-                draft?.posts.forEach(p => {
+                draft?.pages.forEach(page => page.posts.forEach(p => {
                     if (p.id === post.id) p.comments.push(optimsticComment)
-                });
+                }));
             }))
 
             cache.setUserProfileDataCache((data) => produce(data, (draft) => {
@@ -157,11 +157,9 @@ export function useCreatePost() {
 
             const optimisticPost = optimisticFactory.createPost(post);
 
-            cache.setPostsCache((data) => {
-                if (data) {
-                    return { ...data, posts: [optimisticPost, ...data.posts] }
-                }
-            })
+            cache.setPostsCache((data) => produce(data, (draft) => {
+                draft?.pages[0]?.posts.unshift(optimisticPost);
+            }))
 
             cache.setUserProfileDataCache((data) => produce(data, (draft) => {
                 draft?.userProfileData.posts.unshift(optimisticPost);

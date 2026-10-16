@@ -88,7 +88,7 @@ export default function PostCard({ post }: postCardProps) {
             <p className='text-slate-300 leading-relaxed mb-3'>{post.content}</p>
 
             {post.image && (
-                <div className='mb-4 rounded-xl overflow-hidden border border-slate-800'>
+                <div className='mb-4'>
                     <PostImage src={post.image} />
                 </div>
             )}
@@ -116,6 +116,7 @@ export default function PostCard({ post }: postCardProps) {
                         <Input
                             value={comment}
                             onChange={(e: ChangeEvent<HTMLInputElement>) => { setComment(e.target!.value) }}
+                            onKeyDown={(e) => { if (e.key === 'Enter' && !e.nativeEvent.isComposing) handleCommentPost() }}
                             type="text"
                             placeholder="Write a comment..."
                             variant="social"

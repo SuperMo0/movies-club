@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query"
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query"
 import { useSession } from "./use-auth-queries";
 import {
     GETPosts,
@@ -10,12 +10,15 @@ import {
 
 
 export function usePosts() {
-    const query = useQuery({
+    const query = useInfiniteQuery({
         queryKey: ["posts"],
         queryFn: GETPosts,
+        initialPageParam: null as string | null,
+        getNextPageParam: (lastPage) => lastPage.nextCursor,
         staleTime: 60 * 15,
-        throwOnError: true,
-        select: (d) => d.posts
+        // Only a failed first page is fatal; a failed later page keeps the feed and shows a retry button.
+        throwOnError: (_, query) => !query.state.data,
+        select: (d) => d.pages.flatMap(page => page.posts)
     });
     return query
 }

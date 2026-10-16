@@ -37,6 +37,14 @@ describe('Social API', () => {
     })
   })
 
+  describe('feed pagination query validation', () => {
+    it.each(['limit=abc', 'limit=0', 'limit=51', 'cursor=not-a-uuid'])('GET /api/social/posts?%s → 400', async (query) => {
+      const res = await request(app).get(`/api/social/posts?${query}`)
+      expect(res.status).toBe(400)
+      expect(res.body).toMatchObject({ message: 'Invalid query' })
+    })
+  })
+
   describe('param validation', () => {
     it('GET /api/social/users/:username returns 400 for username shorter than 3 chars', async () => {
       const res = await request(app).get('/api/social/users/ab')

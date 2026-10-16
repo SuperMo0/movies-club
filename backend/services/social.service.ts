@@ -1,4 +1,4 @@
-import type { CreateCommentBody, CreatePostBodyServer, UpdateProfileBodyServer } from 'moviesclub-shared/social'
+import type { CreateCommentBody, CreatePostBodyServer, GetPostsQuery, UpdateProfileBodyServer } from 'moviesclub-shared/social'
 import { appError } from '../errors/appError.ts'
 import { prisma } from '../lib/prisma.ts'
 import { Prisma } from '../generated/prisma/client.ts'
@@ -21,10 +21,14 @@ export const safeUserSelection = {
 } satisfies Prisma.userSelect
 
 
-export async function getPosts() {
+// Cursor pagination: newest first, `cursor` is the id of the last post the client already has.
+// One extra row is fetched to know whether another page exists.
+export async function getPosts({ cursor, limit }: GetPostsQuery) {
 
-    const result = await prisma.post.findMany({
-        orderBy: { createdAt: 'desc' },
+    const rows = await prisma.post.findMany({
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        take: limit + 1,
+        ...(cursor && { cursor: { id: cursor }, skip: 1 }),
         include: {
             comments: {
                 include: { author: { select: safeUserSelection } },
@@ -34,7 +38,10 @@ export async function getPosts() {
         }
     })
 
-    return result;
+    const hasMore = rows.length > limit;
+    const posts = hasMore ? rows.slice(0, limit) : rows;
+    const nextCursor = hasMore ? posts.at(-1)!.id : null;
+    return { posts, nextCursor };
 }
 
 

@@ -5,7 +5,9 @@ import type { Movie, todayCinemasRecord } from './movies.schema.ts';
 
 
 export const getPostsResponseSchema = z.object({
-  posts: z.array(socialSchemas.postSchema)
+  posts: z.array(socialSchemas.postSchema),
+  // id of the last post on this page; pass it back as ?cursor= to get the next page, null when there are no more
+  nextCursor: z.string().nullable()
 })
 export type GetPostsResponse = z.infer<typeof getPostsResponseSchema>;
 

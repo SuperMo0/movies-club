@@ -3,6 +3,7 @@ import { Router } from 'express'
 import { protect } from '../middlewares/protect.ts'
 import { validateBody } from '../middlewares/validateBody.ts'
 import { validateParams } from '../middlewares/validateParams.ts'
+import { validateQuery } from '../middlewares/validateQuery.ts'
 import {
     paramsWithpostIdSceham,
     paramsWithUserIdSceham,
@@ -11,6 +12,7 @@ import {
 import {
     createCommentBodySchema,
     createPostBodyServerSchema,
+    getPostsQuerySchema,
     updateProfileBodyServerSchema
 } from 'moviesclub-shared/social'
 
@@ -20,6 +22,7 @@ export const router = Router()
 
 
 router.get('/posts',
+    validateQuery(getPostsQuerySchema),
     controller.getPosts)
 
 

@@ -8,7 +8,8 @@
   "main": "index.ts",
   "scripts": {
     "dev": "NODE_ENV=development tsx watch index.ts",
-    "build": "prisma generate && tsdown index.ts",
+    "build": "prisma generate && tsdown index.ts scripts/seed-posts.ts",
+    "seed:posts": "node dist/scripts/seed-posts.mjs",
     "typecheck": "tsc --noEmit",
     "start": "NODE_ENV=production node dist/index.mjs",
     "prisma:generate": "prisma generate",

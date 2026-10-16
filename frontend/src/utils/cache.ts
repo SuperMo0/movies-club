@@ -1,5 +1,6 @@
 import type { SessionResponse } from 'moviesclub-shared/auth';
 import { queryClient } from './query-client';
+import type { InfiniteData } from '@tanstack/react-query';
 import type { GetPostsResponse, GetUserFollowsListResponse, GetUserLikedPostsResponse, GetUserProfileDataResponse } from 'moviesclub-shared/api'
 
 
@@ -15,13 +16,16 @@ export function setUserLikedPostsCache(updater: (data: GetUserLikedPostsResponse
 }
 
 
+// The feed is an infinite query: one GetPostsResponse per loaded page.
+export type PostsCache = InfiniteData<GetPostsResponse, string | null>;
+
 export function getPostsCache() {
-    const data = queryClient.getQueryData<GetPostsResponse>(["posts"]);
+    const data = queryClient.getQueryData<PostsCache>(["posts"]);
     return data;
 }
 
-export function setPostsCache(updater: (data: GetPostsResponse | undefined) => GetPostsResponse | undefined) {
-    const data = queryClient.setQueryData<GetPostsResponse>(["posts"], updater);
+export function setPostsCache(updater: (data: PostsCache | undefined) => PostsCache | undefined) {
+    const data = queryClient.setQueryData<PostsCache>(["posts"], updater);
     return data;
 }
 
