@@ -20,8 +20,8 @@
     "lint": "eslint . --ext .ts"
   },
   "dependencies": {
-    "@prisma/adapter-pg": "^7.10.0",
-    "@prisma/client": "^7.10.0",
+    "@prisma/adapter-pg": "^7.10.1",
+    "@prisma/client": "^7.10.1",
     "axios": "^1.20.0",
     "bcrypt": "^6.0.0",
     "cheerio": "^1.1.2",
@@ -31,15 +31,15 @@
     "cors": "^2.8.5",
     "date-fns": "^4.4.0",
     "dotenv": "^17.2.3",
-    "express": "^5.2.1",
-    "express-rate-limit": "^8.7.0",
+    "express": "^5.3.0",
+    "express-rate-limit": "^8.7.1",
     "helmet": "^8.3.0",
     "jose": "^6.2.12",
     "moviesclub-shared": "^1.0.0",
     "multer": "^2.4.0",
     "node-cron": "^4.6.0",
-    "pg": "^8.23.0",
-    "zod": "^4.6.5"
+    "pg": "^8.23.1",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
