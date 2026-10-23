@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import { Accessibility, ArrowRight, CalendarDays, ChevronLeft, Clock, Lock, MapPin, ShieldCheck, X } from 'lucide-react';
+import { useEffect, useMemo, useRef, type CSSProperties } from 'react';
+import { Accessibility, ArrowRight, CalendarDays, ChevronLeft, Clock, Lock, MapPin, X } from 'lucide-react';
 import { DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import type { Movie } from 'moviesclub-shared/movies';
 import { cn } from '@/lib/utils';
@@ -7,6 +7,7 @@ import {
     buildSeatMap,
     CROSS_AISLE_AFTER,
     formatPrice,
+    formatShowDate,
     getBookingTotal,
     MAX_SEATS_PER_BOOKING,
     SEAT_PRICES,
@@ -19,13 +20,10 @@ type SeatSelectionProps = {
     cinema: string,
     date: string,
     time: string,
+    selectedIds: string[],
+    onSelectedIdsChange: (update: (ids: string[]) => string[]) => void,
     onBack: () => void,
-}
-
-function formatShowDate(date: string) {
-    const [year, month, day] = date.split('-').map(Number);
-    if (!year || !month || !day) return date;
-    return new Date(year, month - 1, day).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    onProceed: (seats: Seat[]) => void,
 }
 
 function seatClasses(seat: Seat, selected: boolean) {
@@ -46,10 +44,8 @@ const legend = [
     { label: 'Wheelchair', className: 'border-sky-400/50 bg-sky-400/10 text-sky-300' },
 ];
 
-export default function SeatSelection({ movie, cinema, date, time, onBack }: SeatSelectionProps) {
+export default function SeatSelection({ movie, cinema, date, time, selectedIds, onSelectedIdsChange, onBack, onProceed }: SeatSelectionProps) {
     const seatMap = useMemo(() => buildSeatMap(`${cinema}|${movie.title}|${date}|${time}`), [cinema, movie.title, date, time]);
-    const [selectedIds, setSelectedIds] = useState<string[]>([]);
-    const [showPaymentNotice, setShowPaymentNotice] = useState(false);
     const scrollerRef = useRef<HTMLDivElement>(null);
 
     const selectedSeats = useMemo(() => {
@@ -68,8 +64,7 @@ export default function SeatSelection({ movie, cinema, date, time, onBack }: Sea
 
     function toggleSeat(seat: Seat) {
         if (seat.taken) return;
-        setShowPaymentNotice(false);
-        setSelectedIds(ids => {
+        onSelectedIdsChange(ids => {
             if (ids.includes(seat.id)) return ids.filter(id => id !== seat.id);
             if (ids.length >= MAX_SEATS_PER_BOOKING) return ids;
             return [...ids, seat.id];
@@ -198,19 +193,6 @@ export default function SeatSelection({ movie, cinema, date, time, onBack }: Sea
 
             {/* Summary */}
             <div className="border-t border-slate-800/70 bg-slate-950/95 px-4 py-4 backdrop-blur-sm sm:px-6 md:px-8">
-                {showPaymentNotice && (
-                    <div className="mb-4 flex items-start gap-3 rounded-xl border border-emerald-500/25 bg-emerald-500/10 p-3 text-sm animate-in fade-in slide-in-from-bottom-2">
-                        <ShieldCheck className="mt-0.5 size-4 shrink-0 text-emerald-400" />
-                        <p className="grow text-slate-300">
-                            <span className="font-semibold text-white">Secure checkout opens here.</span>{' '}
-                            Payment goes live once Movie Club is connected to {cinema}'s ticketing system.
-                        </p>
-                        <button onClick={() => setShowPaymentNotice(false)} aria-label="Dismiss" className="text-slate-500 transition-colors hover:text-white">
-                            <X className="size-4" />
-                        </button>
-                    </div>
-                )}
-
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="min-w-0">
                         {selectedSeats.length > 0 ? (
@@ -252,7 +234,7 @@ export default function SeatSelection({ movie, cinema, date, time, onBack }: Sea
                         </div>
                         <button
                             disabled={selectedSeats.length === 0}
-                            onClick={() => setShowPaymentNotice(true)}
+                            onClick={() => onProceed(selectedSeats)}
                             className="inline-flex grow items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-3 whitespace-nowrap sm:grow-0 sm:px-6 text-sm font-bold text-white shadow-lg shadow-red-900/30 transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-slate-800 disabled:text-slate-500 disabled:shadow-none"
                         >
                             <Lock className="hidden size-4 min-[400px]:block" />

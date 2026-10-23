@@ -10,6 +10,11 @@ import {
 import Home from './pages/home-page'
 import SocialMainPage from './pages/social-main-page'
 import SocialProfile from './pages/social-profile-page'
+import PartnersPage from './pages/partners-page'
+import PrivacyPage from './pages/privacy-page'
+import ContactPage from './pages/contact-page'
+import JoinPage from './pages/join-page'
+import Footer from './components/movies-components/footer'
 
 import Login from './components/social-components/login'
 import Signup from './components/social-components/signup'
@@ -27,6 +32,10 @@ const router = createBrowserRouter(
         <Route path='main' element={<SocialMainPage />} />
         <Route path='users/:username' element={<SocialProfile />} />
       </Route>
+      <Route path='partners' element={<PartnersPage />} />
+      <Route path='privacy' element={<PrivacyPage />} />
+      <Route path='contact' element={<ContactPage />} />
+      <Route path='join' element={<JoinPage />} />
     </Route>
   )
 );
@@ -82,6 +91,7 @@ function RootLayout() {
           onSignupClick={openSignup}
         />
         <Outlet />
+        <Footer />
       </LoginContext.Provider>
     </div>
   )

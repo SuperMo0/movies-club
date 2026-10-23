@@ -1,5 +1,4 @@
 import { Suspense, useState } from 'react'
-import Footer from '@/components/movies-components/footer'
 import Hero from '@/components/movies-components/hero'
 import ShowingNow from '@/components/movies-components/showing-now'
 import MovieBookingModal from '@/components/movies-components/movie-booking-modal'
@@ -42,7 +41,6 @@ export default function Home() {
                 <Qsearch onChange={handleCinemaSelect} cinema={activeCinema} />
                 {/* <Hero handleMovieClick={handleMovieClick} /> */}
                 <ShowingNow handleMovieClick={handleMovieClick} cinema={activeCinema} />
-                <Footer />
             </div>
         </Suspense>
 

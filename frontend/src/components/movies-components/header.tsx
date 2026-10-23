@@ -28,7 +28,9 @@ type HeaderProps = {
 const Header = ({ onLoginClick, onSignupClick }: HeaderProps) => {
 
     const [isAccountOpen, setIsAccountOpen] = useState(false);
-    const isSocial = useLocation().pathname.startsWith('/social');
+    const { pathname } = useLocation();
+    const isSocial = pathname.startsWith('/social');
+    const isMovies = pathname === '/';
 
     const queryClient = useQueryClient();
 
@@ -88,7 +90,7 @@ const Header = ({ onLoginClick, onSignupClick }: HeaderProps) => {
                 <nav className="flex items-center gap-1 rounded-full border border-white/10 bg-white/5 p-1 md:hidden">
                     <NavLink
                         to="/"
-                        className={cn(mobileTabStyles, isSocial ? "text-muted-foreground hover:text-foreground" : "bg-primary text-primary-foreground")}
+                        className={cn(mobileTabStyles, isMovies ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
                     >
                         Movies
                     </NavLink>

@@ -4,6 +4,8 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } fr
 import type { Movie } from 'moviesclub-shared/movies';
 import CinemaSelector from './cinema-selector';
 import SeatSelection from './seat-selection';
+import Checkout from './checkout';
+import type { Seat } from '@/utils/seat-map';
 import { useTodayCinemas } from '@/hooks/use-movies-query';
 
 type MovieBookingModalProps = {
@@ -19,7 +21,10 @@ export default function MovieBookingModal({ open, onOpenChange, movie, cinema }:
     const [selectedDate, setSelectedDate] = useState(todayDate);
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
     const [selectedCinema, setSelectedCinema] = useState<string | null>(cinema);
-    const [step, setStep] = useState<'showtime' | 'seats'>('showtime');
+    const [step, setStep] = useState<'showtime' | 'seats' | 'checkout'>('showtime');
+    // Kept here (not in SeatSelection) so going back from checkout keeps the chosen seats.
+    const [selectedSeatIds, setSelectedSeatIds] = useState<string[]>([]);
+    const [checkoutSeats, setCheckoutSeats] = useState<Seat[]>([]);
 
     const { data: cinemas } = useTodayCinemas();
 
@@ -49,13 +54,25 @@ export default function MovieBookingModal({ open, onOpenChange, movie, cinema }:
                     <span className="sr-only">Close</span>
                 </DialogClose>
 
-                {step === 'seats' && selectedCinema && selectedTime ? (
+                {step === 'checkout' && selectedCinema && selectedTime ? (
+                    <Checkout
+                        movie={movie}
+                        cinema={selectedCinema}
+                        date={selectedDate}
+                        time={selectedTime}
+                        seats={checkoutSeats}
+                        onBack={() => setStep('seats')}
+                    />
+                ) : step === 'seats' && selectedCinema && selectedTime ? (
                     <SeatSelection
                         movie={movie}
                         cinema={selectedCinema}
                         date={selectedDate}
                         time={selectedTime}
+                        selectedIds={selectedSeatIds}
+                        onSelectedIdsChange={setSelectedSeatIds}
                         onBack={() => setStep('showtime')}
+                        onProceed={(seats) => { setCheckoutSeats(seats); setStep('checkout'); }}
                     />
                 ) : (
                     <div className="flex min-h-0 grow flex-col overflow-y-auto md:flex-row md:overflow-hidden hidden-scrollbar">
@@ -143,7 +160,7 @@ export default function MovieBookingModal({ open, onOpenChange, movie, cinema }:
                             <div className="sticky bottom-0 -mx-4 mt-auto flex justify-end border-t border-slate-800/50 bg-slate-950/95 px-4 py-4 backdrop-blur-sm sm:-mx-6 sm:px-6 md:-mx-8 md:px-8">
                                 <button
                                     disabled={!selectedTime}
-                                    onClick={() => setStep('seats')}
+                                    onClick={() => { setSelectedSeatIds([]); setStep('seats'); }}
                                     className="inline-flex w-full items-center justify-center gap-2 sm:w-auto bg-white text-slate-950 hover:bg-slate-200 px-8 py-3 rounded-xl font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {selectedTime ? `Book for ${selectedTime}` : 'Select a Time'}

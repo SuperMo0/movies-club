@@ -105,6 +105,12 @@ export function getBookingTotal(seats: Seat[]) {
     return seats.reduce((total, seat) => total + SEAT_PRICES[seat.type], 0);
 }
 
+export function formatShowDate(date: string) {
+    const [year, month, day] = date.split('-').map(Number);
+    if (!year || !month || !day) return date;
+    return new Date(year, month - 1, day).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
 export function formatPrice(amount: number) {
     return `EGP ${amount.toLocaleString('en-US')}`;
 }

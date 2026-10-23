@@ -1,4 +1,16 @@
 import React, { useRef, useEffect } from 'react';
+import { NavLink } from 'react-router';
+import { Github, Linkedin, Mail } from 'lucide-react';
+import { CONTACT_EMAIL, FOUNDER } from '@/utils/site-info';
+
+const footerLinks = [
+    { label: 'Movies', to: '/' },
+    { label: 'Community', to: '/social/main' },
+    { label: 'Partners', to: '/partners' },
+    { label: 'Privacy', to: '/privacy' },
+    { label: 'Contact', to: '/contact' },
+    { label: 'Join us', to: '/join' },
+];
 
 export default function Footer() {
     const canvasRef = useRef(null);
@@ -146,44 +158,57 @@ export default function Footer() {
                 <div className='w-full h-px bg-slate-800/50 mb-8' />
 
                 <div className='flex flex-col-reverse md:flex-row justify-between items-center gap-8'>
-                    <nav className='flex flex-wrap justify-center gap-6 text-sm font-medium'>
-                        {['Movies', 'Community', 'Partners', 'Privacy', 'Contact'].map((item) => (
-                            <a key={item} href="#" className='hover:text-red-500 transition-colors'>
-                                {item}
-                            </a>
+                    <nav className='flex flex-wrap justify-center gap-x-6 gap-y-3 text-sm font-medium'>
+                        {footerLinks.map(({ label, to }) => (
+                            <NavLink
+                                key={label}
+                                to={to}
+                                end
+                                className={({ isActive }) => `transition-colors hover:text-red-500 ${isActive ? 'text-red-500' : ''}`}
+                            >
+                                {label}
+                            </NavLink>
                         ))}
                     </nav>
 
-                    <div className='flex gap-5'>
-                        <SocialIcon path="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
-                        <SocialIcon path="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z" />
-                        <SocialIcon path="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z M17.5 6.5h.01 M16 2H8C4.7 2 2 4.7 2 8v8c0 3.3 2.7 6 6 6h8c3.3 0 6-2.7 6-6V8c0-3.3-2.7-6-6-6z" />
+                    <div className='flex gap-3'>
+                        <SocialLink href={FOUNDER.links.github} label='MovieClub on GitHub'><Github className={socialIconClass} /></SocialLink>
+                        <SocialLink href={FOUNDER.links.linkedin} label='Mwafak Almahaini on LinkedIn'><Linkedin className={socialIconClass} /></SocialLink>
+                        <SocialLink href={`mailto:${CONTACT_EMAIL}`} label='Email MovieClub'><Mail className={socialIconClass} /></SocialLink>
                     </div>
                 </div>
 
-                <div className='mt-8 text-center text-xs text-slate-600'>
-                    © {new Date().getFullYear()} MovieClub. All rights reserved.
+                <div className='mt-8 flex flex-col items-center justify-center gap-1 text-center text-xs text-slate-600 sm:flex-row sm:gap-2'>
+                    <span>© {new Date().getFullYear()} MovieClub. All rights reserved.</span>
+                    <span className='hidden sm:inline'>·</span>
+                    <span>
+                        Built by{' '}
+                        <NavLink to='/join' className='font-medium text-slate-400 transition-colors hover:text-white'>{FOUNDER.shortName}</NavLink>
+                        {' '}·{' '}
+                        <a href={FOUNDER.links.github} target='_blank' rel='noreferrer' className='inline-flex items-center gap-1 font-medium text-slate-400 transition-colors hover:text-white'>
+                            <Github className='size-3' /> SuperMo0
+                        </a>
+                    </span>
                 </div>
             </div>
         </footer>
     );
 }
 
-function SocialIcon({ path }) {
+const socialIconClass = 'w-5 h-5 relative z-10 text-slate-400 group-hover:text-white transition-colors';
+
+function SocialLink({ href, label, children }) {
     return (
-        <a href="#" className='group relative flex items-center justify-center p-2 rounded-full transition-all hover:bg-slate-800'>
+        <a
+            href={href}
+            target={href.startsWith('http') ? '_blank' : undefined}
+            rel='noreferrer'
+            aria-label={label}
+            title={label}
+            className='group relative flex items-center justify-center p-2 rounded-full transition-all hover:bg-slate-800'
+        >
             <div className='absolute inset-0 bg-red-600/20 blur-md rounded-full opacity-0 group-hover:opacity-100 transition-opacity' />
-            <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="w-5 h-5 relative z-10 text-slate-400 group-hover:text-white transition-colors"
-            >
-                <path d={path} />
-            </svg>
+            {children}
         </a>
     );
 }
