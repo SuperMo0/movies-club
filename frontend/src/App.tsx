@@ -2,11 +2,11 @@ import { createContext, use, useState } from 'react'
 import {
   createBrowserRouter,
   createRoutesFromElements,
-  RouterProvider,
   Route,
   Outlet,
   ScrollRestoration
-} from "react-router-dom";
+} from "react-router";
+import { RouterProvider } from "react-router/dom";
 import Home from './pages/home-page'
 import SocialMainPage from './pages/social-main-page'
 import SocialProfile from './pages/social-profile-page'
